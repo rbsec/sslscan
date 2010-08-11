@@ -101,7 +101,11 @@ struct sslCheckOptions
     char host[512];
     int port;
     int noFailed;
+    int starttls_ftp;
+    int starttls_imap;
+    int starttls_pop3;
     int starttls_smtp;
+    int starttls_xmpp;
     int sslVersion;
     int targets;
     int pout;
@@ -298,6 +302,19 @@ int tcpConnect(struct sslCheckOptions *options)
             printf("%s    ERROR: The SMTP service on %s port %d did not appear to support STARTTLS.%s\n", COL_RED, options->host, options->port, RESET);
             return 0;
         }
+    }
+
+    if (options->starttls_xmpp == true)
+    {
+    }
+    if (options->starttls_pop3 == true)
+    {
+    }
+    if (options->starttls_imap == true)
+    {
+    }
+    if (options->starttls_ftp == true)
+    {
     }
 
     // Return
@@ -1244,7 +1261,12 @@ int main(int argc, char *argv[])
     xmlArg = 0;
     strcpy(options.host, "127.0.0.1");
     options.noFailed = false;
+    options.starttls_ftp = false;
+    options.starttls_imap = false;
+    options.starttls_pop3 = false;
     options.starttls_smtp = false;
+    options.starttls_xmpp = false;
+
     options.sslVersion = ssl_all;
     options.pout = false;
     SSL_library_init();
@@ -1291,11 +1313,35 @@ int main(int argc, char *argv[])
         else if (strncmp("--pkpass=", argv[argLoop], 9) == 0)
             options.privateKeyPassword = argv[argLoop] +9;
 
-        // StartTLS...
+        // StartTLS... FTP
+        else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
+        {
+            options.sslVersion = tls_v1;
+            options.starttls_ftp = true;
+        }
+        // StartTLS... IMAP
+        else if (strcmp("--starttls-imap", argv[argLoop]) == 0)
+        {
+            options.sslVersion = tls_v1;
+            options.starttls_imap = true;
+        }
+        // StartTLS... POP3
+        else if (strcmp("--starttls-pop3", argv[argLoop]) == 0)
+        {
+            options.sslVersion = tls_v1;
+            options.starttls_pop3 = true;
+        }
+        // StartTLS... SMTP
         else if (strcmp("--starttls-smtp", argv[argLoop]) == 0)
         {
             options.sslVersion = tls_v1;
             options.starttls_smtp = true;
+        }
+        // StartTLS... XMPP
+        else if (strcmp("--starttls-xmpp", argv[argLoop]) == 0)
+        {
+            options.sslVersion = tls_v1;
+            options.starttls_xmpp = true;
         }
 
         // SSL v2 only...
