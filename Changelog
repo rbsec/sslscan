@@ -1,0 +1,108 @@
+Changelog
+=========
+
+Version: 1.8.2
+Date   : 19/06/2009
+Author : Ian Ventura-Whiting (Fizz)
+Changes: The following are a list of changes
+         since the previous version:
+            > Fixed output with HTML disabled
+            > Fixed XML critical
+
+Version: 1.8.1
+Date   : 25/05/2009
+Author : Ian Ventura-Whiting (Fizz)
+Changes: The following are a list of changes
+         since the previous version:
+            > Fixed some compiler warnings.
+
+Version: 1.8.0
+Date   : 19/05/2009
+Author : Ian Ventura-Whiting (Fizz)
+Thanks : John Nichols
+Changes: The following are a list of changes
+         since the previous version:
+            > Added SSL implementation workaround
+              option.
+            > Added HTTP connection testing.
+            > Fixed Certification validation XML
+              output.
+
+Version: 1.7.1
+Date   : 20/04/2008
+Author : Ian Ventura-Whiting (Fizz)
+Thanks : Mark Lowe
+Changes: The following are a list of changes
+         since the previous version:
+            > Added HELO for SMTP checks
+            > Increased read buffer size
+
+
+Version: 1.7
+Date   : 18/04/2008
+Author : Ian Ventura-Whiting (Fizz)
+Changes: The following are a list of changes
+         since the previous version:
+            > Added STARTTLS SMTP capability
+            > Fixed XML output format bug
+
+Version: 1.6
+Date   : 30/12/2007
+Author : Ian Ventura-Whiting (Fizz)
+Changes: The following are a list of changes
+         since the previous version:
+            > Added man page.
+            > Improved certificate checking
+            > Added Makefile
+
+Version: 1.5
+Date   : 25/09/2007
+Author : Ian Ventura-Whiting (Fizz)
+Changes: The following are a list of changes
+         since the previous version:
+            > Update to the license to make it
+              BINARY compatible with OpenSSL. Its
+              then easier for the packagers.
+
+Version: 1.4
+Date   : 03/09/2007
+Author : Ian Ventura-Whiting (Fizz)
+Changes: The following are a list of changes
+         since the previous version:
+            > Added Server Certificate ouput.
+            > Added support for client certs.
+            > Added support for private keys
+              and password.
+            > Added support for PKCS#12.
+            > Fixed xml output.
+
+Version: 1.3
+Date   : 06/08/2007
+Author : Ian Ventura-Whiting (Fizz)
+Changes: The following are a list of changes
+         since the previous version:
+            > Added XML file output option.
+            > Improved help text.
+            > Added program URL.
+
+Version: 1.2
+Date   : 16/07/2007
+Author : Ian Ventura-Whiting (Fizz)
+Changes: The following are a list of changes
+         since the previous version:
+            > Removed unused variable
+            > Other minor changes.
+
+Version: 1.1
+Date   : 13/07/2007
+Author : Ian Ventura-Whiting (Fizz)
+Changes: The following are a list of changes
+         since the previous version:
+            > Correction in banner text
+            > Host:Port now directly from the
+              command-line.
+
+Version: 1.0
+Date   : 13/07/2007
+Author : Ian Ventura-Whiting (Fizz)
+Notes  : Initial version of sslscan

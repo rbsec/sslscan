@@ -1,0 +1,75 @@
+.TH SSLSCAN 1 "May 19, 2009"
+.SH NAME
+sslscan \- Fast SSL scanner
+.SH SYNOPSIS
+.B sslscan
+.RI [ options ] " [host:port | host]"
+.SH DESCRIPTION
+This manual page documents briefly the
+.B sslscan
+command
+.PP
+\fBsslscan\fP queries SSL services, such as HTTPS, in order to determine the
+ciphers that are supported.
+.br
+SSLScan is designed to be easy, lean and fast. The output includes preferred
+ciphers of the SSL service,
+.br
+the certificate and output is in text and XML formats.
+.SH OPTIONS
+.TP
+.B \-\-help
+.br
+Show summary of options.
+.TP
+.B \-\-version
+Show version of program.
+.TP
+.B \-\-targets=<file>
+A file containing a list of hosts to
+check. Hosts can be supplied with
+ports (i.e. host:port). One target per line.
+.TP
+.B \-\-no\-failed
+List only accepted ciphers
+(default is to listing all ciphers).
+.TP
+.B \-\-ssl2
+.br
+Only check SSLv2 ciphers.
+.TP
+.B \-\-ssl3
+.br
+Only check SSLv3 ciphers.
+.TP
+.B \-\-pk=<file>
+A file containing the private key or
+a PKCS#12 file containing a private
+key/certificate pair (as produced by
+MSIE and Netscape).
+.TP
+.B \-\-pkpass=<password>
+The password for the private key or PKCS#12 file.
+.TP
+.B \-\-certs=<file>
+A file containing PEM/ASN1 formatted client certificates.
+.TP
+.B \-\-starttls
+Executes a STARTTLS in order to test the SSL capabilities
+of an SMTP service with TLS support. This option automatically
+forces TLS only ciphers, no need to specify it.
+.TP
+.B \-\-html
+Makes a HTML request after a successful connection and returns
+the server response code.
+.TP
+.B \-\-bugs
+Enables workarounds for SSL bugs.
+.TP
+.B \-\-xml=<file>
+Output results to an XML file.
+.br
+.SH AUTHOR
+sslscan was written by Ian Ventura-Whiting <fizz@titania.co.uk>.
+.br
+This manual page was originally written by Marvin Stark <marv@der-marv.de>.
