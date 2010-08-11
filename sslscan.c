@@ -101,7 +101,7 @@ struct sslCheckOptions
     char host[512];
     int port;
     int noFailed;
-    int starttls;
+    int starttls_smtp;
     int sslVersion;
     int targets;
     int pout;
@@ -270,7 +270,7 @@ int tcpConnect(struct sslCheckOptions *options)
     }
 
     // If STARTTLS is required...
-    if (options->starttls == true)
+    if (options->starttls_smtp == true)
     {
         memset(buffer, 0, BUFFERSIZE);
         recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
@@ -1244,7 +1244,7 @@ int main(int argc, char *argv[])
     xmlArg = 0;
     strcpy(options.host, "127.0.0.1");
     options.noFailed = false;
-    options.starttls = false;
+    options.starttls_smtp = false;
     options.sslVersion = ssl_all;
     options.pout = false;
     SSL_library_init();
@@ -1292,10 +1292,10 @@ int main(int argc, char *argv[])
             options.privateKeyPassword = argv[argLoop] +9;
 
         // StartTLS...
-        else if (strcmp("--starttls", argv[argLoop]) == 0)
+        else if (strcmp("--starttls-smtp", argv[argLoop]) == 0)
         {
             options.sslVersion = tls_v1;
-            options.starttls = true;
+            options.starttls_smtp = true;
         }
 
         // SSL v2 only...
@@ -1390,7 +1390,7 @@ int main(int argc, char *argv[])
             printf("                       PKCS#12 file.\n");
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted\n", COL_GREEN, RESET);
             printf("                       client certificates.\n");
-            printf("  %s--starttls%s           If a STARTTLS is required to kick an\n", COL_GREEN, RESET);
+            printf("  %s--starttls-smtp%s      If a STARTTLS is required to kick an\n", COL_GREEN, RESET);
             printf("                       SMTP service into action.\n");
             printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation  bug work-\n", COL_GREEN, RESET);
