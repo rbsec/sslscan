@@ -1,0 +1,17 @@
+This is a fork of sslscan.c to better support STARTTLS.
+
+The original home page of sslscan is:
+
+    http://www.titania.co.uk
+
+sslscan was originally written by:
+
+    Ian Ventura-Whiting
+
+The current home page of this fork (until upstream merges a finished patch) is:
+
+    http://www.github.com/ioerror/sslscan
+
+Most of the pre-TLS protocol setup was inspired by the OpenSSL s_client.c
+program. The goal of this fork is to eventually merge with the original
+project after the STARTTLS setup is polished.
