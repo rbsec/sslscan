@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version: 1.8.3
+Date   : 11/08/2010
+Author : Jacob Appelbaum <jacob@appelbaum.net>
+Changes: The following are a list of changes
+         > Improve new protocol setup support for STARTTLS:
+         POP3, IMAP, FTP, and XMPP
+         This modeled after the support found in OpenSSL's s_client
+         > Add verbose option to print more info
+
 Version: 1.8.2
 Date   : 19/06/2009
 Author : Ian Ventura-Whiting (Fizz)
