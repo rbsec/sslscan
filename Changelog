@@ -9,6 +9,8 @@ Changes: The following are a list of changes
          POP3, IMAP, FTP, and XMPP
          This modeled after the support found in OpenSSL's s_client
          > Add verbose option to print more info
+         > Add default ports when a STARTTLS setup flag is called without
+         any port at all
 
 Version: 1.8.2
 Date   : 19/06/2009

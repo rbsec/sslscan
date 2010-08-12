@@ -1332,7 +1332,7 @@ int main(int argc, char *argv[])
 
     // Init...
     memset(&options, 0, sizeof(struct sslCheckOptions));
-    options.port = 443;
+    options.port = 0;
     xmlArg = 0;
     strcpy(options.host, "127.0.0.1");
     options.noFailed = false;
@@ -1461,6 +1461,20 @@ int main(int argc, char *argv[])
             tempInt++;
             if (tempInt < maxSize)
                 options.port = atoi(argv[argLoop] + tempInt);
+            else if (options.port == 0) {
+                if (options.starttls_ftp)
+                    options.port = 21;
+                if (options.starttls_imap)
+                    options.port = 143;
+                if (options.starttls_pop3)
+                    options.port = 143;
+                if (options.starttls_smtp)
+                    options.port = 25;
+                if (options.starttls_xmpp)
+                    options.port = 5222;
+                if (options.port == 0)
+                    options.port = 443;
+            }
         }
 
         // Not too sure what the user is doing...
