@@ -309,8 +309,43 @@ int tcpConnect(struct sslCheckOptions *options)
 
     if (options->starttls_xmpp == true && tlsStarted == false)
     {
+
+        /* This is so ghetto, you cannot release it! */
+        char xmpp_setup[255];
+        sprintf(xmpp_setup, "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host);
         tlsStarted = 1;
-        printf("xmpp not yet implemented.\n");
+        memset(buffer, 0, BUFFERSIZE);
+        send(socketDescriptor, xmpp_setup, strlen(xmpp_setup), 0);
+        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (options->verbose)
+        {
+            printf("Server reported: %s\n", buffer);
+            printf("Attempting to STARTTLS\n");
+        }
+        /* TODO: read and search for
+           <starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'
+
+           if all goes well and we find it, carry on
+           If we find '/stream:features' first, we lose */
+
+        send(socketDescriptor, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\r\n", 53, 0);
+        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (options->verbose)
+            printf("Server reported: %s\n", buffer);
+
+        /* TODO:
+           if all goes well, we should see:
+           <starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>
+        */
+
+        /* TODO:
+           read and look for:
+           '<proceed'
+        */
+        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (options->verbose)
+            printf("Server reported: %s\n", buffer);
+
     }
 
     // Setup a POP3 STARTTLS socket
