@@ -111,6 +111,7 @@ struct sslCheckOptions
     int pout;
     int sslbugs;
     int http;
+    int verbose;
 
     // File Handles...
     FILE *xmlOutput;
@@ -242,6 +243,7 @@ int tcpConnect(struct sslCheckOptions *options)
 {
     // Variables...
     int socketDescriptor;
+    int tlsStarted = 0;
     char buffer[BUFFERSIZE];
     struct sockaddr_in localAddress;
     int status;
@@ -274,8 +276,9 @@ int tcpConnect(struct sslCheckOptions *options)
     }
 
     // If STARTTLS is required...
-    if (options->starttls_smtp == true)
+    if (options->starttls_smtp == true && tlsStarted == false)
     {
+        tlsStarted = 1;
         memset(buffer, 0, BUFFERSIZE);
         recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
         if (strncmp(buffer, "220", 3) != 0)
@@ -304,17 +307,54 @@ int tcpConnect(struct sslCheckOptions *options)
         }
     }
 
-    if (options->starttls_xmpp == true)
+    if (options->starttls_xmpp == true && tlsStarted == false)
     {
+        tlsStarted = 1;
+        printf("xmpp not yet implemented.\n");
     }
-    if (options->starttls_pop3 == true)
+
+    // Setup a POP3 STARTTLS socket
+    if (options->starttls_pop3 == true && tlsStarted == false)
     {
+        tlsStarted = 1;
+        memset(buffer, 0, BUFFERSIZE);
+        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (options->verbose)
+            printf("Server reported: %s\n", buffer);
+        send(socketDescriptor, "STLS\r\n", 6, 0);
+        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (options->verbose)
+            printf("Server reported: %s\n", buffer);
     }
-    if (options->starttls_imap == true)
+    if (options->starttls_imap == true && tlsStarted == false)
     {
+        tlsStarted = 1;
+        memset(buffer, 0, BUFFERSIZE);
+        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (options->verbose)
+            printf("Server reported: %s\n", buffer);
+        // Explore the possibilties
+        send(socketDescriptor, ". CAPABILITY\r\n", 14, 0);
+        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (options->verbose)
+            printf("Server reported: %s\n", buffer);
+        // TODO: read, loop, look for 'STARTTLS' if we care to detect support
+        // either way we then say:
+        send(socketDescriptor, ". STARTTLS\r\n", 12, 0);
+        if (options->verbose)
+            printf("STARTLS IMAP setup complete.\n");
+        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (options->verbose)
+            printf("Server reported: %s\n", buffer);
     }
-    if (options->starttls_ftp == true)
+    if (options->starttls_ftp == true && tlsStarted == false)
     {
+        tlsStarted = 1;
+        memset(buffer, 0, BUFFERSIZE);
+        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        printf("Server reported: %s\n", buffer);
+        send(socketDescriptor, "AUTH TLS\r\n", 10, 0);
+        printf("STARTLS FTP setup complete.\n");
     }
 
     // Return
@@ -1266,6 +1306,7 @@ int main(int argc, char *argv[])
     options.starttls_pop3 = false;
     options.starttls_smtp = false;
     options.starttls_xmpp = false;
+    options.verbose = false;
 
     options.sslVersion = ssl_all;
     options.pout = false;
@@ -1296,6 +1337,10 @@ int main(int argc, char *argv[])
         // XML Output
         else if (strncmp("--xml=", argv[argLoop], 6) == 0)
             xmlArg = argLoop;
+
+        // Verbose
+        else if (strcmp("--verbose", argv[argLoop]) == 0)
+            options.verbose = true;
 
         // P Output
         else if (strcmp("-p", argv[argLoop]) == 0)
@@ -1436,13 +1481,17 @@ int main(int argc, char *argv[])
             printf("                       PKCS#12 file.\n");
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted\n", COL_GREEN, RESET);
             printf("                       client certificates.\n");
-            printf("  %s--starttls-smtp%s      If a STARTTLS is required to kick an\n", COL_GREEN, RESET);
-            printf("                       SMTP service into action.\n");
+            printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
+            printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
+            printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
+            printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
+            printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
             printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation  bug work-\n", COL_GREEN, RESET);
             printf("                       arounds.\n");
             printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
+            printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
             printf("  %s--help%s               Display the  help text  you are  now\n", COL_GREEN, RESET);
             printf("                       reading.\n");
             printf("%sExample:%s\n", COL_BLUE, RESET);
