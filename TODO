@@ -5,4 +5,7 @@ Properly parse the IMAP response and don't start until we see something like:
 
 Properly parse expected XMPP responses by hand in a better way
 
+Add tests for a given set of hosts that are known to be interesting
 Add support for checking supported ciphers of a given Tor relay
+Make a Debian package
+Send diff from 1.8.2 to the upstream developer
