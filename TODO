@@ -1,0 +1,8 @@
+Properly parse the IMAP response and don't start until we see something like:
+
+    ". OK Begin SSL/TLS negotiation now."
+    ". OK Begin TLS negotiation now"
+
+Properly parse expected XMPP responses by hand in a better way
+
+Add support for checking supported ciphers of a given Tor relay
