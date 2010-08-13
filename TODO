@@ -7,5 +7,7 @@ Properly parse expected XMPP responses by hand in a better way
 
 Add tests for a given set of hosts that are known to be interesting
 Add test for TLS/SSL renegotiation
+Add STARTTLS support for LDAP:
+    http://www.rfc-editor.org/rfc/rfc2830.txt
 Make a Debian package
 Send diff from 1.8.2 to the upstream developer
