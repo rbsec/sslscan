@@ -314,6 +314,9 @@ int tcpConnect(struct sslCheckOptions *options)
            eg:
            talk.google.com actually expects gmail.com, not talk.google.com
            jabber.ccc.de expects jabber.ccc.de
+
+           It may be useful to provide a commandline switch to provide the
+           expected hostname.
         */
         sprintf(xmpp_setup, "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host);
         tlsStarted = 1;
