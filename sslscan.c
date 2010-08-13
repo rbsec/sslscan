@@ -310,7 +310,7 @@ int tcpConnect(struct sslCheckOptions *options)
     {
 
         /* This is so ghetto, you cannot release it! */
-        char xmpp_setup[1024];
+        char xmpp_setup[1024]; // options->host is 512 bytes long
         /* XXX: TODO - options->host isn't always the host you want to test
            eg:
            talk.google.com actually expects gmail.com, not talk.google.com
