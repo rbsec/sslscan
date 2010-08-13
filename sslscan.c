@@ -310,6 +310,11 @@ int tcpConnect(struct sslCheckOptions *options)
 
         /* This is so ghetto, you cannot release it! */
         char xmpp_setup[255];
+        /* TODO - options->host isn't always the host you want to test
+           eg:
+           talk.google.com actually expects gmail.com, not talk.google.com
+           jabber.ccc.de expects jabber.ccc.de
+        */
         sprintf(xmpp_setup, "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host);
         tlsStarted = 1;
         memset(buffer, 0, BUFFERSIZE);
