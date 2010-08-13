@@ -305,12 +305,13 @@ int tcpConnect(struct sslCheckOptions *options)
         }
     }
 
+    // We could use an XML parser but frankly it seems like a security disaster
     if (options->starttls_xmpp == true && tlsStarted == false)
     {
 
         /* This is so ghetto, you cannot release it! */
-        char xmpp_setup[255];
-        /* TODO - options->host isn't always the host you want to test
+        char xmpp_setup[1024];
+        /* XXX: TODO - options->host isn't always the host you want to test
            eg:
            talk.google.com actually expects gmail.com, not talk.google.com
            jabber.ccc.de expects jabber.ccc.de
@@ -328,29 +329,35 @@ int tcpConnect(struct sslCheckOptions *options)
             printf("Server reported: %s\n", buffer);
             printf("Attempting to STARTTLS\n");
         }
-        /* TODO: read and search for
-           <starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'
-
-           if all goes well and we find it, carry on
-           If we find '/stream:features' first, we lose */
 
         send(socketDescriptor, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\r\n", 53, 0);
         recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+
+        /* We're looking for something like:
+        <starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'
+        If we find the end of the stream features before we find tls, we may
+        not have STARTTLS support. */
+        if (strstr(buffer, "urn:ietf:params:xml:ns:xmpp-tls")) {
+            if (options->verbose) {
+                printf("It appears that xmpp-tls was detected.\n");
+            }
+        } else if (strstr(buffer, "/stream:features")) {
+                if (options->verbose) {
+                printf("It appears that xmpp-tls was not detected.\n");
+                }
+        }
+
         if (options->verbose)
             printf("Server reported: %s\n", buffer);
 
-        /* TODO:
-           if all goes well, we should see:
-           <starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>
-        */
-
-        /* TODO:
-           read and look for:
-           '<proceed'
-        */
         recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (strstr(buffer, "<proceed")) {
+            if (options->verbose) {
+                printf("It appears that xmpp-tls is ready for TLS.\n");
+            }
         if (options->verbose)
             printf("Server reported: %s\n", buffer);
+        }
 
     }
 
