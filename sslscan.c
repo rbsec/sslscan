@@ -1203,6 +1203,8 @@ int getCertificate(struct sslCheckOptions *options)
 
                                 // Free X509 Certificate...
                                 X509_free(x509Cert);
+                            } else {
+                                printf("    Unable to parse certificate\n");
                             }
 
                             if (options->xmlOutput != 0)
