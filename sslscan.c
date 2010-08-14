@@ -408,10 +408,24 @@ int tcpConnect(struct sslCheckOptions *options)
     {
         tlsStarted = 1;
         memset(buffer, 0, BUFFERSIZE);
+
+        // Fetch the server banner
         recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
-        printf("Server reported: %s\n", buffer);
+        if (options->verbose)
+            printf("Server banner: %s\n", buffer);
+
+        // Send TLS request
         send(socketDescriptor, "AUTH TLS\r\n", 10, 0);
-        printf("STARTLS FTP setup complete.\n");
+        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (strstr(buffer, "234 AUTH TLS successful")) {
+            if (options->verbose)
+                printf("STARTLS FTP setup complete.\n");
+        } else {
+            if (options->verbose)
+                printf("STARTLS FTP setup possibly not complete.\n");
+        }
+        if (options->verbose)
+            printf("Server reported: %s\n", buffer);
     }
 
     // Return
