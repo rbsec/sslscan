@@ -15,3 +15,6 @@ uninstall:
 
 clean:
 	rm -f sslscan
+
+newopenssl:
+	gcc -o sslscan -g -Wall -I /tmp/openssl-0.9.8n/ sslscan.c /tmp/openssl-0.9.8n/libssl.a /tmp/openssl-0.9.8n/libcrypto.a
