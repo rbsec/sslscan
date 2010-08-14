@@ -2,6 +2,7 @@
  *   sslscan - A SSL cipher scanning tool                                  *
  *   Copyright 2007-2009 by Ian Ventura-Whiting (Fizz)                     *
  *   fizz@titania.co.uk                                                    *
+ *   Copyright 2010 by Michael Boman (michael@michaelboman.org)            *
  *   Copyleft 2010 by Jacob Appelbaum <jacob@appelbaum.net>                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -132,6 +133,12 @@ struct sslCheckOptions
     char *privateKeyPassword;
 };
 
+// store renegotiation test data
+struct renegotiationOutput
+{
+    int supported;
+    int secure;
+};
 
 // Adds Ciphers to the Cipher List structure
 int populateCipherList(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
@@ -445,7 +452,6 @@ int tcpConnect(struct sslCheckOptions *options)
     return socketDescriptor;
 }
 
-
 // Private Key Password Callback...
 static int password_callback(char *buf, int size, int rwflag, void *userdata)
 {
@@ -453,7 +459,6 @@ static int password_callback(char *buf, int size, int rwflag, void *userdata)
     buf[strlen(userdata)] = 0;
     return strlen(userdata);
 }
-
 
 // Load client certificates/private keys...
 int loadCerts(struct sslCheckOptions *options)
@@ -567,6 +572,260 @@ int loadCerts(struct sslCheckOptions *options)
         return false;
 }
 
+
+// Test renegotiation
+int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOutput *outputData)
+{
+
+    if (options->verbose == true)
+    {
+        if (outputData->secure)
+            printf("    Secure session renegotiations supported\n\n");
+        else if (outputData->supported)
+            printf("    Insecure session renegotiations supported\n\n");
+        else
+           printf("    Session renegotiation not supported\n\n");
+    }
+
+    if (options->xmlOutput != 0)
+    {
+        printf("  <renegotiation supported=\"%d\" secure=\"%d\" />\n",
+               outputData->supported, outputData->secure);
+    }
+
+    return true;
+}
+
+struct renegotiationOutput * newRenegotiationOutput( void )
+{
+    struct renegotiationOutput *myRenOut;
+    myRenOut = calloc(1,sizeof(struct renegotiationOutput));
+    return( myRenOut );
+}
+
+int freeRenegotiationOutput( struct renegotiationOutput *myRenOut )
+{
+    if ( myRenOut != NULL) {
+        free(myRenOut);
+    }
+    return true;
+}
+
+/* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
+ * many versions and releases of OpenSSL. */
+/** Does the run-time openssl version look like we need
+ * SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION? */
+static int use_unsafe_renegotiation_op = 0;
+/** Does the run-time openssl version look like we need
+ * SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION? */
+static int use_unsafe_renegotiation_flag = 0;
+
+/* We redefine these so that we can run correctly even if the vendor gives us
+ * a version of OpenSSL that does not match its header files.  (Apple: I am
+ * looking at you.)
+ */
+#ifndef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+#define SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION 0x00040000L
+#endif
+#ifndef SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+#define SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION 0x0010
+#endif
+
+
+// Check if the server supports renegotiation
+int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
+{
+    // Variables...
+    int cipherStatus;
+    int status = true;
+    //int secure = false;
+    int socketDescriptor = 0;
+    int res;
+    SSL *ssl = NULL;
+    BIO *cipherConnectionBio;
+    struct renegotiationOutput *renOut = newRenegotiationOutput();
+
+    /* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
+     * many versions and release of OpenSSL. */
+    long version = SSLeay();
+    if (version >= 0x009080c0L && version < 0x009080d0L) {
+        printf("OpenSSL %s looks like version 0.9.8l; I will try SSL3_FLAGS to enable renegotation.\n",
+                SSLeay_version(SSLEAY_VERSION));
+        use_unsafe_renegotiation_flag = 1;
+        use_unsafe_renegotiation_op = 1;
+    } else if (version >= 0x009080d0L) {
+        printf("OpenSSL %s looks like version 0.9.8m or later; "
+        "I will try SSL_OP to enable renegotiation\n",
+        SSLeay_version(SSLEAY_VERSION));
+        use_unsafe_renegotiation_op = 1;
+    } else if (version < 0x009080c0L) {
+        printf("OpenSSL %s [%lx] looks like it's older than "
+                 "0.9.8l, but some vendors have backported 0.9.8l's "
+                 "renegotiation code to earlier versions, and some have "
+                 "backported the code from 0.9.8m or 0.9.8n.  I'll set both "
+                 "SSL3_FLAGS and SSL_OP just to be safe.\n",
+                 SSLeay_version(SSLEAY_VERSION), version);
+        use_unsafe_renegotiation_flag = 1;
+        use_unsafe_renegotiation_op = 1;
+    } else {
+        printf("OpenSSL %s has version %lx\n",
+               SSLeay_version(SSLEAY_VERSION), version);
+    }
+
+#ifdef SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
+  SSL_CTX_set_options(options->ctx,
+                      SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+#endif
+
+    // Connect to host
+    socketDescriptor = tcpConnect(options);
+    if (socketDescriptor != 0)
+    {
+
+        // Setup Context Object...
+        options->ctx = SSL_CTX_new(sslMethod);
+        if (options->ctx != NULL)
+        {
+            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            {
+
+                // Load Certs if required...
+                if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
+                    status = loadCerts(options);
+
+                if (status == true)
+                {
+                    // Create SSL object...
+                    ssl = SSL_new(options->ctx);
+
+#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
+                    // Make sure we can connect to insecure servers
+                    // OpenSSL is going to change the default at a later date
+                    SSL_set_options(ssl, SSL_OP_LEGACY_SERVER_CONNECT);
+#endif
+
+                   if (ssl != NULL)
+                    {
+                        // Connect socket and BIO
+                        cipherConnectionBio = BIO_new_socket(socketDescriptor, BIO_NOCLOSE);
+
+                        // Connect SSL and BIO
+                        SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
+
+                        // Connect SSL over socket
+                        cipherStatus = SSL_connect(ssl);
+
+                  /* Yes, we know what we are doing here.  No, we do not treat a renegotiation
+                   * as authenticating any earlier-received data. */
+                  if (use_unsafe_renegotiation_flag) {
+                      printf("use_unsafe_renegotiation_flag\n");
+                    ssl->s3->flags |= SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+                    printf("%i\n", ssl->s3->flags);
+                  }
+                  if (use_unsafe_renegotiation_op) {
+                      printf("use_unsafe_renegotiation_op\n");
+                    SSL_set_options(ssl,
+                                    SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
+                  }
+
+
+                        if (cipherStatus == 1)
+                        {
+
+#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
+                            // SSL_get_secure_renegotiation_support() appeared first in OpenSSL 0.9.8m
+                            renOut->secure = SSL_get_secure_renegotiation_support(ssl);
+                            if( renOut->secure )
+                            {
+                                // If it supports secure renegotiations,
+                                // it should have renegotioation support in general
+                                renOut->supported = true;
+                                status = true;
+                            }
+                            else
+                            {
+#endif
+                                // We can't assume that just because the secure renegotiation
+                                // support failed the server doesn't support insecure renegotiations·
+
+                                // assume ssl is connected and error free up to here
+                                //setBlocking(ssl); // this is unnecessary if it is already blocking·
+                                SSL_renegotiate(ssl); // Ask to renegotiate the connection
+                                // This hangs when an 'encrypted alert' is sent by the server
+                                SSL_do_handshake(ssl); // Send renegotiation request to server //TODO :: XXX hanging here
+
+                                if (ssl->state == SSL_ST_OK)
+                                {
+                                    res = SSL_do_handshake(ssl); // Send renegotiation request to server
+                                    if( res != 1 )
+                                    {
+                                        fprintf(stderr, "\n\nSSL_do_handshake() call failed\n");
+                                    }
+                                    if (ssl->state == SSL_ST_OK)
+                                    {
+                                        /* our renegotiation is complete */
+                                        renOut->supported = true;
+                                        status = true;
+                                    } else {
+                                        renOut->supported = false;
+                                        status = false;
+                                        fprintf(stderr, "\n\nFailed to complete renegotiation\n");
+                                    }
+                                } else {
+                                    status = false;
+                                    renOut->secure = false;
+                                }
+#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
+                            }
+#endif
+                            // Disconnect SSL over socket
+                            SSL_shutdown(ssl);
+                        }
+
+                        // Free SSL object
+                        SSL_free(ssl);
+                    }
+                    else
+                    {
+                        status = false;
+                        renOut->supported = false;
+                        fprintf(stderr, "%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                    }
+                }
+            }
+            else
+            {
+                status = false;
+                renOut->supported = false;
+                fprintf(stderr, "%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+            }
+            // Free CTX Object
+            SSL_CTX_free(options->ctx);
+        }
+        // Error Creating Context Object
+        else
+        {
+            status = false;
+            renOut->supported = false;
+            fprintf(stderr, "%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+        }
+
+        // Disconnect from host
+        close(socketDescriptor);
+    }
+    else
+    {
+        // Could not connect
+        fprintf(stderr, "%sERROR: Could not connect.%s\n", COL_RED, RESET);
+        renOut->supported = false;
+        status = false;
+    }
+    outputRenegotiation(options, renOut);
+    freeRenegotiationOutput( renOut );
+
+    return status;
+
+}
 
 // Test a cipher...
 int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPointer)
@@ -1203,9 +1462,11 @@ int getCertificate(struct sslCheckOptions *options)
 
                                 // Free X509 Certificate...
                                 X509_free(x509Cert);
-                            } else {
-                                printf("    Unable to parse certificate\n");
                             }
+
+                       else {
+                                printf("    Unable to parse certificate\n");
+                       }
 
                             if (options->xmlOutput != 0)
                                 fprintf(options->xmlOutput, "  </certificate>\n");
@@ -1282,8 +1543,16 @@ int testHost(struct sslCheckOptions *options)
     if (options->xmlOutput != 0)
         fprintf(options->xmlOutput, " <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
 
-    // Test supported ciphers...
+    // Test renegotiation
     printf("\n%sTesting SSL server %s on port %d%s\n\n", COL_GREEN, options->host, options->port, RESET);
+
+    if (status == true && options->reneg )
+    {
+        printf("\n  %sSSL renegotiation:%s\n", COL_BLUE, RESET);
+        testRenegotiation(options, TLSv1_client_method());
+    }
+
+    // Test supported ciphers...
     printf("  %sSupported Server Cipher(s):%s\n", COL_BLUE, RESET);
     if ((options->http == true) && (options->pout == true))
         printf("|| Status || HTTP Code || Version || Bits || Cipher ||\n");
@@ -1588,7 +1857,7 @@ int main(int argc, char *argv[])
             printf("                       PKCS#12 file.\n");
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted\n", COL_GREEN, RESET);
             printf("                       client certificates.\n");
-            printf("  %s--renegotiation%s      Test if remote system supports renegotiation\n", COL_GREEN, RESET);
+            printf("  %s--renegotiation%s      Attempt TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
