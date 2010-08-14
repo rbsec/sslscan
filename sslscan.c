@@ -837,6 +837,8 @@ int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
         fprintf(stderr, "%sERROR: Could not connect.%s\n", COL_RED, RESET);
         renOut->supported = false;
         status = false;
+        freeRenegotiationOutput( renOut );
+        exit(status);
     }
     outputRenegotiation(options, renOut);
     freeRenegotiationOutput( renOut );
