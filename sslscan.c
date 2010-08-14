@@ -371,30 +371,38 @@ int tcpConnect(struct sslCheckOptions *options)
             printf("Server reported: %s\n", buffer);
         send(socketDescriptor, "STLS\r\n", 6, 0);
         recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        // We probably want to confirm that we see something like:
+        // '+OK Begin SSL/TLS negotiation now.'
         if (options->verbose)
             printf("Server reported: %s\n", buffer);
     }
+
+    // Setup an IMAP STARTTLS socket
     if (options->starttls_imap == true && tlsStarted == false)
     {
         tlsStarted = 1;
         memset(buffer, 0, BUFFERSIZE);
+
+        // Fetch the IMAP banner
         recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
         if (options->verbose)
-            printf("Server reported: %s\n", buffer);
-        // Explore the possibilties
-        send(socketDescriptor, ". CAPABILITY\r\n", 14, 0);
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
-        if (options->verbose)
-            printf("Server reported: %s\n", buffer);
-        // TODO: read, loop, look for 'STARTTLS' if we care to detect support
-        // either way we then say:
+            printf("Server banner: %s\n", buffer);
+        // Attempt to STARTTLS
         send(socketDescriptor, ". STARTTLS\r\n", 12, 0);
-        if (options->verbose)
-            printf("STARTLS IMAP setup complete.\n");
         recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
-        if (options->verbose)
-            printf("Server reported: %s\n", buffer);
+        if (strstr(buffer, ". OK") || strstr(buffer, " . OK")) {
+            if (options->verbose) {
+                printf("STARTLS IMAP setup complete.\n");
+                printf("Server reported: %s\n", buffer);
+            }
+        } else {
+            if (options->verbose) {
+                printf("STARTLS IMAP setup not complete.\n");
+                printf("Server reported: %s\n", buffer);
+            }
+        }
     }
+
     if (options->starttls_ftp == true && tlsStarted == false)
     {
         tlsStarted = 1;
