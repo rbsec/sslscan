@@ -577,21 +577,18 @@ int loadCerts(struct sslCheckOptions *options)
 int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOutput *outputData)
 {
 
-    if (options->verbose == true)
-    {
-        if (outputData->secure)
-            printf("    Secure session renegotiations supported\n\n");
-        else if (outputData->supported)
-            printf("    Insecure session renegotiations supported\n\n");
-        else
-           printf("    Session renegotiation not supported\n\n");
-    }
-
     if (options->xmlOutput != 0)
     {
-        printf("  <renegotiation supported=\"%d\" secure=\"%d\" />\n",
+        fprintf(options->xmlOutput, "  <renegotiation supported=\"%d\" secure=\"%d\" />\n",
                outputData->supported, outputData->secure);
     }
+
+    if (outputData->secure)
+        printf("    Secure session renegotiations supported\n\n");
+    else if (outputData->supported)
+        printf("    Insecure session renegotiations supported\n\n");
+    else
+       printf("    Session renegotiation not supported\n\n");
 
     return true;
 }
@@ -631,6 +628,49 @@ static int use_unsafe_renegotiation_flag = 0;
 #define SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION 0x0010
 #endif
 
+void tls_reneg_init(struct sslCheckOptions *options)
+{
+    /* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
+     * many versions and release of OpenSSL. */
+    SSL_library_init();
+    SSL_load_error_strings();
+
+    long version = SSLeay();
+    if (version >= 0x009080c0L && version < 0x009080d0L) {
+        if (options->verbose)
+            printf("OpenSSL %s looks like version 0.9.8l; I will try SSL3_FLAGS to enable renegotation.\n",
+                SSLeay_version(SSLEAY_VERSION));
+        use_unsafe_renegotiation_flag = 1;
+        use_unsafe_renegotiation_op = 1;
+    } else if (version >= 0x009080d0L) {
+        if (options->verbose)
+            printf("OpenSSL %s looks like version 0.9.8m or later; "
+            "I will try SSL_OP to enable renegotiation\n",
+        SSLeay_version(SSLEAY_VERSION));
+        use_unsafe_renegotiation_op = 1;
+    } else if (version < 0x009080c0L) {
+        if (options->verbose)
+            printf("OpenSSL %s [%lx] looks like it's older than "
+                 "0.9.8l, but some vendors have backported 0.9.8l's "
+                 "renegotiation code to earlier versions, and some have "
+                 "backported the code from 0.9.8m or 0.9.8n.  I'll set both "
+                 "SSL3_FLAGS and SSL_OP just to be safe.\n",
+                 SSLeay_version(SSLEAY_VERSION), version);
+        use_unsafe_renegotiation_flag = 1;
+        use_unsafe_renegotiation_op = 1;
+    } else {
+        if (options->verbose)
+            printf("OpenSSL %s has version %lx\n",
+               SSLeay_version(SSLEAY_VERSION), version);
+    }
+
+#ifdef SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
+  SSL_CTX_set_options(options->ctx,
+                      SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+#endif
+
+}
+
 
 // Check if the server supports renegotiation
 int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
@@ -645,37 +685,7 @@ int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
     BIO *cipherConnectionBio;
     struct renegotiationOutput *renOut = newRenegotiationOutput();
 
-    /* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
-     * many versions and release of OpenSSL. */
-    long version = SSLeay();
-    if (version >= 0x009080c0L && version < 0x009080d0L) {
-        printf("OpenSSL %s looks like version 0.9.8l; I will try SSL3_FLAGS to enable renegotation.\n",
-                SSLeay_version(SSLEAY_VERSION));
-        use_unsafe_renegotiation_flag = 1;
-        use_unsafe_renegotiation_op = 1;
-    } else if (version >= 0x009080d0L) {
-        printf("OpenSSL %s looks like version 0.9.8m or later; "
-        "I will try SSL_OP to enable renegotiation\n",
-        SSLeay_version(SSLEAY_VERSION));
-        use_unsafe_renegotiation_op = 1;
-    } else if (version < 0x009080c0L) {
-        printf("OpenSSL %s [%lx] looks like it's older than "
-                 "0.9.8l, but some vendors have backported 0.9.8l's "
-                 "renegotiation code to earlier versions, and some have "
-                 "backported the code from 0.9.8m or 0.9.8n.  I'll set both "
-                 "SSL3_FLAGS and SSL_OP just to be safe.\n",
-                 SSLeay_version(SSLEAY_VERSION), version);
-        use_unsafe_renegotiation_flag = 1;
-        use_unsafe_renegotiation_op = 1;
-    } else {
-        printf("OpenSSL %s has version %lx\n",
-               SSLeay_version(SSLEAY_VERSION), version);
-    }
-
-#ifdef SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
-  SSL_CTX_set_options(options->ctx,
-                      SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
-#endif
+    tls_reneg_init(options);
 
     // Connect to host
     socketDescriptor = tcpConnect(options);
@@ -715,18 +725,19 @@ int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
 
-                  /* Yes, we know what we are doing here.  No, we do not treat a renegotiation
-                   * as authenticating any earlier-received data. */
-                  if (use_unsafe_renegotiation_flag) {
-                      printf("use_unsafe_renegotiation_flag\n");
-                    ssl->s3->flags |= SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
-                    printf("%i\n", ssl->s3->flags);
-                  }
-                  if (use_unsafe_renegotiation_op) {
-                      printf("use_unsafe_renegotiation_op\n");
-                    SSL_set_options(ssl,
-                                    SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
-                  }
+                      /* Yes, we know what we are doing here.  No, we do not treat a renegotiation
+                       * as authenticating any earlier-received data. */
+                      if (use_unsafe_renegotiation_flag) {
+                        if(options->verbose)
+                            printf("use_unsafe_renegotiation_flag\n");
+                        ssl->s3->flags |= SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+                      }
+                      if (use_unsafe_renegotiation_op) {
+                        if(options->verbose)
+                            printf("use_unsafe_renegotiation_op\n");
+                        SSL_set_options(ssl,
+                                        SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
+                      }
 
 
                         if (cipherStatus == 1)
@@ -734,6 +745,8 @@ int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
 
 #if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                             // SSL_get_secure_renegotiation_support() appeared first in OpenSSL 0.9.8m
+                            if(options->verbose)
+                                printf("Attempting secure_renegotiation_support()");
                             renOut->secure = SSL_get_secure_renegotiation_support(ssl);
                             if( renOut->secure )
                             {
@@ -750,8 +763,12 @@ int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
 
                                 // assume ssl is connected and error free up to here
                                 //setBlocking(ssl); // this is unnecessary if it is already blocking·
+                                if(options->verbose)
+                                    printf("Attempting SSL_renegotiate(ssl)\n");
                                 SSL_renegotiate(ssl); // Ask to renegotiate the connection
                                 // This hangs when an 'encrypted alert' is sent by the server
+                                if(options->verbose)
+                                    printf("Attempting SSL_do_handshake(ssl)\n");
                                 SSL_do_handshake(ssl); // Send renegotiation request to server //TODO :: XXX hanging here
 
                                 if (ssl->state == SSL_ST_OK)
@@ -776,6 +793,7 @@ int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                                     renOut->secure = false;
                                 }
 #if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
+                                printf("Unable to test renegotiation\n");
                             }
 #endif
                             // Disconnect SSL over socket
@@ -1548,7 +1566,7 @@ int testHost(struct sslCheckOptions *options)
 
     if (status == true && options->reneg )
     {
-        printf("\n  %sSSL renegotiation:%s\n", COL_BLUE, RESET);
+        printf("\n  %sTLS renegotiation:%s\n", COL_BLUE, RESET);
         testRenegotiation(options, TLSv1_client_method());
     }
 
