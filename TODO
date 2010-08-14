@@ -10,4 +10,5 @@ Add test for TLS/SSL renegotiation
 Add STARTTLS support for LDAP:
     http://www.rfc-editor.org/rfc/rfc2830.txt
 Make a Debian package
+Merge the Windows port into tip: http://code.google.com/p/sslscan-win/
 Send diff from 1.8.2 to the upstream developer
