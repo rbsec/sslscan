@@ -1,3 +1,4 @@
+Fix sslscan to work with 0.9.8o or newer.
 Add tests for a given set of hosts that are known to be interesting
 Add STARTTLS support for LDAP:
     http://www.rfc-editor.org/rfc/rfc2830.txt
