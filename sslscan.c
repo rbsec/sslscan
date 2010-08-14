@@ -1489,7 +1489,7 @@ int main(int argc, char *argv[])
                 if (options.starttls_imap)
                     options.port = 143;
                 if (options.starttls_pop3)
-                    options.port = 143;
+                    options.port = 110;
                 if (options.starttls_smtp)
                     options.port = 25;
                 if (options.starttls_xmpp)
