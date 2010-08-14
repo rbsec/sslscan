@@ -1228,6 +1228,7 @@ int getCertificate(struct sslCheckOptions *options)
     {
 
         // Setup Context Object...
+        // TODO: XXX: We may want to also try TLSv1_client_ method() or SSLv3_client_ method() if this fails
         sslMethod = SSLv23_method();
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
