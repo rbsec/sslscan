@@ -403,6 +403,7 @@ int tcpConnect(struct sslCheckOptions *options)
         }
     }
 
+    // Setup a FTP STARTTLS socket
     if (options->starttls_ftp == true && tlsStarted == false)
     {
         tlsStarted = 1;
