@@ -83,9 +83,9 @@ const char *program_banner = "                   _\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n"
-                             "                  Version 1.8.3rc1\n";
-const char *program_version = "sslscan version 1.8.3rc1\n";
-const char *xml_version = "1.8.3rc1";
+                             "                  Version 1.8.3rc2\n";
+const char *program_version = "sslscan version 1.8.3rc2\n";
+const char *xml_version = "1.8.3rc2";
 
 
 struct sslCipher

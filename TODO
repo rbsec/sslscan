@@ -1,12 +1,5 @@
-Properly parse the IMAP response and don't start until we see something like:
-
-    ". OK Begin SSL/TLS negotiation now."
-    ". OK Begin TLS negotiation now"
-
-Properly parse expected XMPP responses by hand in a better way
-
+Fix sslscan to work with 0.9.8o or newer.
 Add tests for a given set of hosts that are known to be interesting
-Add test for TLS/SSL renegotiation
 Add STARTTLS support for LDAP:
     http://www.rfc-editor.org/rfc/rfc2830.txt
 Make a Debian package
