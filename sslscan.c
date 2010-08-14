@@ -43,6 +43,10 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
+#ifdef FREEBSD
+#include <netinet/in.h>
+#endif
+
 // Defines...
 #define false 0
 #define true 1
