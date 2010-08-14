@@ -373,6 +373,13 @@ int tcpConnect(struct sslCheckOptions *options)
         recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
         // We probably want to confirm that we see something like:
         // '+OK Begin SSL/TLS negotiation now.'
+        // Or
+        // '+OK Begin TLS negotiation, mate'
+        if (strstr(buffer, "+OK Begin")) {
+            if (options->verbose) {
+                printf("It appears that the POP3 server is ready for TLS.\n");
+            }
+        }
         if (options->verbose)
             printf("Server reported: %s\n", buffer);
     }
