@@ -1,4 +1,7 @@
-Fix sslscan to work with 0.9.8o or newer.
+Fix sslscan to work with OpenSSL 0.9.8o or newer on 64bit machines
+Add support for SNI:
+    http://en.wikipedia.org/wiki/Server_Name_Indication
+Update man page
 Add tests for a given set of hosts that are known to be interesting
 Add STARTTLS support for LDAP:
     http://www.rfc-editor.org/rfc/rfc2830.txt
