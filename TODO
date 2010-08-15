@@ -8,6 +8,9 @@ Make a Debian package
 Merge the Windows port into tip: http://code.google.com/p/sslscan-win/
 Send diff from 1.8.2 to the upstream developer
 Ensure that output is highlighted for dangerous ciphers (blink, blink)
+    Throw up sirens if ssl2 is enabled
+    ciphers from the LOW/EXP/eNULL category are supported for any protocol
+    renegotiation is allowed on tlsv1 (maybe check if TRACE is supported if it's an http server)
 
 Fix segfault when working with OpenSSL 1.0.0a:
 Program received signal SIGSEGV, Segmentation fault.
