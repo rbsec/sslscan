@@ -3,7 +3,7 @@ BINPATH = /usr/bin/
 MANPATH = /usr/share/man/
 
 all:
-	gcc -g -Wall -lssl -o sslscan $(SRCS) $(LDFLAGS) $(CFLAGS)
+	gcc -g -Wall -lcrypto -lssl -o sslscan $(SRCS) $(LDFLAGS) $(CFLAGS)
 
 install:
 	cp sslscan $(BINPATH)
@@ -17,4 +17,4 @@ clean:
 	rm -f sslscan
 
 newopenssl:
-	gcc -o sslscan -g -Wall -I /tmp/openssl-0.9.8n/ sslscan.c /tmp/openssl-0.9.8n/libssl.a /tmp/openssl-0.9.8n/libcrypto.a
+	gcc -o sslscan -g -Wall -I /tmp/openssl-0.9.8o/ -L /tmp/openssl-0.9.8o/ sslscan.c /tmp/openssl-0.9.8o/libssl.a /tmp/openssl-0.9.8o/libcrypto.a
