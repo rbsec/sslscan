@@ -15,3 +15,7 @@ The current home page of this fork (until upstream merges a finished patch) is:
 Most of the pre-TLS protocol setup was inspired by the OpenSSL s_client.c
 program. The goal of this fork is to eventually merge with the original
 project after the STARTTLS setup is polished.
+
+Some of the OpenSSL setup code was borrowed from The Tor Project's Tor program.
+This it is likely proper to comply with the BSD license by saying:
+    Copyright (c) 2007-2010, The Tor Project, Inc.
