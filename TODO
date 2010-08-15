@@ -1,4 +1,3 @@
-Fix sslscan to work with OpenSSL 0.9.8o or newer on 64bit machines
 Add support for SNI:
     http://en.wikipedia.org/wiki/Server_Name_Indication
 Update man page
