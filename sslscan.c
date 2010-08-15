@@ -791,10 +791,7 @@ int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                                     status = false;
                                     renOut->secure = false;
                                 }
-#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
-                                printf("Unable to test renegotiation\n");
                             }
-#endif
                             // Disconnect SSL over socket
                             SSL_shutdown(ssl);
                         }
