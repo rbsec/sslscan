@@ -22,4 +22,4 @@ newopenssl:
 	gcc -o sslscan -g -Wall -I /tmp/openssl-1.0.0a/ -L /tmp/openssl-1.0.0a/ sslscan.c /tmp/openssl-1.0.0a/libssl.a /tmp/openssl-1.0.0a/libcrypto.a
 
 demo: all
-	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --verbose --renegotiation encrypted.google.com
+	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --renegotiation encrypted.google.com
