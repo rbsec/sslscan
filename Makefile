@@ -1,6 +1,8 @@
 SRCS = sslscan.c
 BINPATH = /usr/bin/
 MANPATH = /usr/share/man/
+CFLAGS="-I/opt/local/include"
+LDFLAGS="-L/opt/local/lib"
 
 all:
 	gcc -g -Wall -lcrypto -lssl -o sslscan $(SRCS) $(LDFLAGS) $(CFLAGS)
