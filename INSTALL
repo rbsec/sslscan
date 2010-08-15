@@ -1,5 +1,5 @@
 Requirements:
-   OpenSSL
+   OpenSSL 0.9.8o or better
 
 Makefile build:
       make
