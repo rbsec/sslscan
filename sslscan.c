@@ -82,9 +82,8 @@ const char *program_banner = "                   _\n"
                              "           ___ ___| |___  ___ __ _ _ __\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
-                             "          |___/___/_|___/\\___\\__,_|_| |_|\n\n"
-                             "                  Version 1.8.3rc2\n";
-const char *program_version = "sslscan version 1.8.3rc2\n";
+                             "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
+const char *program_version = "sslscan version 1.8.3rc2 ";
 const char *xml_version = "1.8.3rc2";
 
 
@@ -1847,7 +1846,9 @@ int main(int argc, char *argv[])
     switch (mode)
     {
         case mode_version:
-            printf("%s%s%s", COL_BLUE, program_version, RESET);
+            printf("%s\t\t%s\n\t\t%s\n%s\n", COL_BLUE, program_version,
+                    SSLeay_version(SSLEAY_VERSION), RESET);
+
             break;
 
         case mode_help:
@@ -1899,7 +1900,8 @@ int main(int argc, char *argv[])
         // Check a single host/port ciphers...
         case mode_single:
         case mode_multiple:
-            printf("%s%s%s", COL_BLUE, program_banner, RESET);
+            printf("%s%s\t\t%s\n\t\t%s\n%s\n", COL_BLUE, program_banner, program_version,
+                    SSLeay_version(SSLEAY_VERSION), RESET);
 
             SSLeay_add_all_algorithms();
             ERR_load_crypto_strings();
