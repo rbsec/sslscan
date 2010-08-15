@@ -7,6 +7,7 @@ Add STARTTLS support for LDAP:
 Make a Debian package
 Merge the Windows port into tip: http://code.google.com/p/sslscan-win/
 Send diff from 1.8.2 to the upstream developer
+Ensure that output is highlighted for dangerous ciphers (blink, blink)
 
 Fix segfault when working with OpenSSL 1.0.0a:
 Program received signal SIGSEGV, Segmentation fault.
