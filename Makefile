@@ -1,11 +1,11 @@
 SRCS = sslscan.c
 BINPATH = /usr/bin/
 MANPATH = /usr/share/man/
-CFLAGS="-I/opt/local/include"
-LDFLAGS="-L/opt/local/lib"
+CFLAGS=-I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/
+LDFLAGS=-L/usr/local/ssl/lib/
 
 all:
-	gcc -g -Wall -lcrypto -lssl -o sslscan $(SRCS) $(LDFLAGS) $(CFLAGS)
+	gcc -o sslscan -g -Wall $(CFLAGS) $(LDFLAGS) -lssl -lcrypto $(SRCS)
 
 install:
 	cp sslscan $(BINPATH)
@@ -19,4 +19,7 @@ clean:
 	rm -f sslscan
 
 newopenssl:
-	gcc -o sslscan -g -Wall -I /tmp/openssl-0.9.8o/ -L /tmp/openssl-0.9.8o/ sslscan.c /tmp/openssl-0.9.8o/libssl.a /tmp/openssl-0.9.8o/libcrypto.a
+	gcc -o sslscan -g -Wall -I /tmp/openssl-1.0.0a/ -L /tmp/openssl-1.0.0a/ sslscan.c /tmp/openssl-1.0.0a/libssl.a /tmp/openssl-1.0.0a/libcrypto.a
+
+demo: all
+	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --verbose --renegotiation encrypted.google.com
