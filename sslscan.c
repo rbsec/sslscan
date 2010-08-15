@@ -960,6 +960,8 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     }
                     else
                     {
+                        if (options->verbose == true)
+                            printf("SSL_get_error(ssl, cipherStatus) said: %d\n", SSL_get_error(ssl, cipherStatus));
                         if (options->xmlOutput != 0)
                             fprintf(options->xmlOutput, "failed\"");
                         if (options->http == true)
