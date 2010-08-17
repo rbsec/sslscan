@@ -15,11 +15,16 @@ Ensure that output is highlighted for dangerous ciphers (blink, blink)
     renegotiation is allowed on tlsv1 (maybe check if TRACE is supported if it's an http server)
 
 Fix segfault when working with OpenSSL 1.0.0a:
-Program received signal SIGSEGV, Segmentation fault.
-0x0000000000430052 in BN_num_bits ()
-    (gdb) bt
-#0  0x0000000000430052 in BN_num_bits ()
-#1  0x000000000040511f in getCertificate (options=0x7fff13daead0)
-        at sslscan.c:1388
-#2  0x0000000000405d58 in testHost (options=0x7fff13daead0) at sslscan.c:1648
-#3  0x0000000000406bf6 in main (argc=5, argv=0x7fff13daee58) at sslscan.c:1928
+
+    Program received signal SIGSEGV, Segmentation fault.
+    0x0000000000430052 in BN_num_bits ()
+        (gdb) bt
+    #0  0x0000000000430052 in BN_num_bits ()
+    #1  0x000000000040511f in getCertificate (options=0x7fff13daead0)
+            at sslscan.c:1388
+    #2  0x0000000000405d58 in testHost (options=0x7fff13daead0) at sslscan.c:1648
+    #3  0x0000000000406bf6 in main (argc=5, argv=0x7fff13daee58) at sslscan.c:1928
+
+We should explictly check for things that may be NULL; it is likely the cause
+of the above error.
+
