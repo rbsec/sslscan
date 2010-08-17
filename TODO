@@ -1,4 +1,4 @@
-Print the entire certificate before attempting to parse it
+Fix the certificate formatting (prefix it with whitespace)
 Add support for SOCKS5 proxy (or audit for 'usewithtor')
 Add support for SNI:
     http://en.wikipedia.org/wiki/Server_Name_Indication

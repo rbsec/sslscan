@@ -1226,8 +1226,15 @@ int getCertificate(struct sslCheckOptions *options)
     {
 
         // Setup Context Object...
-        // TODO: XXX: We may want to also try TLSv1_client_ method() or SSLv3_client_ method() if this fails
-        sslMethod = SSLv23_method();
+        if( options->sslVersion == tls_v1) {
+            if (options->verbose)
+                printf("sslMethod = TLSv1_method()");
+            sslMethod = TLSv1_method();
+        } else {
+            if (options->verbose)
+                printf("sslMethod = SSLv23_method()");
+            sslMethod = SSLv23_method();
+        }
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
         {
@@ -1273,6 +1280,16 @@ int getCertificate(struct sslCheckOptions *options)
                             x509Cert = SSL_get_peer_certificate(ssl);
                             if (x509Cert != NULL)
                             {
+
+                                // Print a base64 blob version of the cert
+                                printf("    Certificate blob:\n");
+                                PEM_write_bio_X509(stdoutBIO,x509Cert);
+                                if (options->xmlOutput != 0)
+                                {
+                                    fprintf(options->xmlOutput, "   <certificate-blob>\n");
+                                    PEM_write_bio_X509(fileBIO,x509Cert);
+                                    fprintf(options->xmlOutput, "   </certificate-blob>\n");
+                                }
 
                                 //SSL_set_verify(ssl, SSL_VERIFY_NONE|SSL_VERIFY_CLIENT_ONCE, NULL);
 
