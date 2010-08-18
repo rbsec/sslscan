@@ -1400,36 +1400,57 @@ int getCertificate(struct sslCheckOptions *options)
                                         switch (publicKey->type)
                                         {
                                             case EVP_PKEY_RSA:
-                                                printf("    RSA Public Key: (%d bit)\n", BN_num_bits(publicKey->pkey.rsa->n));
-                                                if (options->xmlOutput != 0)
-                                                    fprintf(options->xmlOutput, "   <pk error=\"false\" type=\"RSA\" bits=\"%d\">\n", BN_num_bits(publicKey->pkey.rsa->n));
-                                                RSA_print(stdoutBIO, publicKey->pkey.rsa, 6);
-                                                if (options->xmlOutput != 0)
+                                                if (publicKey->pkey.rsa)
                                                 {
-                                                    RSA_print(fileBIO, publicKey->pkey.rsa, 4);
-                                                    fprintf(options->xmlOutput, "   </pk>\n");
+                                                    printf("    RSA Public Key: (%d bit)\n", BN_num_bits(publicKey->pkey.rsa->n));
+                                                    if (options->xmlOutput != 0)
+                                                        fprintf(options->xmlOutput, "   <pk error=\"false\" type=\"RSA\" bits=\"%d\">\n", BN_num_bits(publicKey->pkey.rsa->n));
+                                                    RSA_print(stdoutBIO, publicKey->pkey.rsa, 6);
+                                                    if (options->xmlOutput != 0)
+                                                    {
+                                                        RSA_print(fileBIO, publicKey->pkey.rsa, 4);
+                                                        fprintf(options->xmlOutput, "   </pk>\n");
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    printf("    RSA Public Key: NULL\n");
                                                 }
                                                 break;
                                             case EVP_PKEY_DSA:
-                                                printf("    DSA Public Key:\n");
-                                                if (options->xmlOutput != 0)
-                                                    fprintf(options->xmlOutput, "   <pk error=\"false\" type=\"DSA\">\n");
-                                                DSA_print(stdoutBIO, publicKey->pkey.dsa, 6);
-                                                if (options->xmlOutput != 0)
+                                                if (publicKey->pkey.dsa)
                                                 {
-                                                    DSA_print(fileBIO, publicKey->pkey.dsa, 4);
-                                                    fprintf(options->xmlOutput, "   </pk>\n");
+                                                    printf("    DSA Public Key:\n");
+                                                    if (options->xmlOutput != 0)
+                                                        fprintf(options->xmlOutput, "   <pk error=\"false\" type=\"DSA\">\n");
+                                                    DSA_print(stdoutBIO, publicKey->pkey.dsa, 6);
+                                                    if (options->xmlOutput != 0)
+                                                    {
+                                                        DSA_print(fileBIO, publicKey->pkey.dsa, 4);
+                                                        fprintf(options->xmlOutput, "   </pk>\n");
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    printf("    DSA Public Key: NULL\n");
                                                 }
                                                 break;
                                             case EVP_PKEY_EC:
-                                                printf("    EC Public Key:\n");
-                                                if (options->xmlOutput != 0)
-                                                    fprintf(options->xmlOutput, "   <pk error=\"false\" type=\"EC\">\n");
-                                                EC_KEY_print(stdoutBIO, publicKey->pkey.ec, 6);
-                                                if (options->xmlOutput != 0)
+                                                if (publicKey->pkey.ec)
                                                 {
-                                                    EC_KEY_print(fileBIO, publicKey->pkey.ec, 4);
-                                                    fprintf(options->xmlOutput, "   </pk>\n");
+                                                    printf("    EC Public Key:\n");
+                                                    if (options->xmlOutput != 0)
+                                                        fprintf(options->xmlOutput, "   <pk error=\"false\" type=\"EC\">\n");
+                                                    EC_KEY_print(stdoutBIO, publicKey->pkey.ec, 6);
+                                                    if (options->xmlOutput != 0)
+                                                    {
+                                                        EC_KEY_print(fileBIO, publicKey->pkey.ec, 4);
+                                                        fprintf(options->xmlOutput, "   </pk>\n");
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    printf("    EC Public Key: NULL\n");
                                                 }
                                                 break;
                                             default:
