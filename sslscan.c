@@ -1604,6 +1604,18 @@ int testHost(struct sslCheckOptions *options)
     // Test renegotiation
     printf("\n%sTesting SSL server %s on port %d%s\n\n", COL_GREEN, options->host, options->port, RESET);
 
+    sslCipherPointer = options->ciphers;
+    printf("  %sSupported Client Cipher(s):%s\n", COL_BLUE, RESET);
+    while ((sslCipherPointer != 0) && (status == true))
+    {
+        printf("    %s\n",sslCipherPointer->name);
+
+        if (options->xmlOutput != 0)
+            fprintf(options->xmlOutput, " <client-cipher cipher=\"%s\">\n", sslCipherPointer->name);
+
+        sslCipherPointer = sslCipherPointer->next;
+    }
+
     if (status == true && options->reneg )
     {
         printf("\n  %sTLS renegotiation:%s\n", COL_BLUE, RESET);
