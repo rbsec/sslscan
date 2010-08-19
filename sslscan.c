@@ -584,9 +584,9 @@ int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOu
     }
 
     if (outputData->secure)
-        printf("    Secure session renegotiations supported\n\n");
+        printf("    Secure session renegotiation supported\n\n");
     else if (outputData->supported)
-        printf("    Insecure session renegotiations supported\n\n");
+        printf("    Insecure session renegotiation supported\n\n");
     else
        printf("    Session renegotiation not supported\n\n");
 
