@@ -1,5 +1,7 @@
 Fix the certificate formatting (prefix it with whitespace)
 Add support for SOCKS5 proxy (or audit for 'usewithtor')
+    It seems to work fine with 'usewithtor'
+    It still seems prudent to add proper proxy support
 Add support for SNI:
     http://en.wikipedia.org/wiki/Server_Name_Indication
 Add tests for a given set of hosts that are known to be interesting
