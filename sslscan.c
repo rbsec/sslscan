@@ -331,7 +331,8 @@ int tcpConnect(struct sslCheckOptions *options)
            It may be useful to provide a commandline switch to provide the
            expected hostname.
         */
-        sprintf(xmpp_setup, "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host);
+        sprintf(xmpp_setup, "<?xml version='1.0' ?>\r\n"
+               "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host);
         tlsStarted = 1;
         memset(buffer, 0, BUFFERSIZE);
         send(socketDescriptor, xmpp_setup, strlen(xmpp_setup), 0);
