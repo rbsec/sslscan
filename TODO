@@ -2,7 +2,6 @@ Fix the certificate formatting (prefix it with whitespace)
 Add support for SOCKS5 proxy (or audit for 'usewithtor')
 Add support for SNI:
     http://en.wikipedia.org/wiki/Server_Name_Indication
-Update man page
 Add tests for a given set of hosts that are known to be interesting
 Add STARTTLS support for LDAP:
     http://www.rfc-editor.org/rfc/rfc2830.txt

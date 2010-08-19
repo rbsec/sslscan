@@ -1,6 +1,6 @@
 .TH SSLSCAN 1 "May 19, 2009"
 .SH NAME
-sslscan \- Fast SSL scanner
+sslscan \- Fast SSL/TLS scanner
 .SH SYNOPSIS
 .B sslscan
 .RI [ options ] " [host:port | host]"
@@ -9,11 +9,11 @@ This manual page documents briefly the
 .B sslscan
 command
 .PP
-\fBsslscan\fP queries SSL services, such as HTTPS, in order to determine the
+\fBsslscan\fP queries SSL/TLS services, such as HTTPS, in order to determine the
 ciphers that are supported.
 .br
 SSLScan is designed to be easy, lean and fast. The output includes preferred
-ciphers of the SSL service,
+ciphers of the SSL/TLS service,
 .br
 the certificate and output is in text and XML formats.
 .SH OPTIONS
@@ -54,10 +54,23 @@ The password for the private key or PKCS#12 file.
 .B \-\-certs=<file>
 A file containing PEM/ASN1 formatted client certificates.
 .TP
-.B \-\-starttls
-Executes a STARTTLS in order to test the SSL capabilities
-of an SMTP service with TLS support. This option automatically
-forces TLS only ciphers, no need to specify it.
+.B \-\-renegotiation
+Attempt TLS renegotiation
+.TP
+.B \-\-starttls\-ftp
+STARTTLS setup for FTP
+.TP
+.B \-\-starttls\-imap
+STARTTLS setup for IMAP
+.TP
+.B \-\-starttls\-pop3
+STARTTLS setup for POP3
+.TP
+.B \-\-starttls\-smtp
+STARTTLS setup for SMTP
+.TP
+.B \-\-starttls\-xmpp
+STARTTLS setup for XMPP
 .TP
 .B \-\-html
 Makes a HTML request after a successful connection and returns
@@ -70,6 +83,7 @@ Enables workarounds for SSL bugs.
 Output results to an XML file.
 .br
 .SH AUTHOR
-sslscan was written by Ian Ventura-Whiting <fizz@titania.co.uk>.
+sslscan was originally written by Ian Ventura-Whiting <fizz@titania.co.uk>.
+sslscan was extended by Jacob Appelbaum <jacob@appelbaum.net>.
 .br
 This manual page was originally written by Marvin Stark <marv@der-marv.de>.
