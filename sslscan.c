@@ -64,8 +64,16 @@
 #define ssl_v3 2
 #define tls_v1 3
 
+// Global comments:
+// The comment style:
+//   // Call foo()
+//   foo()
+// is crappy, but I haven't removed them unless I was otherwise reworking the
+// code.
+
 // Colour Console Output...
 #if !defined(__WIN32__)
+// Always better to do "const char RESET[] = " because it saves relocation records.
 const char *RESET = "[0m";            // DEFAULT
 const char *COL_RED = "[31m";     // RED
 const char *COL_BLUE = "[34m";        // BLUE
@@ -147,70 +155,57 @@ int populateCipherList(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
     struct sslCipher *sslCipherPointer;
     int tempInt;
     int loop;
+    // STACK_OF is a sign that you should be using C++ :)
     STACK_OF(SSL_CIPHER) *cipherList;
     SSL *ssl = NULL;
 
-    // Setup Context Object...
     options->ctx = SSL_CTX_new(sslMethod);
-    if (options->ctx != NULL)
-    {
-        SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL");
+    if (options->ctx == NULL) {
+        printf("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+        return false;
+    }
 
-        // Create new SSL object
-        ssl = SSL_new(options->ctx);
-        if (ssl != NULL)
+    SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL");
+
+    ssl = SSL_new(options->ctx);
+    if (ssl == NULL) {
+        printf("%sERROR: Could not create SSL object.%s\n", COL_RED, RESET);
+        SSL_CTX_free(options->ctx);
+        return false;
+    }
+
+    cipherList = SSL_get_ciphers(ssl);
+
+    // Create Cipher Struct Entries...
+    for (loop = 0; loop < sk_SSL_CIPHER_num(cipherList); loop++)
+    {
+        if (options->ciphers == 0)
         {
-            // Get List of Ciphers
-            cipherList = SSL_get_ciphers(ssl);
-    
-            // Create Cipher Struct Entries...
-            for (loop = 0; loop < sk_SSL_CIPHER_num(cipherList); loop++)
-            {
-                // Create Structure...
-                if (options->ciphers == 0)
-                {
-                    options->ciphers = malloc(sizeof(struct sslCipher));
-                    sslCipherPointer = options->ciphers;
-                }
-                else
-                {
-                    sslCipherPointer = options->ciphers;
-                    while (sslCipherPointer->next != 0)
-                        sslCipherPointer = sslCipherPointer->next;
-                    sslCipherPointer->next = malloc(sizeof(struct sslCipher));
-                    sslCipherPointer = sslCipherPointer->next;
-                }
-    
-                // Init
-                memset(sslCipherPointer, 0, sizeof(struct sslCipher));
-    
-                // Add cipher information...
-                sslCipherPointer->sslMethod = sslMethod;
-                sslCipherPointer->name = SSL_CIPHER_get_name(sk_SSL_CIPHER_value(cipherList, loop));
-                sslCipherPointer->version = SSL_CIPHER_get_version(sk_SSL_CIPHER_value(cipherList, loop));
-                SSL_CIPHER_description(sk_SSL_CIPHER_value(cipherList, loop), sslCipherPointer->description, sizeof(sslCipherPointer->description) - 1);
-                sslCipherPointer->bits = SSL_CIPHER_get_bits(sk_SSL_CIPHER_value(cipherList, loop), &tempInt);
-            }
-    
-            // Free SSL object
-            SSL_free(ssl);
+            options->ciphers = malloc(sizeof(struct sslCipher));
+            sslCipherPointer = options->ciphers;
         }
         else
         {
-            returnCode = false;
-            printf("%sERROR: Could not create SSL object.%s\n", COL_RED, RESET);
+            sslCipherPointer = options->ciphers;
+            while (sslCipherPointer->next != 0)
+                sslCipherPointer = sslCipherPointer->next;
+            sslCipherPointer->next = malloc(sizeof(struct sslCipher));
+            sslCipherPointer = sslCipherPointer->next;
         }
 
-        // Free CTX Object
-        SSL_CTX_free(options->ctx);
+        // Init
+        memset(sslCipherPointer, 0, sizeof(struct sslCipher));
+
+        // Add cipher information...
+        sslCipherPointer->sslMethod = sslMethod;
+        sslCipherPointer->name = SSL_CIPHER_get_name(sk_SSL_CIPHER_value(cipherList, loop));
+        sslCipherPointer->version = SSL_CIPHER_get_version(sk_SSL_CIPHER_value(cipherList, loop));
+        SSL_CIPHER_description(sk_SSL_CIPHER_value(cipherList, loop), sslCipherPointer->description, sizeof(sslCipherPointer->description) - 1);
+        sslCipherPointer->bits = SSL_CIPHER_get_bits(sk_SSL_CIPHER_value(cipherList, loop), &tempInt);
     }
 
-    // Error Creating Context Object
-    else
-    {
-        returnCode = false;
-        printf("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
-    }
+    SSL_free(ssl);
+    SSL_CTX_free(options->ctx);
 
     return returnCode;
 }
@@ -219,13 +214,7 @@ int populateCipherList(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
 // File Exists
 int fileExists(char *fileName)
 {
-    // Variables...
-    struct stat fileStats;
-
-    if (stat(fileName, &fileStats) == 0)
-        return true;
-    else
-        return false;
+    return access(fileName, X_OK) == 0;
 }
 
 
@@ -240,11 +229,36 @@ void readLine(FILE *input, char *lineFromFile, int maxSize)
 
     // Clear the end-of-line stuff...
     stripPointer = strlen(lineFromFile) -1;
-    while ((lineFromFile[stripPointer] == '\r') || (lineFromFile[stripPointer] == '\n') || (lineFromFile[stripPointer] == ' '))
+    while (stripPointer >= 0 && ((lineFromFile[stripPointer] == '\r') || (lineFromFile[stripPointer] == '\n') || (lineFromFile[stripPointer] == ' ')))
     {
         lineFromFile[stripPointer] = 0;
         stripPointer--;
     }
+}
+
+
+int readOrLogAndClose(int fd, void* buffer, size_t len, const struct sslCheckOptions *options)
+{
+    ssize_t n;
+
+    if (len < 2)
+        return 1;
+
+    n = recv(fd, buffer, len - 1, 0);
+
+    if (n < 0) {
+        printf("%s    ERROR: error reading from %s:%d: %s%s\n", COL_RED, options->host, options->port, strerror(errno), RESET);
+        close(fd);
+        return 0;
+    } else if (n == 0) {
+        printf("%s    ERROR: unexpected EOF reading from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+        close(fd);
+        return 0;
+    } else {
+        ((unsigned char *)buffer)[n] = 0;
+    }
+
+    return 1;
 }
 
 
@@ -255,7 +269,6 @@ int tcpConnect(struct sslCheckOptions *options)
     int socketDescriptor;
     int tlsStarted = 0;
     char buffer[BUFFERSIZE];
-    struct sockaddr_in localAddress;
     int status;
 
     // Create Socket
@@ -263,17 +276,6 @@ int tcpConnect(struct sslCheckOptions *options)
     if(socketDescriptor < 0)
     {
         printf("%s    ERROR: Could not open a socket.%s\n", COL_RED, RESET);
-        return 0;
-    }
-
-    // Configure Local Port
-    localAddress.sin_family = AF_INET;
-    localAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-    localAddress.sin_port = htons(0);
-    status = bind(socketDescriptor, (struct sockaddr *) &localAddress, sizeof(localAddress));
-    if(status < 0)
-    {
-        printf("%s    ERROR: Could not bind to port.%s\n", COL_RED, RESET);
         return 0;
     }
 
@@ -289,8 +291,9 @@ int tcpConnect(struct sslCheckOptions *options)
     if (options->starttls_smtp == true && tlsStarted == false)
     {
         tlsStarted = 1;
-        memset(buffer, 0, BUFFERSIZE);
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
+
         if (strncmp(buffer, "220", 3) != 0)
         {
             close(socketDescriptor);
@@ -298,8 +301,8 @@ int tcpConnect(struct sslCheckOptions *options)
             return 0;
         }
         send(socketDescriptor, "EHLO titania.co.uk\r\n", 20, 0);
-        memset(buffer, 0, BUFFERSIZE);
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
         if (strncmp(buffer, "250", 3) != 0)
         {
             close(socketDescriptor);
@@ -307,8 +310,8 @@ int tcpConnect(struct sslCheckOptions *options)
             return 0;
         }
         send(socketDescriptor, "STARTTLS\r\n", 10, 0);
-        memset(buffer, 0, BUFFERSIZE);
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
         if (strncmp(buffer, "220", 3) != 0)
         {
             close(socketDescriptor);
@@ -331,12 +334,15 @@ int tcpConnect(struct sslCheckOptions *options)
            It may be useful to provide a commandline switch to provide the
            expected hostname.
         */
-        sprintf(xmpp_setup, "<?xml version='1.0' ?>\r\n"
-               "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host);
+        if (snprintf(xmpp_setup, sizeof(xmpp_setup), "<?xml version='1.0' ?>\r\n"
+               "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host) >= sizeof(xmpp_setup)) {
+            printf("(internal error: xmpp_setup buffer too small)\n");
+            abort();
+        }
         tlsStarted = 1;
-        memset(buffer, 0, BUFFERSIZE);
         send(socketDescriptor, xmpp_setup, strlen(xmpp_setup), 0);
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
         if (options->verbose)
         {
             printf("Server reported: %s\n", buffer);
@@ -344,7 +350,8 @@ int tcpConnect(struct sslCheckOptions *options)
         }
 
         send(socketDescriptor, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\r\n", 53, 0);
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
 
         /* We're looking for something like:
         <starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'
@@ -363,7 +370,8 @@ int tcpConnect(struct sslCheckOptions *options)
         if (options->verbose)
             printf("Server reported: %s\n", buffer);
 
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
         if (strstr(buffer, "<proceed")) {
             if (options->verbose) {
                 printf("It appears that xmpp-tls is ready for TLS.\n");
@@ -378,12 +386,13 @@ int tcpConnect(struct sslCheckOptions *options)
     if (options->starttls_pop3 == true && tlsStarted == false)
     {
         tlsStarted = 1;
-        memset(buffer, 0, BUFFERSIZE);
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
         if (options->verbose)
             printf("Server reported: %s\n", buffer);
         send(socketDescriptor, "STLS\r\n", 6, 0);
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
         // We probably want to confirm that we see something like:
         // '+OK Begin SSL/TLS negotiation now.'
         // Or
@@ -404,12 +413,14 @@ int tcpConnect(struct sslCheckOptions *options)
         memset(buffer, 0, BUFFERSIZE);
 
         // Fetch the IMAP banner
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
         if (options->verbose)
             printf("Server banner: %s\n", buffer);
         // Attempt to STARTTLS
         send(socketDescriptor, ". STARTTLS\r\n", 12, 0);
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
         if (strstr(buffer, ". OK") || strstr(buffer, " . OK")) {
             if (options->verbose) {
                 printf("STARTLS IMAP setup complete.\n");
@@ -427,16 +438,17 @@ int tcpConnect(struct sslCheckOptions *options)
     if (options->starttls_ftp == true && tlsStarted == false)
     {
         tlsStarted = 1;
-        memset(buffer, 0, BUFFERSIZE);
 
         // Fetch the server banner
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
         if (options->verbose)
             printf("Server banner: %s\n", buffer);
 
         // Send TLS request
         send(socketDescriptor, "AUTH TLS\r\n", 10, 0);
-        recv(socketDescriptor, buffer, BUFFERSIZE - 1, 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
         if (strstr(buffer, "234 AUTH TLS successful")) {
             if (options->verbose)
                 printf("STARTLS FTP setup complete.\n");
@@ -456,6 +468,8 @@ int tcpConnect(struct sslCheckOptions *options)
 static int password_callback(char *buf, int size, int rwflag, void *userdata)
 {
     strncpy(buf, (char *)userdata, size);
+    // I don't know the semantics of these arguments, but it looks like this
+    // could go badly wrong if userdata is too long.
     buf[strlen(userdata)] = 0;
     return strlen(userdata);
 }
@@ -501,6 +515,7 @@ int loadCerts(struct sslCheckOptions *options)
             {
                 if (!SSL_CTX_use_PrivateKey_file(options->ctx, options->privateKeyFile, SSL_FILETYPE_ASN1))
                 {
+                    // Why would the more specific functions succeed if the generic functions failed?
                     if (!SSL_CTX_use_RSAPrivateKey_file(options->ctx, options->privateKeyFile, SSL_FILETYPE_PEM))
                     {
                         if (!SSL_CTX_use_RSAPrivateKey_file(options->ctx, options->privateKeyFile, SSL_FILETYPE_ASN1))
