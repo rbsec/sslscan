@@ -4,7 +4,6 @@ Add support for SOCKS5 proxy (or audit for 'usewithtor')
     It still seems prudent to add proper proxy support
 Add support for SNI:
     http://en.wikipedia.org/wiki/Server_Name_Indication
-Add tests for a given set of hosts that are known to be interesting
 Add STARTTLS support for LDAP:
     http://www.rfc-editor.org/rfc/rfc2830.txt
 Make a Debian package

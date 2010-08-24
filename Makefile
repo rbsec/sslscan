@@ -21,5 +21,17 @@ clean:
 newopenssl:
 	gcc -o sslscan -g -Wall -I /tmp/openssl-1.0.0a/ -L /tmp/openssl-1.0.0a/ sslscan.c /tmp/openssl-1.0.0a/libssl.a /tmp/openssl-1.0.0a/libcrypto.a
 
-demo: all
+demo: demo-https demo-xmpp demo-pop3 demo-imap
+	echo "See above!"
+
+demo-https: all
 	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --renegotiation encrypted.google.com
+
+demo-xmpp: all
+	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --renegotiation --starttls-xmpp jabber.ccc.de
+
+demo-pop3: all
+	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --renegotiation --starttls-pop3 pop3.sonic.net
+
+demo-imap: all
+	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --renegotiation --starttls-imap imap.sonic.net
