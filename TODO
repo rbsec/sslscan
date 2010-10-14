@@ -6,13 +6,14 @@ Add support for SNI:
     http://en.wikipedia.org/wiki/Server_Name_Indication
 Add STARTTLS support for LDAP:
     http://www.rfc-editor.org/rfc/rfc2830.txt
+Add HTML report generation
+Add diff between reported and actually supported ciphers
 Make a Debian package
 Merge the Windows port into tip: http://code.google.com/p/sslscan-win/
-Send diff from 1.8.2 to the upstream developer
 Ensure that output is highlighted for dangerous ciphers (blink, blink)
     Throw up sirens if ssl2 is enabled
     ciphers from the LOW/EXP/eNULL category are supported for any protocol
     renegotiation is allowed on tlsv1 (maybe check if TRACE is supported if it's an http server)
-
 We should explictly check for things that may be NULL; the original author was not very careful.
-
+Perhaps write a GUI for people who are console adverse?
+Finally, we should send a diff from 1.8.2 to the upstream developer
