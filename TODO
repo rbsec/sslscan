@@ -16,4 +16,5 @@ Ensure that output is highlighted for dangerous ciphers (blink, blink)
     renegotiation is allowed on tlsv1 (maybe check if TRACE is supported if it's an http server)
 We should explictly check for things that may be NULL; the original author was not very careful.
 Perhaps write a GUI for people who are console adverse?
+Compare with http://www.thesprawl.org/memdump/?entry=7
 Finally, we should send a diff from 1.8.2 to the upstream developer
