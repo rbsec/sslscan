@@ -738,6 +738,22 @@ int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                         // Connect SSL and BIO
                         SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
 
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+                        // This enables TLS SNI
+                        // Based on http://does-not-exist.org/mail-archives/mutt-dev/msg13045.html
+                        // TLS Virtual-hosting requires that the server present the correct
+                        // certificate; to do this, the ServerNameIndication TLS extension is used.
+                        // If TLS is negotiated, and OpenSSL is recent enough that it might have
+                        // support, and support was enabled when OpenSSL was built, mutt supports
+                        // sending the hostname we think we're connecting to, so a server can send
+                        // back the correct certificate.
+                        // NB: finding a server which uses this for IMAP is problematic, so this is
+                        // untested.  Please report success or failure!  However, this code change
+                        // has worked fine in other projects to which the contributor has added it,
+                        // or HTTP usage.
+                        SSL_set_tlsext_host_name(ssl, options->host);
+#endif
+
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
 
@@ -897,6 +913,11 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
 
                 // Connect SSL and BIO
                 SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
+
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+                // This enables TLS SNI
+                SSL_set_tlsext_host_name (ssl, options->host);
+#endif
 
                 // Connect SSL over socket
                 cipherStatus = SSL_connect(ssl);
@@ -1121,6 +1142,11 @@ int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                         // Connect SSL and BIO
                         SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
 
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+                        // TLS SNI
+                        SSL_set_tlsext_host_name (ssl, options->host);
+#endif
+
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
                         if (cipherStatus == 1)
@@ -1277,6 +1303,21 @@ int getCertificate(struct sslCheckOptions *options)
 
                         // Connect SSL and BIO
                         SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
+
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+                        // Based on http://does-not-exist.org/mail-archives/mutt-dev/msg13045.html
+                        // TLS Virtual-hosting requires that the server present the correct
+                        // certificate; to do this, the ServerNameIndication TLS extension is used.
+                        // If TLS is negotiated, and OpenSSL is recent enough that it might have
+                        // support, and support was enabled when OpenSSL was built, mutt supports
+                        // sending the hostname we think we're connecting to, so a server can send
+                        // back the correct certificate.
+                        // NB: finding a server which uses this for IMAP is problematic, so this is
+                        // untested.  Please report success or failure!  However, this code change
+                        // has worked fine in other projects to which the contributor has added it,
+                        // or HTTP usage.
+                        SSL_set_tlsext_host_name (ssl, options->host);
+#endif
 
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
