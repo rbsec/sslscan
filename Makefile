@@ -37,5 +37,6 @@ demo-imap: all
 	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --renegotiation --starttls-imap imap.sonic.net
 
 # Please see this website for information on the TLS SNI extension: https://www.sni.velox.ch/
+# Also it may be of interest to read this: http://wiki.cacert.org/VhostTaskForce
 demo-sni: all
 	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --renegotiation --http dave.sni.velox.ch
