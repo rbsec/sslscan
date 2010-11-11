@@ -21,7 +21,7 @@ clean:
 newopenssl:
 	gcc -o sslscan -g -Wall -I /tmp/openssl-1.0.0a/ -L/tmp/openssl-1.0.0a/ sslscan.c /tmp/openssl-1.0.0a/libssl.a /tmp/openssl-1.0.0a/libcrypto.a
 
-demo: demo-https demo-xmpp demo-pop3 demo-imap
+demo: demo-https demo-xmpp demo-pop3 demo-imap demo-sni
 	echo "See above!"
 
 demo-https: all
@@ -35,3 +35,7 @@ demo-pop3: all
 
 demo-imap: all
 	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --renegotiation --starttls-imap imap.sonic.net
+
+# Please see this website for information on the TLS SNI extension: https://www.sni.velox.ch/
+demo-sni: all
+	LD_LIBRARY_PATH=/usr/local/ssl/lib ./sslscan --renegotiation --http dave.sni.velox.ch
