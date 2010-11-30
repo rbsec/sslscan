@@ -1368,6 +1368,8 @@ int getCertificate(struct sslCheckOptions *options)
                                     tempLong = ASN1_INTEGER_get(X509_get_serialNumber(x509Cert));
                                     if (tempLong < 1)
                                     {
+                                        // XXX TODO: We overflow here sometimes; bad juju
+                                        // Serial Number: -4294967295
                                         printf("    Serial Number: -%lu\n", tempLong);
                                         if (options->xmlOutput != 0)
                                             fprintf(options->xmlOutput, "   <serial>-%lu</serial>\n", tempLong);
