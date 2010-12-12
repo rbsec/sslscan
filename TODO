@@ -4,6 +4,8 @@ Add support for SOCKS5 proxy (or audit for 'usewithtor')
     It still seems prudent to add proper proxy support
 Add STARTTLS support for LDAP:
     http://www.rfc-editor.org/rfc/rfc2830.txt
+Fix XMPP scans that do not support StartTLS:
+    "<stream:error><invalid-namespace xmlns='urn:ietf:params:xml:ns:xmpp-streams'/></stream:error>"
 Add HTML report generation
 Add diff between reported and actually supported ciphers
 Make a Debian package
