@@ -1367,7 +1367,10 @@ int getCertificate(struct sslCheckOptions *options)
 				{
 					ASN1_INTEGER *bs;
 					BIO *bp;
+					BIO *xml_bp;
 					bp = BIO_new_fp(stdout, BIO_NOCLOSE);
+					if (options->xmlOutput != 0)
+						xml_bp = BIO_new_fp(options->xmlOutput, BIO_NOCLOSE);
 					long l;
 					int i;
 					const char *neg;
@@ -1388,6 +1391,9 @@ int getCertificate(struct sslCheckOptions *options)
 							neg="";
 						if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
 							return(1);
+						if (options->xmlOutput != 0)
+							if (BIO_printf(xml_bp,"   <serial>%s%lu (%s0x%lx)</serial>\n",neg,l,neg,l) <= 0)
+								return(1);
 					}   
 					else
 					{   
@@ -1395,15 +1401,37 @@ int getCertificate(struct sslCheckOptions *options)
 						if (BIO_printf(bp,"%1s%s","",neg) <= 0)
 							return(1);
 
+						if (options->xmlOutput != 0)
+							if (BIO_printf(xml_bp,"   <serial>") <= 0)
+								return(1);
+
 						for (i=0; i<bs->length; i++)
 						{   
 							if (BIO_printf(bp,"%02x%c",bs->data[i],
 										((i+1 == bs->length)?'\n':':')) <= 0)
 								return(1);
+							if (options->xmlOutput != 0) {
+								if (i+1 == bs->length)
+								{
+									if (BIO_printf(xml_bp,"%02x",bs->data[i]) <= 0)
+										return(1);
+								}
+								else
+								{
+									if (BIO_printf(xml_bp,"%02x%c",bs->data[i], ':') <= 0)
+										return(1);
+								}
+							}
 						}   
+
+						if (options->xmlOutput != 0)
+							if (BIO_printf(xml_bp,"</serial>\n") <= 0)
+								return(1);
+
 					} 
 					if(NULL != bp)
 						BIO_free(bp);
+					// We don't free the xml_bp because it will be used in the future
 				}
 
                                 // Signature Algo...
