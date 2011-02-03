@@ -1362,25 +1362,49 @@ int getCertificate(struct sslCheckOptions *options)
                                         fprintf(options->xmlOutput, "   <version>%lu</version>\n", tempLong);
                                 }
 
-                                // Cert Serial No.
-                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
-                                {
-                                    tempLong = ASN1_INTEGER_get(X509_get_serialNumber(x509Cert));
-                                    if (tempLong < 1)
-                                    {
-                                        // XXX TODO: We overflow here sometimes; bad juju
-                                        // Serial Number: -4294967295
-                                        printf("    Serial Number: -%lu\n", tempLong);
-                                        if (options->xmlOutput != 0)
-                                            fprintf(options->xmlOutput, "   <serial>-%lu</serial>\n", tempLong);
-                                    }
-                                    else
-                                    {
-                                        printf("    Serial Number: %lu\n", tempLong);
-                                        if (options->xmlOutput != 0)
-                                            fprintf(options->xmlOutput, "   <serial>%lu</serial>\n", tempLong);
-                                    }
-                                }
+                                // Cert Serial No. - Code adapted from OpenSSL's crypto/asn1/t_x509.c
+				if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
+				{
+					ASN1_INTEGER *bs;
+					BIO *bp;
+					bp = BIO_new_fp(stdout, BIO_NOCLOSE);
+					long l;
+					int i;
+					const char *neg;
+					bs=X509_get_serialNumber(x509Cert);
+
+					if (BIO_write(bp,"    Serial Number:",18) <= 0)
+						return(1);
+
+					if (bs->length <= 4)
+					{   
+						l=ASN1_INTEGER_get(bs);
+						if (l < 0)
+						{   
+							l= -l; 
+							neg="-";
+						}   
+						else
+							neg="";
+						if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
+							return(1);
+					}   
+					else
+					{   
+						neg=(bs->type == V_ASN1_NEG_INTEGER)?" (Negative)":"";
+						if (BIO_printf(bp,"%1s%s","",neg) <= 0)
+							return(1);
+
+						for (i=0; i<bs->length; i++)
+						{   
+							if (BIO_printf(bp,"%02x%c",bs->data[i],
+										((i+1 == bs->length)?'\n':':')) <= 0)
+								return(1);
+						}   
+					} 
+					if(NULL != bp)
+						BIO_free(bp);
+				}
 
                                 // Signature Algo...
                                 if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SIGNAME))
