@@ -5,7 +5,7 @@ CFLAGS=-I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/
 LDFLAGS=-L/usr/local/ssl/lib/
 
 all:
-	gcc -o sslscan -g -Wall $(CFLAGS) $(LDFLAGS) -lssl -lcrypto $(SRCS)
+	gcc -g -Wall ${LDFLAGS} ${SRCS} ${CFLAGS} -lssl -lcrypto -o sslscan
 
 install:
 	cp sslscan $(BINPATH)
