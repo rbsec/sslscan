@@ -1102,7 +1102,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
 }
 
 
-// Test for prefered ciphers
+// Test for preferred ciphers
 int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
 {
     // Variables...
@@ -1780,7 +1780,7 @@ int testHost(struct sslCheckOptions *options)
 
     if (status == true)
     {
-        // Test prefered ciphers...
+        // Test preferred ciphers...
         printf("\n  %sPrefered Server Cipher(s):%s\n", COL_BLUE, RESET);
         if (options->pout == true)
             printf("|| Version || Bits || Cipher ||\n");
@@ -2019,7 +2019,7 @@ int main(int argc, char *argv[])
             printf("%s%s%s\n", COL_BLUE, program_banner, RESET);
             printf("SSLScan is a fast SSL port scanner. SSLScan connects to SSL\n");
             printf("ports and determines what  ciphers are supported, which are\n");
-            printf("the servers  prefered  ciphers,  which  SSL  protocols  are\n");
+            printf("the servers  preferred  ciphers,  which  SSL  protocols  are\n");
             printf("supported  and   returns  the   SSL   certificate.   Client\n");
             printf("certificates /  private key can be configured and output is\n");
             printf("to text / XML.\n\n");
