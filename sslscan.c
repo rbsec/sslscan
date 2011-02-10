@@ -1102,7 +1102,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
 }
 
 
-// Test for prefered ciphers
+// Test for preferred ciphers
 int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
 {
     // Variables...
@@ -1362,25 +1362,77 @@ int getCertificate(struct sslCheckOptions *options)
                                         fprintf(options->xmlOutput, "   <version>%lu</version>\n", tempLong);
                                 }
 
-                                // Cert Serial No.
-                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
-                                {
-                                    tempLong = ASN1_INTEGER_get(X509_get_serialNumber(x509Cert));
-                                    if (tempLong < 1)
-                                    {
-                                        // XXX TODO: We overflow here sometimes; bad juju
-                                        // Serial Number: -4294967295
-                                        printf("    Serial Number: -%lu\n", tempLong);
-                                        if (options->xmlOutput != 0)
-                                            fprintf(options->xmlOutput, "   <serial>-%lu</serial>\n", tempLong);
-                                    }
-                                    else
-                                    {
-                                        printf("    Serial Number: %lu\n", tempLong);
-                                        if (options->xmlOutput != 0)
-                                            fprintf(options->xmlOutput, "   <serial>%lu</serial>\n", tempLong);
-                                    }
-                                }
+                                // Cert Serial No. - Code adapted from OpenSSL's crypto/asn1/t_x509.c
+				if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
+				{
+					ASN1_INTEGER *bs;
+					BIO *bp;
+					BIO *xml_bp;
+					bp = BIO_new_fp(stdout, BIO_NOCLOSE);
+					if (options->xmlOutput != 0)
+						xml_bp = BIO_new_fp(options->xmlOutput, BIO_NOCLOSE);
+					long l;
+					int i;
+					const char *neg;
+					bs=X509_get_serialNumber(x509Cert);
+
+					if (BIO_write(bp,"    Serial Number:",18) <= 0)
+						return(1);
+
+					if (bs->length <= 4)
+					{   
+						l=ASN1_INTEGER_get(bs);
+						if (l < 0)
+						{   
+							l= -l; 
+							neg="-";
+						}   
+						else
+							neg="";
+						if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
+							return(1);
+						if (options->xmlOutput != 0)
+							if (BIO_printf(xml_bp,"   <serial>%s%lu (%s0x%lx)</serial>\n",neg,l,neg,l) <= 0)
+								return(1);
+					}   
+					else
+					{   
+						neg=(bs->type == V_ASN1_NEG_INTEGER)?" (Negative)":"";
+						if (BIO_printf(bp,"%1s%s","",neg) <= 0)
+							return(1);
+
+						if (options->xmlOutput != 0)
+							if (BIO_printf(xml_bp,"   <serial>") <= 0)
+								return(1);
+
+						for (i=0; i<bs->length; i++)
+						{   
+							if (BIO_printf(bp,"%02x%c",bs->data[i],
+										((i+1 == bs->length)?'\n':':')) <= 0)
+								return(1);
+							if (options->xmlOutput != 0) {
+								if (i+1 == bs->length)
+								{
+									if (BIO_printf(xml_bp,"%02x",bs->data[i]) <= 0)
+										return(1);
+								}
+								else
+								{
+									if (BIO_printf(xml_bp,"%02x%c",bs->data[i], ':') <= 0)
+										return(1);
+								}
+							}
+						}   
+
+						if (options->xmlOutput != 0)
+							if (BIO_printf(xml_bp,"</serial>\n") <= 0)
+								return(1);
+
+					} 
+					if(NULL != bp)
+						BIO_free(bp);
+					// We don't free the xml_bp because it will be used in the future
+				}
 
                                 // Signature Algo...
                                 if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SIGNAME))
@@ -1728,7 +1780,7 @@ int testHost(struct sslCheckOptions *options)
 
     if (status == true)
     {
-        // Test prefered ciphers...
+        // Test preferred ciphers...
         printf("\n  %sPrefered Server Cipher(s):%s\n", COL_BLUE, RESET);
         if (options->pout == true)
             printf("|| Version || Bits || Cipher ||\n");
@@ -1967,7 +2019,7 @@ int main(int argc, char *argv[])
             printf("%s%s%s\n", COL_BLUE, program_banner, RESET);
             printf("SSLScan is a fast SSL port scanner. SSLScan connects to SSL\n");
             printf("ports and determines what  ciphers are supported, which are\n");
-            printf("the servers  prefered  ciphers,  which  SSL  protocols  are\n");
+            printf("the servers  preferred  ciphers,  which  SSL  protocols  are\n");
             printf("supported  and   returns  the   SSL   certificate.   Client\n");
             printf("certificates /  private key can be configured and output is\n");
             printf("to text / XML.\n\n");
