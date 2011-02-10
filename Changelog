@@ -8,6 +8,7 @@ Changes: The following are a list of changes
          > Add demo targets in Makefile
          > Refactoring of code by Adam Langley
          > Add SNI patch from Tim Brown
+         > Bug fixes from craSH and Cygwin build improvements
 
 Version: 1.8.3
 Date   : 11/08/2010
