@@ -1,3 +1,6 @@
+Fix session resumption test
+    We have a false positive for session resumption
+    IDs are assigned but not accepted for resumption
 Fix the certificate formatting (prefix it with whitespace)
 Add support for SOCKS5 proxy (or audit for 'usewithtor')
     It seems to work fine with 'usewithtor'
