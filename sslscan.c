@@ -2029,8 +2029,7 @@ int main(int argc, char *argv[])
             printf("  %s--targets=<file>%s     A file containing a list of hosts to\n", COL_GREEN, RESET);
             printf("                       check.  Hosts can  be supplied  with\n");
             printf("                       ports (i.e. host:port).\n");
-            printf("  %s--no-failed%s          List only accepted ciphers  (default\n", COL_GREEN, RESET);
-            printf("                       is to listing all ciphers).\n");
+            printf("  %s--failed%s             Show unsupported ciphers.\n", COL_GREEN, RESET);
             printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--ssl3%s               Only check SSLv3 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls1%s               Only check TLSv1 ciphers.\n", COL_GREEN, RESET);
