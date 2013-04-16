@@ -76,11 +76,13 @@
 // Always better to do "const char RESET[] = " because it saves relocation records.
 const char *RESET = "[0m";            // DEFAULT
 const char *COL_RED = "[31m";     // RED
+const char *COL_YELLOW = "[33m";     // RED
 const char *COL_BLUE = "[34m";        // BLUE
 const char *COL_GREEN = "[32m";   // GREEN
 #else
 const char *RESET = "";
 const char *COL_RED = "";
+const char *COL_YELLOW = "";
 const char *COL_BLUE = "";
 const char *COL_GREEN = "";
 #endif
@@ -1059,7 +1061,18 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     if (options->pout == true)
                         printf("%d || ", sslCipherPointer->bits);
                     else
-                        printf("%d bits  ", sslCipherPointer->bits);
+                        if (sslCipherPointer->bits > 56)
+                        {
+                            printf("%s%d%s bits  ", COL_GREEN, sslCipherPointer->bits, RESET);
+                        }
+                        else if (sslCipherPointer->bits > 40)
+                        {
+                            printf("%s%d%s bits  ", COL_YELLOW, sslCipherPointer->bits, RESET);
+                        }
+                        else
+                        {
+                            printf("%s%d%s bits  ", COL_RED, sslCipherPointer->bits, RESET);
+                        }
                     while (tempInt != 0)
                     {
                         tempInt--;
