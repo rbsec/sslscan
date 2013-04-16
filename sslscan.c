@@ -113,6 +113,7 @@ struct sslCheckOptions
     int port;
     int noFailed;
     int getCertificate;
+    int showClientCiphers;
     int reneg;
     int starttls_ftp;
     int starttls_imap;
@@ -1719,17 +1720,19 @@ int testHost(struct sslCheckOptions *options)
     printf("\n%sTesting SSL server %s on port %d%s\n\n", COL_GREEN, options->host, options->port, RESET);
 
     sslCipherPointer = options->ciphers;
-    printf("  %sSupported Client Cipher(s):%s\n", COL_BLUE, RESET);
-    while ((sslCipherPointer != 0) && (status == true))
+    if (options->showClientCiphers == true)
     {
-        printf("    %s\n",sslCipherPointer->name);
+        printf("  %sSupported Client Cipher(s):%s\n", COL_BLUE, RESET);
+        while ((sslCipherPointer != 0) && (status == true))
+        {
+            printf("    %s\n",sslCipherPointer->name);
 
-        if (options->xmlOutput != 0)
-            fprintf(options->xmlOutput, " <client-cipher cipher=\"%s\">\n", sslCipherPointer->name);
+            if (options->xmlOutput != 0)
+                fprintf(options->xmlOutput, " <client-cipher cipher=\"%s\">\n", sslCipherPointer->name);
 
-        sslCipherPointer = sslCipherPointer->next;
+            sslCipherPointer = sslCipherPointer->next;
+        }
     }
-
     if (status == true && options->reneg )
     {
         printf("\n  %sTLS renegotiation:%s\n", COL_BLUE, RESET);
@@ -1841,6 +1844,7 @@ int main(int argc, char *argv[])
     strcpy(options.host, "127.0.0.1");
     options.noFailed = true;
     options.getCertificate = false;
+    options.showClientCiphers = false;
     options.reneg = false;
     options.starttls_ftp = false;
     options.starttls_imap = false;
@@ -1874,6 +1878,10 @@ int main(int argc, char *argv[])
         // Get certificate
         else if (strcmp("--get-certificate", argv[argLoop]) == 0)
             options.getCertificate = true;
+
+        // Show supported client ciphers
+        else if (strcmp("--show-ciphers", argv[argLoop]) == 0)
+            options.showClientCiphers = true;
 
         // Version
         else if (strcmp("--version", argv[argLoop]) == 0)
@@ -2037,6 +2045,7 @@ int main(int argc, char *argv[])
             printf("                       ports (i.e. host:port).\n");
             printf("  %s--failed%s             Show unsupported ciphers.\n", COL_GREEN, RESET);
             printf("  %s--get-certificate%s    Get Certificate information.\n", COL_GREEN, RESET);
+            printf("  %s--show-ciphers%s       Show supported client ciphers.\n", COL_GREEN, RESET);
             printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--ssl3%s               Only check SSLv3 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls1%s               Only check TLSv1 ciphers.\n", COL_GREEN, RESET);
