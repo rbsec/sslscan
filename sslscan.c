@@ -112,6 +112,7 @@ struct sslCheckOptions
     char host[512];
     int port;
     int noFailed;
+    int getCertificate;
     int reneg;
     int starttls_ftp;
     int starttls_imap;
@@ -1805,7 +1806,7 @@ int testHost(struct sslCheckOptions *options)
         }
     }
 
-    if (status == true)
+    if (status == true && options->getCertificate == true)
     {
         status = getCertificate(options);
     }
@@ -1839,6 +1840,7 @@ int main(int argc, char *argv[])
     xmlArg = 0;
     strcpy(options.host, "127.0.0.1");
     options.noFailed = true;
+    options.getCertificate = false;
     options.reneg = false;
     options.starttls_ftp = false;
     options.starttls_imap = false;
@@ -1868,6 +1870,10 @@ int main(int argc, char *argv[])
         // Show unsupported ciphers
         else if (strcmp("--failed", argv[argLoop]) == 0)
             options.noFailed = false;
+
+        // Get certificate
+        else if (strcmp("--get-certificate", argv[argLoop]) == 0)
+            options.getCertificate = true;
 
         // Version
         else if (strcmp("--version", argv[argLoop]) == 0)
@@ -2030,6 +2036,7 @@ int main(int argc, char *argv[])
             printf("                       check.  Hosts can  be supplied  with\n");
             printf("                       ports (i.e. host:port).\n");
             printf("  %s--failed%s             Show unsupported ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--get-certificate%s    Get Certificate information.\n", COL_GREEN, RESET);
             printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--ssl3%s               Only check SSLv3 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls1%s               Only check TLSv1 ciphers.\n", COL_GREEN, RESET);
