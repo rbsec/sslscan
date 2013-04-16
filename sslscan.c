@@ -1838,7 +1838,7 @@ int main(int argc, char *argv[])
     options.port = 0;
     xmlArg = 0;
     strcpy(options.host, "127.0.0.1");
-    options.noFailed = false;
+    options.noFailed = true;
     options.reneg = false;
     options.starttls_ftp = false;
     options.starttls_imap = false;
@@ -1865,9 +1865,9 @@ int main(int argc, char *argv[])
             options.targets = argLoop;
         }
 
-        // Show only supported
-        else if (strcmp("--no-failed", argv[argLoop]) == 0)
-            options.noFailed = true;
+        // Show unsupported ciphers
+        else if (strcmp("--failed", argv[argLoop]) == 0)
+            options.noFailed = false;
 
         // Version
         else if (strcmp("--version", argv[argLoop]) == 0)
