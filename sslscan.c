@@ -1173,7 +1173,7 @@ int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                                 if (options->pout == true)
                                     printf("|| SSLv2 || ");
                                 else
-                                    printf("    SSLv2  ");
+                                    printf("    %sSSLv2%s  ", COL_RED, RESET);
                             }
                             else if (sslMethod == SSLv3_client_method())
                             {
@@ -1202,7 +1202,23 @@ int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                             if (options->pout == true)
                                 printf("%d bits || ", SSL_get_cipher_bits(ssl, &tempInt2));
                             else
-                                printf("%d bits  ", SSL_get_cipher_bits(ssl, &tempInt2));
+                            {
+                                //Bit ugly
+                                int tempbits = SSL_get_cipher_bits(ssl, &tempInt2);
+                                if (tempbits > 56)
+                                {
+                                    printf("%s%d%s bits  ", COL_GREEN, tempbits, RESET);
+                                }
+                                else if (tempbits > 40)
+                                {
+                                    printf("%s%d%s bits  ", COL_YELLOW, tempbits, RESET);
+                                }
+                                else
+                                {
+                                    printf("%s%d%s bits  ", COL_RED, tempbits, RESET);
+                                }
+
+                            }
                             while (tempInt != 0)
                             {
                                 tempInt--;
