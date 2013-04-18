@@ -604,11 +604,11 @@ int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOu
     }
 
     if (outputData->secure)
-        printf("    Secure session renegotiation supported\n\n");
+        printf("    %sSecure%s session renegotiation supported\n\n", COL_GREEN, RESET);
     else if (outputData->supported)
-        printf("    Insecure session renegotiation supported\n\n");
+        printf("    %sInsecure%s session renegotiation supported\n\n", COL_RED, RESET);
     else
-       printf("    Session renegotiation not supported\n\n");
+       printf("    Session renegotiation %snot supported%s\n\n", COL_GREEN, RESET);
 
     return true;
 }
@@ -1874,7 +1874,7 @@ int main(int argc, char *argv[])
     options.noFailed = true;
     options.getCertificate = false;
     options.showClientCiphers = false;
-    options.reneg = false;
+    options.reneg = true;
     options.starttls_ftp = false;
     options.starttls_imap = false;
     options.starttls_pop3 = false;
@@ -1941,9 +1941,9 @@ int main(int argc, char *argv[])
             options.privateKeyPassword = argv[argLoop] +9;
 
         // Should we check for TLS renegotiation?
-        else if (strcmp("--renegotiation", argv[argLoop]) == 0)
+        else if (strcmp("--no-renegotiation", argv[argLoop]) == 0)
         {
-            options.reneg = true;
+            options.reneg = false;
         }
 
         // StartTLS... FTP
@@ -2086,7 +2086,7 @@ int main(int argc, char *argv[])
             printf("                       PKCS#12 file.\n");
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted\n", COL_GREEN, RESET);
             printf("                       client certificates.\n");
-            printf("  %s--renegotiation%s      Attempt TLS renegotiation\n", COL_GREEN, RESET);
+            printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
