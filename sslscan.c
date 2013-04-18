@@ -2107,7 +2107,7 @@ int main(int argc, char *argv[])
         // Check a single host/port ciphers...
         case mode_single:
         case mode_multiple:
-            printf("%s%s\t\t%s\n\t\t%s\n%s\n", COL_BLUE, program_banner, program_version,
+            printf("%s\t\t%s\n\t\t%s\n%s\n", COL_BLUE, program_version,
                     SSLeay_version(SSLEAY_VERSION), RESET);
 
             SSLeay_add_all_algorithms();
