@@ -93,7 +93,7 @@ const char *program_banner = "                   _\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
-const char *program_version = "sslscan version 1.8.3rc3 ";
+const char *program_version = "1.8.3rc3-rbsec";
 const char *xml_version = "1.8.3rc3";
 
 
@@ -1746,7 +1746,7 @@ int testHost(struct sslCheckOptions *options)
         fprintf(options->xmlOutput, " <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
 
     // Test renegotiation
-    printf("\n%sTesting SSL server %s on port %d%s\n\n", COL_GREEN, options->host, options->port, RESET);
+    printf("\nTesting SSL server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
 
     sslCipherPointer = options->ciphers;
     if (options->showClientCiphers == true)
@@ -2107,7 +2107,7 @@ int main(int argc, char *argv[])
         // Check a single host/port ciphers...
         case mode_single:
         case mode_multiple:
-            printf("%s\t\t%s\n\t\t%s\n%s\n", COL_BLUE, program_version,
+            printf("Version: %s%s%s\n%s\n%s\n", COL_GREEN, program_version, RESET,
                     SSLeay_version(SSLEAY_VERSION), RESET);
 
             SSLeay_add_all_algorithms();
