@@ -1083,7 +1083,16 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     if (options->pout == true)
                         printf("%s ||\n", sslCipherPointer->name);
                     else
-                        printf("%s\n", sslCipherPointer->name);
+                    {
+                        if (strstr(sslCipherPointer->name, "RC4"))
+                        {                   
+                            printf("%s%s%s\n", COL_YELLOW, sslCipherPointer->name, RESET);
+                        }
+                        else
+                        {
+                            printf("%s\n", sslCipherPointer->name);
+                        }
+                    }
                 }
 
                 // Disconnect SSL over socket
