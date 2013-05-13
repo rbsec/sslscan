@@ -1238,7 +1238,14 @@ int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                             if (options->pout == true)
                                 printf("%s ||\n", SSL_get_cipher_name(ssl));
                             else
-                                printf("%s\n", SSL_get_cipher_name(ssl));
+                                if (strstr(SSL_get_cipher_name(ssl), "RC4"))
+                                {                   
+                                    printf("%s%s%s\n", COL_YELLOW, SSL_get_cipher_name(ssl), RESET);
+                                }
+                                else
+                                {
+                                    printf("%s\n", SSL_get_cipher_name(ssl));
+                                }
 
                             // Disconnect SSL over socket
                             SSL_shutdown(ssl);
