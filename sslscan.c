@@ -1084,7 +1084,11 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         printf("%s ||\n", sslCipherPointer->name);
                     else
                     {
-                        if (strstr(sslCipherPointer->name, "RC4"))
+                        if (strstr(sslCipherPointer->name, "EXP"))
+                        {                   
+                            printf("%s%s%s\n", COL_RED, sslCipherPointer->name, RESET);
+                        }
+                        else if (strstr(sslCipherPointer->name, "RC4"))
                         {                   
                             printf("%s%s%s\n", COL_YELLOW, sslCipherPointer->name, RESET);
                         }
@@ -1238,7 +1242,12 @@ int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                             if (options->pout == true)
                                 printf("%s ||\n", SSL_get_cipher_name(ssl));
                             else
-                                if (strstr(SSL_get_cipher_name(ssl), "RC4"))
+                            {
+                                if (strstr(SSL_get_cipher_name(ssl), "EXP"))
+                                {                   
+                                    printf("%s%s%s\n", COL_RED, SSL_get_cipher_name(ssl), RESET);
+                                }
+                                else if (strstr(SSL_get_cipher_name(ssl), "RC4"))
                                 {                   
                                     printf("%s%s%s\n", COL_YELLOW, SSL_get_cipher_name(ssl), RESET);
                                 }
@@ -1246,6 +1255,7 @@ int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                                 {
                                     printf("%s\n", SSL_get_cipher_name(ssl));
                                 }
+                            }
 
                             // Disconnect SSL over socket
                             SSL_shutdown(ssl);
