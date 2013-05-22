@@ -604,11 +604,11 @@ int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOu
     }
 
     if (outputData->secure)
-        printf("    %sSecure%s session renegotiation supported\n\n", COL_GREEN, RESET);
+        printf("%sSecure%s session renegotiation supported\n\n", COL_GREEN, RESET);
     else if (outputData->supported)
-        printf("    %sInsecure%s session renegotiation supported\n\n", COL_RED, RESET);
+        printf("%sInsecure%s session renegotiation supported\n\n", COL_RED, RESET);
     else
-       printf("    Session renegotiation %snot supported%s\n\n", COL_GREEN, RESET);
+       printf("Session renegotiation %snot supported%s\n\n", COL_GREEN, RESET);
 
     return true;
 }
@@ -938,7 +938,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         if (options->pout == true)
                             printf("|| Accepted || ");
                         else
-                            printf("    Accepted  ");
+                            printf("Accepted  ");
                         if (options->http == true)
                         {
 
@@ -1186,7 +1186,7 @@ int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                                 if (options->pout == true)
                                     printf("|| SSLv2 || ");
                                 else
-                                    printf("    %sSSLv2%s  ", COL_RED, RESET);
+                                    printf("%sSSLv2%s  ", COL_RED, RESET);
                             }
                             else if (sslMethod == SSLv3_client_method())
                             {
@@ -1195,7 +1195,7 @@ int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                                 if (options->pout == true)
                                     printf("|| SSLv3 || ");
                                 else
-                                    printf("    SSLv3  ");
+                                    printf("SSLv3  ");
                             }
                             else
                             {
@@ -1204,7 +1204,7 @@ int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                                 if (options->pout == true)
                                     printf("|| TLSv1 || ");
                                 else
-                                    printf("    TLSv1  ");
+                                    printf("TLSv1  ");
                             }
                             if (SSL_get_cipher_bits(ssl, &tempInt2) < 10)
                                 tempInt = 2;
@@ -1840,7 +1840,7 @@ int testHost(struct sslCheckOptions *options)
     if (status == true)
     {
         // Test preferred ciphers...
-        printf("\n  %sPrefered Server Cipher(s):%s\n", COL_BLUE, RESET);
+        printf("\n  %sPreferred Server Cipher(s):%s\n", COL_BLUE, RESET);
         if (options->pout == true)
             printf("|| Version || Bits || Cipher ||\n");
         switch (options->sslVersion)
