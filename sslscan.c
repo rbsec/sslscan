@@ -77,7 +77,7 @@
 const char *RESET = "[0m";            // DEFAULT
 const char *COL_RED = "[31m";     // RED
 const char *COL_YELLOW = "[33m";     // RED
-const char *COL_BLUE = "[34m";        // BLUE
+const char *COL_BLUE = "[1;34m";        // BLUE
 const char *COL_GREEN = "[32m";   // GREEN
 #else
 const char *RESET = "";
@@ -1772,7 +1772,7 @@ int testHost(struct sslCheckOptions *options)
         fprintf(options->xmlOutput, " <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
 
     // Test renegotiation
-    printf("\nTesting SSL server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
+    printf("Testing SSL server %s%s%s on port %s%d%s\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
 
     sslCipherPointer = options->ciphers;
     if (options->showClientCiphers == true)
