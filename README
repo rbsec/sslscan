@@ -1,3 +1,21 @@
+# README
+This is a fork of ioerror's version of sslscan (the original readme of which is included below). Changes are as follows:
+
+* Highlight SSLv2 ciphers in output.
+* Highlight RC4 ciphers in output.
+* Highlight weak (<40 bit) and medium (40 < n <= 56) ciphers in output.
+* Hide certificate information by default (display with --get-certificate).
+* Hide rejected ciphers by default (display with --failed).
+
+#### Building on Kali
+Note that many modern distros (including Kali) ship with a version of OpenSSL that disables support for SSLv2 ciphers. If sslscan is compiled on one of these distros, it will not be able to detect SSLv2.
+
+This issue can be resolved by rebuilding OpenSSL from source after removing the patch that disables SSLv2 support. See the following article for details:
+
+http://blog.opensecurityresearch.com/2013/05/fixing-sslv2-support-in-kali-linux.html
+
+
+# Original (ioerror) README
 This is a fork of sslscan.c to better support STARTTLS.
 
 The original home page of sslscan is:
