@@ -75,10 +75,10 @@
 #if !defined(__WIN32__)
 // Always better to do "const char RESET[] = " because it saves relocation records.
 const char *RESET = "[0m";            // DEFAULT
-const char *COL_RED = "[31m";     // RED
-const char *COL_YELLOW = "[33m";     // RED
-const char *COL_BLUE = "[1;34m";        // BLUE
-const char *COL_GREEN = "[32m";   // GREEN
+const char *COL_RED = "[31m";
+const char *COL_YELLOW = "[33m";
+const char *COL_BLUE = "[1;34m";
+const char *COL_GREEN = "[32m";
 #else
 const char *RESET = "";
 const char *COL_RED = "";
