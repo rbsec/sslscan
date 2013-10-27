@@ -62,7 +62,7 @@
 #define ssl_all 0
 #define ssl_v2 1
 #define ssl_v3 2
-#define tls_v1 3
+#define tls_v10 3
 #define tls_v11 4
 #define tls_v12 5
 
@@ -1048,29 +1048,29 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     else if (sslCipherPointer->sslMethod == TLSv1_client_method())
                     {
                         if (options->xmlOutput != 0)
-                            fprintf(options->xmlOutput, "TLSv1\" bits=\"");
+                            fprintf(options->xmlOutput, "TLSv1.0\" bits=\"");
                         if (options->pout == true)
-                            printf("TLSv1 || ");
+                            printf("TLSv1.0 || ");
                         else
-                            printf("TLSv1  ");
+                            printf("TLSv1.0  ");
                     }
 					else if (sslCipherPointer->sslMethod == TLSv1_1_client_method())
                     {
                         if (options->xmlOutput != 0)
-                            fprintf(options->xmlOutput, "TLS11\" bits=\"");
+                            fprintf(options->xmlOutput, "TLSv1.1\" bits=\"");
                         if (options->pout == true)
-                            printf("TLS11 || ");
+                            printf("TLSv1.1 || ");
                         else
-                            printf("TLS11  ");
+                            printf("TLSv1.1  ");
                     }
 					else if (sslCipherPointer->sslMethod == TLSv1_2_client_method())
                     {
                         if (options->xmlOutput != 0)
-                            fprintf(options->xmlOutput, "TLS12\" bits=\"");
+                            fprintf(options->xmlOutput, "TLSv1.2\" bits=\"");
                         if (options->pout == true)
-                            printf("TLS12 || ");
+                            printf("TLSv1.2 || ");
                         else
-                            printf("TLS12  ");
+                            printf("TLSv1.2  ");
                     }
                     if (sslCipherPointer->bits < 10)
                         tempInt = 2;
@@ -1222,27 +1222,27 @@ int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
                                 if (options->xmlOutput != 0)
                                     fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLSv1\" bits=\"");
                                 if (options->pout == true)
-                                    printf("|| TLSv1 || ");
+                                    printf("|| TLSv1.0 || ");
                                 else
-                                    printf("TLSv1  ");
+                                    printf("TLSv1.0  ");
                             }
 							else if (sslMethod == TLSv1_1_client_method())
                             {
                                 if (options->xmlOutput != 0)
-                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLS11\" bits=\"");
+                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLSv1.1\" bits=\"");
                                 if (options->pout == true)
-                                    printf("|| TLS11 || ");
+                                    printf("|| TLSv1.1 || ");
                                 else
-                                    printf("    TLS11  ");
+                                    printf("TLSv1.1  ");
                             }
                             else if (sslMethod == TLSv1_2_client_method())
                             {
                                 if (options->xmlOutput != 0)
                                     fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLSv2\" bits=\"");
                                 if (options->pout == true)
-                                    printf("|| TLS12 || ");
+                                    printf("|| TLSv1.2 || ");
                                 else
-                                    printf("    TLS12  ");
+                                    printf("TLSv1.2  ");
                             }
                             if (SSL_get_cipher_bits(ssl, &tempInt2) < 10)
                                 tempInt = 2;
@@ -1366,7 +1366,7 @@ int getCertificate(struct sslCheckOptions *options)
     {
 
         // Setup Context Object...
-        if( options->sslVersion == tls_v1) {
+        if( options->sslVersion == tls_v10) {
             if (options->verbose)
                 printf("sslMethod = TLSv1_method()");
             sslMethod = TLSv1_method();
@@ -1900,7 +1900,7 @@ int testHost(struct sslCheckOptions *options)
             case ssl_v3:
                 status = defaultCipher(options, SSLv3_client_method());
                 break;
-            case tls_v1:
+            case tls_v10:
                 status = defaultCipher(options, TLSv1_client_method());
                 break;
             case tls_v11:
@@ -2023,31 +2023,31 @@ int main(int argc, char *argv[])
         // StartTLS... FTP
         else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v1;
+            options.sslVersion = tls_v10;
             options.starttls_ftp = true;
         }
         // StartTLS... IMAP
         else if (strcmp("--starttls-imap", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v1;
+            options.sslVersion = tls_v10;
             options.starttls_imap = true;
         }
         // StartTLS... POP3
         else if (strcmp("--starttls-pop3", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v1;
+            options.sslVersion = tls_v10;
             options.starttls_pop3 = true;
         }
         // StartTLS... SMTP
         else if (strcmp("--starttls-smtp", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v1;
+            options.sslVersion = tls_v10;
             options.starttls_smtp = true;
         }
         // StartTLS... XMPP
         else if (strcmp("--starttls-xmpp", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v1;
+            options.sslVersion = tls_v10;
             options.starttls_xmpp = true;
         }
 
@@ -2061,7 +2061,7 @@ int main(int argc, char *argv[])
 
         // TLS v1 only...
         else if (strcmp("--tls1", argv[argLoop]) == 0)
-            options.sslVersion = tls_v1;
+            options.sslVersion = tls_v10;
 			
         // TLS v11 only...
         else if (strcmp("--tls11", argv[argLoop]) == 0)
@@ -2159,9 +2159,9 @@ int main(int argc, char *argv[])
             printf("  %s--show-ciphers%s       Show supported client ciphers.\n", COL_GREEN, RESET);
             printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--ssl3%s               Only check SSLv3 ciphers.\n", COL_GREEN, RESET);
-            printf("  %s--tls1%s               Only check TLSv1 ciphers.\n", COL_GREEN, RESET);
-            printf("  %s--tls11%s              Only check TLSv11 ciphers.\n", COL_GREEN, RESET);
-            printf("  %s--tls12%s              Only check TLSv12 ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--tls10%s              Only check TLSv1.0 ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--tls11%s              Only check TLSv1.1 ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--tls12%s              Only check TLSv1.2 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--pk=<file>%s          A file containing the private key or\n", COL_GREEN, RESET);
             printf("                       a PKCS#12  file containing a private\n");
             printf("                       key/certificate pair (as produced by\n");
@@ -2213,7 +2213,7 @@ int main(int argc, char *argv[])
                 case ssl_v3:
                     populateCipherList(&options, SSLv3_client_method());
                     break;
-                case tls_v1:
+                case tls_v10:
                     populateCipherList(&options, TLSv1_client_method());
                     break;
                 case tls_v11:
