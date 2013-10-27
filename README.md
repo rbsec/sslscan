@@ -6,6 +6,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Highlight weak (<40 bit) and medium (40 < n <= 56) ciphers in output.
 * Hide certificate information by default (display with --get-certificate).
 * Hide rejected ciphers by default (display with --failed).
+* Added TLSv1.1 and TLSv1.2 support (merged from twwbond/sslscan).
 
 #### Building on Kali
 Note that many modern distros (including Kali) ship with a version of OpenSSL that disables support for SSLv2 ciphers. If sslscan is compiled on one of these distros, it will not be able to detect SSLv2.
