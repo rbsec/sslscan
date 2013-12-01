@@ -106,7 +106,7 @@ struct sslCipher
     char *version;
     int bits;
     char description[512];
-    SSL_METHOD *sslMethod;
+    const SSL_METHOD *sslMethod;
     struct sslCipher *next;
 };
 
@@ -154,7 +154,7 @@ struct renegotiationOutput
 };
 
 // Adds Ciphers to the Cipher List structure
-int populateCipherList(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
+int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
     // Variables...
     int returnCode = true;
@@ -695,7 +695,7 @@ void tls_reneg_init(struct sslCheckOptions *options)
 
 
 // Check if the server supports renegotiation
-int testRenegotiation(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
+int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
     // Variables...
     int cipherStatus;
@@ -1154,7 +1154,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
 
 
 // Test for preferred ciphers
-int defaultCipher(struct sslCheckOptions *options, SSL_METHOD *sslMethod)
+int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
     // Variables...
     int cipherStatus;
@@ -1357,7 +1357,7 @@ int getCertificate(struct sslCheckOptions *options)
     BIO *fileBIO = NULL;
     X509 *x509Cert = NULL;
     EVP_PKEY *publicKey = NULL;
-    SSL_METHOD *sslMethod = NULL;
+    const SSL_METHOD *sslMethod = NULL;
     ASN1_OBJECT *asn1Object = NULL;
     X509_EXTENSION *extension = NULL;
     char buffer[1024];
@@ -1942,7 +1942,6 @@ int main(int argc, char *argv[])
     // Variables...
     struct sslCheckOptions options;
     struct sslCipher *sslCipherPointer;
-    int status;
     int argLoop;
     int tempInt;
     int maxSize;
@@ -2255,7 +2254,7 @@ int main(int argc, char *argv[])
 
             // Do the testing...
             if (mode == mode_single)
-                status = testHost(&options);
+                testHost(&options);
             else
             {
                 if (fileExists(argv[options.targets] + 10) == true)
@@ -2284,7 +2283,7 @@ int main(int argc, char *argv[])
                                     options.port = atoi(line + tempInt);
 
                                 // Test the host...
-                                status = testHost(&options);
+                                testHost(&options);
                             }
                             readLine(targetsFile, line, sizeof(line));
                         }
