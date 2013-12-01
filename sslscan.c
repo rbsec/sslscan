@@ -1034,7 +1034,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         if (options->pout == true)
                             printf("SSLv2 || ");
                         else
-                            printf("%sSSLv2%s  ", COL_RED, RESET);
+                            printf("%sSSLv2%s    ", COL_RED, RESET);
                     }
                     else if (sslCipherPointer->sslMethod == SSLv3_client_method())
                     {
