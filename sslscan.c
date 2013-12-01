@@ -2145,8 +2145,12 @@ int main(int argc, char *argv[])
     switch (mode)
     {
         case mode_version:
-            printf("%s\t\t%s\n\t\t%s\n%s\n", COL_BLUE, program_version,
+            printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, program_version,
                     SSLeay_version(SSLEAY_VERSION), RESET);
+            #ifdef OPENSSL_NO_SSL2
+            printf("\t\t%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
+            printf("\t\t%sSSLv2 ciphers will not be detected%s\n", COL_RED, RESET);
+	    #endif
 
             break;
 
@@ -2159,6 +2163,10 @@ int main(int argc, char *argv[])
             printf("supported  and   returns  the   SSL   certificate.   Client\n");
             printf("certificates /  private key can be configured and output is\n");
             printf("to text / XML.\n\n");
+            #ifdef OPENSSL_NO_SSL2
+            printf("%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
+            printf("%sSSLv2 ciphers will not be detected%s\n\n", COL_RED, RESET);
+	    #endif
             printf("%sCommand:%s\n", COL_BLUE, RESET);
             printf("  %s%s [Options] [host:port | host]%s\n\n", COL_GREEN, argv[0], RESET);
             printf("%sOptions:%s\n", COL_BLUE, RESET);
@@ -2168,7 +2176,9 @@ int main(int argc, char *argv[])
             printf("  %s--failed%s             Show unsupported ciphers.\n", COL_GREEN, RESET);
             printf("  %s--get-certificate%s    Get Certificate information.\n", COL_GREEN, RESET);
             printf("  %s--show-ciphers%s       Show supported client ciphers.\n", COL_GREEN, RESET);
+            #ifndef OPENSSL_NO_SSL2
             printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
+	    #endif
             printf("  %s--ssl3%s               Only check SSLv3 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls10%s              Only check TLSv1.0 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls11%s              Only check TLSv1.1 ciphers.\n", COL_GREEN, RESET);
@@ -2204,6 +2214,10 @@ int main(int argc, char *argv[])
         case mode_multiple:
             printf("Version: %s%s%s\n%s\n%s\n", COL_GREEN, program_version, RESET,
                     SSLeay_version(SSLEAY_VERSION), RESET);
+            #ifdef OPENSSL_NO_SSL2
+            printf("%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
+            printf("%sSSLv2 ciphers will not be detected%s\n\n", COL_RED, RESET);
+	    #endif
 
             SSLeay_add_all_algorithms();
             ERR_load_crypto_strings();
