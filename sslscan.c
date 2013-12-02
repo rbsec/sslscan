@@ -137,6 +137,7 @@ struct sslCheckOptions
     // TCP Connection Variables...
     struct hostent *hostStruct;
     struct sockaddr_in serverAddress;
+    struct sockaddr_in6 serverAddress6;
 
     // SSL Variables...
     SSL_CTX *ctx;
@@ -278,7 +279,15 @@ int tcpConnect(struct sslCheckOptions *options)
     int status;
 
     // Create Socket
-    socketDescriptor = socket(AF_INET, SOCK_STREAM, 0);
+    if (options->hostStruct->h_addrtype == AF_INET)
+    {
+        socketDescriptor = socket(AF_INET, SOCK_STREAM, 0);
+    }
+    else    // IPv6
+    {
+        socketDescriptor = socket(AF_INET6, SOCK_STREAM, 0);
+    }
+
     if(socketDescriptor < 0)
     {
         printf("%s    ERROR: Could not open a socket.%s\n", COL_RED, RESET);
@@ -286,7 +295,15 @@ int tcpConnect(struct sslCheckOptions *options)
     }
 
     // Connect
-    status = connect(socketDescriptor, (struct sockaddr *) &options->serverAddress, sizeof(options->serverAddress));
+    if (options->hostStruct->h_addrtype == AF_INET)
+    {
+        status = connect(socketDescriptor, (struct sockaddr *) &options->serverAddress, sizeof(options->serverAddress));
+    }
+    else    // IPv6
+    {
+        status = connect(socketDescriptor, (struct sockaddr *) &options->serverAddress6, sizeof(options->serverAddress6));
+    }
+
     if(status < 0)
     {
         printf("%s    ERROR: Could not open a connection to host %s on port %d.%s\n", COL_RED, options->host, options->port, RESET);
@@ -1799,17 +1816,33 @@ int testHost(struct sslCheckOptions *options)
     int status = true;
 
     // Resolve Host Name
-    options->hostStruct = gethostbyname(options->host);
+    options->hostStruct = gethostbyname2(options->host, AF_INET);
     if (options->hostStruct == NULL)
     {
-        printf("%sERROR: Could not resolve hostname %s.%s\n", COL_RED, options->host, RESET);
-        return false;
+        options->hostStruct = gethostbyname2(options->host, AF_INET6);
+        if (options->hostStruct == NULL)
+        {
+            printf("%sERROR: Could not resolve hostname %s.%s\n", COL_RED, options->host, RESET);
+            return false;
+        }
     }
 
     // Configure Server Address and Port
-    options->serverAddress.sin_family = options->hostStruct->h_addrtype;
-    memcpy((char *) &options->serverAddress.sin_addr.s_addr, options->hostStruct->h_addr_list[0], options->hostStruct->h_length);
-    options->serverAddress.sin_port = htons(options->port);
+    
+    if (options->hostStruct->h_addrtype == AF_INET6)
+    {
+        options->serverAddress6.sin6_family = options->hostStruct->h_addrtype;
+        memcpy((char *) &options->serverAddress6.sin6_addr, options->hostStruct->h_addr, options->hostStruct->h_length);
+        options->serverAddress6.sin6_port = htons(options->port);
+    }
+
+    else
+    {
+        options->serverAddress.sin_family = options->hostStruct->h_addrtype;
+        memcpy((char *) &options->serverAddress.sin_addr, options->hostStruct->h_addr, options->hostStruct->h_length);
+        options->serverAddress.sin_port = htons(options->port);
+
+    }
 
     // XML Output...
     if (options->xmlOutput != 0)
