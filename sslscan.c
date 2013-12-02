@@ -2088,6 +2088,15 @@ int testHost(struct sslCheckOptions *options)
             case ssl_v3:
                 status = defaultCipher(options, SSLv3_client_method());
                 break;
+            case tls_all:
+                status = true;
+                if (status != false)
+                    status = defaultCipher(options, TLSv1_client_method());
+                if (status != false)
+                    status = defaultCipher(options, TLSv1_1_client_method());
+                if (status != false)
+                    status = defaultCipher(options, TLSv1_2_client_method());
+                break;
             case tls_v10:
                 status = defaultCipher(options, TLSv1_client_method());
                 break;
