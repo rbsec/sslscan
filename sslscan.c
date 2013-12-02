@@ -130,6 +130,8 @@ struct sslCheckOptions
     int sslbugs;
     int http;
     int verbose;
+    int ipv4;
+    int ipv6;
 
     // File Handles...
     FILE *xmlOutput;
@@ -1816,18 +1818,23 @@ int testHost(struct sslCheckOptions *options)
     int status = true;
 
     // Resolve Host Name
-    options->hostStruct = gethostbyname2(options->host, AF_INET);
-    if (options->hostStruct == NULL)
+    
+    if (options->ipv4)
+    {
+        options->hostStruct = gethostbyname2(options->host, AF_INET);
+    }
+    if (options->hostStruct == NULL && options->ipv6)
     {
         options->hostStruct = gethostbyname2(options->host, AF_INET6);
-        if (options->hostStruct == NULL)
-        {
-            printf("%sERROR: Could not resolve hostname %s.%s\n", COL_RED, options->host, RESET);
-            return false;
-        }
-        printf("Using %sIPv6%s address\n\n", COL_GREEN, RESET);
-    }
+        printf("Trying %sIPv6%s lookup\n\n", COL_GREEN, RESET);
 
+    }
+    if (options->hostStruct == NULL)
+    {
+        printf("%sERROR: Could not resolve hostname %s.%s\n", COL_RED, options->host, RESET);
+        return false;
+    }
+    
     // Configure Server Address and Port
     
     if (options->hostStruct->h_addrtype == AF_INET6)
@@ -1999,6 +2006,8 @@ int main(int argc, char *argv[])
     options.starttls_smtp = false;
     options.starttls_xmpp = false;
     options.verbose = false;
+    options.ipv4 = true;
+    options.ipv6 = true;
 
     options.sslVersion = ssl_all;
     options.pout = false;
@@ -2123,6 +2132,14 @@ int main(int argc, char *argv[])
         else if (strcmp("--http", argv[argLoop]) == 0)
             options.http = 1;
 
+        // IPv4 only
+        else if (strcmp("--ipv4", argv[argLoop]) == 0)
+            options.ipv6 = false;
+
+        // IPv6 only
+        else if (strcmp("--ipv6", argv[argLoop]) == 0)
+            options.ipv4 = false;
+
         // Host (maybe port too)...
         else if (argLoop + 1 == argc)
         {
@@ -2233,6 +2250,8 @@ int main(int argc, char *argv[])
             printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation  bug work-\n", COL_GREEN, RESET);
             printf("                       arounds.\n");
+            printf("  %s--ipv4%s               Only use IPv4\n", COL_GREEN, RESET);
+            printf("  %s--ipv6%s               Only use IPv6\n", COL_GREEN, RESET);
             printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
