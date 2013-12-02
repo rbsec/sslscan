@@ -1081,7 +1081,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         if (options->pout == true)
                             printf("|| Accepted || ");
                         else
-                            printf("Accepted  ");
+                            printf("    Accepted  ");
                         if (options->http == true)
                         {
 
