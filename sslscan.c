@@ -1825,6 +1825,7 @@ int testHost(struct sslCheckOptions *options)
             printf("%sERROR: Could not resolve hostname %s.%s\n", COL_RED, options->host, RESET);
             return false;
         }
+        printf("Using %sIPv6%s address\n\n", COL_GREEN, RESET);
     }
 
     // Configure Server Address and Port
