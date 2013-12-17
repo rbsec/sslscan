@@ -1210,7 +1210,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                                 if (options->pout == true)
                                     printf("|| SSLv2 || ");
                                 else
-                                    printf("%sSSLv2%s  ", COL_RED, RESET);
+                                    printf("%sSSLv2%s    ", COL_RED, RESET);
                             }
                             else
 #endif
