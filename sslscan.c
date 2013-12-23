@@ -2113,7 +2113,7 @@ int main(int argc, char *argv[])
             options.sslVersion = ssl_v3;
 
         // TLS v1 only...
-        else if (strcmp("--tls1", argv[argLoop]) == 0)
+        else if (strcmp("--tls10", argv[argLoop]) == 0)
             options.sslVersion = tls_v10;
 			
         // TLS v11 only...
