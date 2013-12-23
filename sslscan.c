@@ -119,6 +119,7 @@ struct sslCheckOptions
     int getCertificate;
     int showClientCiphers;
     int reneg;
+    int compression;
     int starttls_ftp;
     int starttls_imap;
     int starttls_pop3;
@@ -712,6 +713,116 @@ void tls_reneg_init(struct sslCheckOptions *options)
 
 }
 
+// Check if the server supports compression
+int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
+{
+    // Variables...
+    int status = true;
+    int socketDescriptor = 0;
+    SSL *ssl = NULL;
+    BIO *cipherConnectionBio;
+    SSL_SESSION session;
+
+    tls_reneg_init(options);
+
+    // Connect to host
+    socketDescriptor = tcpConnect(options);
+    if (socketDescriptor != 0)
+    {
+
+        // Setup Context Object...
+        options->ctx = SSL_CTX_new(sslMethod);
+        if (options->ctx != NULL)
+        {
+            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            {
+
+                // Load Certs if required...
+                if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
+                    status = loadCerts(options);
+
+                if (status == true)
+                {
+                    // Create SSL object...
+                    ssl = SSL_new(options->ctx);
+
+#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
+                    // Make sure we can connect to insecure servers
+                    // OpenSSL is going to change the default at a later date
+                    SSL_set_options(ssl, SSL_OP_LEGACY_SERVER_CONNECT);
+#endif
+
+                   if (ssl != NULL)
+                    {
+                        // Connect socket and BIO
+                        cipherConnectionBio = BIO_new_socket(socketDescriptor, BIO_NOCLOSE);
+
+                        // Connect SSL and BIO
+                        SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
+
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+                        // This enables TLS SNI
+                        SSL_set_tlsext_host_name(ssl, options->host);
+#endif
+
+                        // Connect SSL over socket
+                        SSL_connect(ssl);
+
+
+                        session = *SSL_get_session(ssl);
+
+                        if (session.compress_meth == 0)
+                        {
+                            printf("Compression %sdisabled%s\n\n", COL_GREEN, RESET);
+                        }
+                        else
+                        {
+                            printf("Compression %senabled%s (CRIME)\n\n", COL_RED, RESET);
+                        }
+
+
+                        // Disconnect SSL over socket
+                        SSL_shutdown(ssl);
+
+                        // Free SSL object
+                        SSL_free(ssl);
+                    }
+                    else
+                    {
+                        status = false;
+                        fprintf(stderr, "%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                    }
+                }
+            }
+            else
+            {
+                status = false;
+                fprintf(stderr, "%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+            }
+            // Free CTX Object
+            SSL_CTX_free(options->ctx);
+        }
+        // Error Creating Context Object
+        else
+        {
+            status = false;
+            fprintf(stderr, "%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+        }
+
+        // Disconnect from host
+        close(socketDescriptor);
+    }
+    else
+    {
+        // Could not connect
+        fprintf(stderr, "%sERROR: Could not connect.%s\n", COL_RED, RESET);
+        status = false;
+        exit(status);
+    }
+
+    return status;
+
+}
 
 // Check if the server supports renegotiation
 int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
@@ -1879,6 +1990,12 @@ int testHost(struct sslCheckOptions *options)
         testRenegotiation(options, TLSv1_client_method());
     }
 
+    if (status == true && options->compression )
+    {
+        printf("\n  %sTLS Compression%s\n", COL_BLUE, RESET);
+        testCompression(options, TLSv1_client_method());
+    }
+
     // Test supported ciphers...
     printf("  %sSupported Server Cipher(s):%s\n", COL_BLUE, RESET);
     if ((options->http == true) && (options->pout == true))
@@ -2000,6 +2117,7 @@ int main(int argc, char *argv[])
     options.getCertificate = false;
     options.showClientCiphers = false;
     options.reneg = true;
+    options.compression = true;
     options.starttls_ftp = false;
     options.starttls_imap = false;
     options.starttls_pop3 = false;
@@ -2071,6 +2189,12 @@ int main(int argc, char *argv[])
         else if (strcmp("--no-renegotiation", argv[argLoop]) == 0)
         {
             options.reneg = false;
+        }
+
+        // Should we check for TLS Compression
+        else if (strcmp("--no-compression", argv[argLoop]) == 0)
+        {
+            options.compression = false;
         }
 
         // StartTLS... FTP
@@ -2237,6 +2361,7 @@ int main(int argc, char *argv[])
             printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted client certificates\n", COL_GREEN, RESET);
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
+            printf("  %s--no-compression%s   Do not check for TLS compression\n", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
