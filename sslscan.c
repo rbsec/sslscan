@@ -95,7 +95,7 @@ const char *program_banner = "                   _\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
-const char *program_version = "1.8.3rc3-rbsec";
+const char *program_version = "1.9-rbsec";
 const char *xml_version = "1.8.3rc3";
 
 
@@ -630,7 +630,7 @@ int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOu
     else if (outputData->supported)
         printf("%sInsecure%s session renegotiation supported\n\n", COL_RED, RESET);
     else
-       printf("Session renegotiation %snot supported%s\n\n", COL_GREEN, RESET);
+       printf("Session renegotiation %snot supported%s\n", COL_GREEN, RESET);
 
     return true;
 }
@@ -1992,7 +1992,7 @@ int testHost(struct sslCheckOptions *options)
 
     if (status == true && options->compression )
     {
-        printf("\n  %sTLS Compression%s\n", COL_BLUE, RESET);
+        printf("\n  %sTLS Compression:%s\n", COL_BLUE, RESET);
         testCompression(options, TLSv1_client_method());
     }
 
@@ -2331,12 +2331,8 @@ int main(int argc, char *argv[])
         case mode_help:
             // Program version banner...
             printf("%s%s%s\n", COL_BLUE, program_banner, RESET);
-            printf("SSLScan is a fast SSL port scanner. SSLScan connects to SSL\n");
-            printf("ports and determines what  ciphers are supported, which are\n");
-            printf("the servers  preferred  ciphers,  which  SSL  protocols  are\n");
-            printf("supported  and   returns  the   SSL   certificate.   Client\n");
-            printf("certificates /  private key can be configured and output is\n");
-            printf("to text / XML.\n\n");
+            printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, program_version,
+                    SSLeay_version(SSLEAY_VERSION), RESET);
 #ifdef OPENSSL_NO_SSL2
             printf("%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
             printf("%sSSLv2 ciphers will not be detected%s\n\n", COL_RED, RESET);
@@ -2375,7 +2371,7 @@ int main(int argc, char *argv[])
             printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
-            printf("  %s--help%s               Display the  help text  you are  now reading\n", COL_GREEN, RESET);
+            printf("  %s--help%s               Display the  help text  you are  now reading\n\n", COL_GREEN, RESET);
             printf("%sExample:%s\n", COL_BLUE, RESET);
             printf("  %s%s 127.0.0.1%s\n\n", COL_GREEN, argv[0], RESET);
             break;
