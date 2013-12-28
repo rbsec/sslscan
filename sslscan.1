@@ -11,52 +11,77 @@ command
 .PP
 \fBsslscan\fP queries SSL/TLS services, such as HTTPS, in order to determine the
 ciphers that are supported.
-.br
+
 SSLScan is designed to be easy, lean and fast. The output includes preferred
-ciphers of the SSL/TLS service,
-.br
-the certificate and output is in text and XML formats. It is TLS SNI aware when
-used with a supported version of OpenSSL.
+ciphers of the SSL/TLS service, the certificate and output is in text and XML formats. It is TLS SNI aware when used with a supported version of OpenSSL.
 .SH OPTIONS
 .TP
 .B \-\-help
 .br
-Show summary of options.
+Show summary of options
 .TP
 .B \-\-version
-Show version of program.
+Show version of program
 .TP
 .B \-\-targets=<file>
 A file containing a list of hosts to
 check. Hosts can be supplied with
-ports (i.e. host:port). One target per line.
+ports (i.e. host:port). One target per line
 .TP
-.B \-\-no\-failed
-List only accepted ciphers
-(default is to listing all ciphers).
+.B \-\-ipv4
+.br
+Force IPv4 DNS resolution.
+Default is to try IPv4, and if that fails then fall back to IPv6.
+.TP
+.B \-\-ipv6
+.br
+Force IPv6 DNS resolution.
+Default is to try IPv4, and if that fails then fall back to IPv6.
+.TP
+.B \-\-get\-certificate
+Display certificate information.
+.TP
+.B \-\-failed
+Show rejected ciphers
+(default is to listing only accepted ciphers)
 .TP
 .B \-\-ssl2
 .br
-Only check SSLv2 ciphers.
+Only check SSLv2 ciphers
 .TP
 .B \-\-ssl3
 .br
-Only check SSLv3 ciphers.
+Only check SSLv3 ciphers
+.TP
+.B \-\-tls10
+.br
+Only check TLS 1.0 ciphers
+.TP
+.B \-\-tls11
+.br
+Only check TLS 1.1 ciphers
+.TP
+.B \-\-tls12
+.br
+Only check TLS 1.2 ciphers
 .TP
 .B \-\-pk=<file>
 A file containing the private key or
 a PKCS#12 file containing a private
 key/certificate pair (as produced by
-MSIE and Netscape).
+MSIE and Netscape)
 .TP
 .B \-\-pkpass=<password>
-The password for the private key or PKCS#12 file.
+The password for the private key or PKCS#12 file
 .TP
 .B \-\-certs=<file>
-A file containing PEM/ASN1 formatted client certificates.
+A file containing PEM/ASN1 formatted client certificates
 .TP
-.B \-\-renegotiation
-Attempt TLS renegotiation
+.B \-\-no\-renegotiation
+Do not check for secure TLS renegotiation
+.TP
+.B \-\-no\-compression
+Do not check for TLS compression (CRIME)
 .TP
 .B \-\-starttls\-ftp
 STARTTLS setup for FTP
@@ -74,17 +99,23 @@ STARTTLS setup for SMTP
 STARTTLS setup for XMPP
 .TP
 .B \-\-html
+.br
 Makes a HTML request after a successful connection and returns
-the server response code.
+the server response code
 .TP
 .B \-\-bugs
-Enables workarounds for SSL bugs.
+.br
+Enables workarounds for SSL bugs
 .TP
 .B \-\-xml=<file>
-Output results to an XML file.
+.br
+Output results to an XML file
 .br
 .SH AUTHOR
 sslscan was originally written by Ian Ventura-Whiting <fizz@titania.co.uk>.
+.br
 sslscan was extended by Jacob Appelbaum <jacob@appelbaum.net>.
+.br
+sslscan was extended by rbsec <robin@rbsec.net>.
 .br
 This manual page was originally written by Marvin Stark <marv@der-marv.de>.
