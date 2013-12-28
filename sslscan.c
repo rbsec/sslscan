@@ -2346,6 +2346,8 @@ int main(int argc, char *argv[])
             printf("%sOptions:%s\n", COL_BLUE, RESET);
             printf("  %s--targets=<file>%s     A file containing a list of hosts to check.\n", COL_GREEN, RESET);
             printf("                       Hosts can  be supplied  with ports (host:port)\n");
+            printf("  %s--ipv4%s               Only use IPv4\n", COL_GREEN, RESET);
+            printf("  %s--ipv6%s               Only use IPv6\n", COL_GREEN, RESET);
             printf("  %s--failed%s             Show unsupported ciphers.\n", COL_GREEN, RESET);
             printf("  %s--get-certificate%s    Get Certificate information.\n", COL_GREEN, RESET);
             printf("  %s--show-ciphers%s       Show supported client ciphers.\n", COL_GREEN, RESET);
@@ -2361,7 +2363,7 @@ int main(int argc, char *argv[])
             printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted client certificates\n", COL_GREEN, RESET);
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
-            printf("  %s--no-compression%s   Do not check for TLS compression\n", COL_GREEN, RESET);
+            printf("  %s--no-compression%s     Do not check for TLS compression\n", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
@@ -2370,8 +2372,6 @@ int main(int argc, char *argv[])
             printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation  bug work-\n", COL_GREEN, RESET);
             printf("                       arounds.\n");
-            printf("  %s--ipv4%s               Only use IPv4\n", COL_GREEN, RESET);
-            printf("  %s--ipv6%s               Only use IPv6\n", COL_GREEN, RESET);
             printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
