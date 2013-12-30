@@ -4,6 +4,7 @@
  *   fizz@titania.co.uk                                                    *
  *   Copyright 2010 by Michael Boman (michael@michaelboman.org)            *
  *   Copyleft 2010 by Jacob Appelbaum <jacob@appelbaum.net>                *
+ *   Copyleft 2013 by rbsec <robin@rbsec.net>                              *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
