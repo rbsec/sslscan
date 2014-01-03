@@ -2249,6 +2249,10 @@ int main(int argc, char *argv[])
         else if (strcmp("--tls12", argv[argLoop]) == 0)
             options.sslVersion = tls_v12;
 
+		// TLS (all versions)...
+        else if (strcmp("--tlsall", argv[argLoop]) == 0)
+            options.sslVersion = tls_all;
+
         // SSL Bugs...
         else if (strcmp("--bugs", argv[argLoop]) == 0)
             options.sslbugs = 1;
@@ -2355,6 +2359,7 @@ int main(int argc, char *argv[])
             printf("  %s--tls10%s              Only check TLSv1.0 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls11%s              Only check TLSv1.1 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls12%s              Only check TLSv1.2 ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--tlsall%s             Only check TLS ciphers (all versions).\n", COL_GREEN, RESET);
             printf("  %s--pk=<file>%s          A file containing the private key or a PKCS#12 file\n", COL_GREEN, RESET);
             printf("                       containing a private key/certificate pair\n");
             printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
