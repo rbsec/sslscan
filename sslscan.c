@@ -62,9 +62,10 @@
 #define ssl_all 0
 #define ssl_v2 1
 #define ssl_v3 2
-#define tls_v10 3
-#define tls_v11 4
-#define tls_v12 5
+#define tls_all 3
+#define tls_v10 4
+#define tls_v11 5
+#define tls_v12 6
 
 // Global comments:
 // The comment style:
@@ -2200,31 +2201,31 @@ int main(int argc, char *argv[])
         // StartTLS... FTP
         else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v10;
+            options.sslVersion = tls_all;
             options.starttls_ftp = true;
         }
         // StartTLS... IMAP
         else if (strcmp("--starttls-imap", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v10;
+            options.sslVersion = tls_all;
             options.starttls_imap = true;
         }
         // StartTLS... POP3
         else if (strcmp("--starttls-pop3", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v10;
+            options.sslVersion = tls_all;
             options.starttls_pop3 = true;
         }
         // StartTLS... SMTP
         else if (strcmp("--starttls-smtp", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v10;
+            options.sslVersion = tls_all;
             options.starttls_smtp = true;
         }
         // StartTLS... XMPP
         else if (strcmp("--starttls-xmpp", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v10;
+            options.sslVersion = tls_all;
             options.starttls_xmpp = true;
         }
 
@@ -2407,6 +2408,11 @@ int main(int argc, char *argv[])
 #endif
                 case ssl_v3:
                     populateCipherList(&options, SSLv3_client_method());
+                    break;
+                case tls_all:
+                    populateCipherList(&options, TLSv1_client_method());
+                    populateCipherList(&options, TLSv1_1_client_method());
+                    populateCipherList(&options, TLSv1_2_client_method());
                     break;
                 case tls_v10:
                     populateCipherList(&options, TLSv1_client_method());
