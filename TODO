@@ -13,10 +13,6 @@ Add HTML report generation
 Add diff between reported and actually supported ciphers
 Make a Debian package
 Merge the Windows port into tip: http://code.google.com/p/sslscan-win/
-Ensure that output is highlighted for dangerous ciphers (blink, blink)
-    Throw up sirens if ssl2 is enabled
-    ciphers from the LOW/EXP/eNULL category are supported for any protocol
-    renegotiation is allowed on tlsv1 (maybe check if TRACE is supported if it's an http server)
 We should explictly check for things that may be NULL; the original author was not very careful.
 Perhaps write a GUI for people who are console adverse?
 Compare with http://www.thesprawl.org/memdump/?entry=7

@@ -4,6 +4,7 @@
  *   fizz@titania.co.uk                                                    *
  *   Copyright 2010 by Michael Boman (michael@michaelboman.org)            *
  *   Copyleft 2010 by Jacob Appelbaum <jacob@appelbaum.net>                *
+ *   Copyleft 2013 by rbsec <robin@rbsec.net>                              *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -97,7 +98,7 @@ const char *program_banner = "                   _\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
 const char *program_version = "1.9-rbsec";
-const char *xml_version = "1.8.3rc3";
+const char *xml_version = "1.9-rbsec";
 
 
 struct sslCipher
@@ -772,6 +773,13 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
 
                         session = *SSL_get_session(ssl);
 
+
+                        if (options->xmlOutput != 0)
+                        {
+                            fprintf(options->xmlOutput, "  <compression supported=\"%d\" />\n",
+                                    session.compress_meth);
+                        }
+
                         if (session.compress_meth == 0)
                         {
                             printf("Compression %sdisabled%s\n\n", COL_GREEN, RESET);
@@ -780,7 +788,6 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         {
                             printf("Compression %senabled%s (CRIME)\n\n", COL_RED, RESET);
                         }
-
 
                         // Disconnect SSL over socket
                         SSL_shutdown(ssl);
