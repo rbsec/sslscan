@@ -8,6 +8,7 @@ Changes: The following are a list of changes
          > Highlight SSLv2 ciphers
          > Highlight weak (n <= 40 bit) and medium (40 < n <= 56 bit) ciphers
          > Highlight RC4 ciphers
+         > Highlight anonymous (ADH) ciphers
          > Hide certificate information by default
          > Hide rejected ciphers by default (display with --failed).
          > Added TLSv1.1 and TLSv1.2 support (merged from twwbond/sslscan).
