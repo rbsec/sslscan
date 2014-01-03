@@ -83,12 +83,14 @@ const char *COL_RED = "[31m";
 const char *COL_YELLOW = "[33m";
 const char *COL_BLUE = "[1;34m";
 const char *COL_GREEN = "[32m";
+const char *COL_PURPLE = "[35m";
 #else
 const char *RESET = "";
 const char *COL_RED = "";
 const char *COL_YELLOW = "";
 const char *COL_BLUE = "";
 const char *COL_GREEN = "";
+const char *COL_PURPLE = "";
 #endif
 
 
@@ -1245,7 +1247,11 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         printf("%s ||\n", sslCipherPointer->name);
                     else
                     {
-                        if (strstr(sslCipherPointer->name, "EXP"))
+                        if (strstr(sslCipherPointer->name, "ADH"))
+                        {                   
+                            printf("%s%s%s\n", COL_PURPLE, sslCipherPointer->name, RESET);
+                        }
+                        else if (strstr(sslCipherPointer->name, "EXP"))
                         {                   
                             printf("%s%s%s\n", COL_RED, sslCipherPointer->name, RESET);
                         }
