@@ -13,7 +13,7 @@ command
 ciphers that are supported.
 
 SSLScan is designed to be easy, lean and fast. The output includes preferred
-ciphers of the SSL/TLS service, the certificate and output is in text and XML formats. It is TLS SNI aware when used with a supported version of OpenSSL.
+ciphers of the SSL/TLS service, and text and XML output formats are supported. It is TLS SNI aware when used with a supported version of OpenSSL.
 .SH OPTIONS
 .TP
 .B \-\-help
@@ -111,6 +111,16 @@ Enables workarounds for SSL bugs
 .br
 Output results to an XML file
 .br
+.SH EXAMPLES
+.LP
+Scan a local HTTPS server
+.RS
+.nf
+sslscan localhost
+sslscan 127.0.0.1
+sslscan 127.0.0.1:443
+sslscan [::1]
+sslscan [::1]:443
 .SH AUTHOR
 sslscan was originally written by Ian Ventura-Whiting <fizz@titania.co.uk>.
 .br

@@ -2270,17 +2270,40 @@ int main(int argc, char *argv[])
             mode = mode_single;
 
             // Get host...
+            // IPv6 [] address parsing by DinoTools/phibos
             tempInt = 0;
-            maxSize = strlen(argv[argLoop]);
-            while ((argv[argLoop][tempInt] != 0) && (argv[argLoop][tempInt] != ':'))
+            char *hostString = argv[argLoop];
+
+            maxSize = strlen(hostString);
+            int squareBrackets = false;
+            if (hostString[0] == '[')
+            {
+                squareBrackets = true;
+                // skip the square bracket
+                hostString++;
+            }
+
+            while ((hostString[tempInt] != 0) && ((squareBrackets == true && hostString[tempInt] != ']') || (squareBrackets == false && hostString[tempInt] != ':')))
                 tempInt++;
-            argv[argLoop][tempInt] = 0;
-            strncpy(options.host, argv[argLoop], sizeof(options.host) -1);
+
+                if (squareBrackets == true && hostString[tempInt] == ']')
+                {
+                    hostString[tempInt] = 0;
+                    if (tempInt < maxSize && hostString[tempInt + 1] == ':')
+                    {
+                        tempInt++;
+                        hostString[tempInt] = 0;
+                    }
+                }
+                else
+                    hostString[tempInt] = 0;
+
+            strncpy(options.host, hostString, sizeof(options.host) -1);
 
             // Get port (if it exists)...
             tempInt++;
             if (tempInt < maxSize)
-                options.port = atoi(argv[argLoop] + tempInt);
+                options.port = atoi(hostString + tempInt);
             else if (options.port == 0) {
                 if (options.starttls_ftp)
                     options.port = 21;
@@ -2372,7 +2395,8 @@ int main(int argc, char *argv[])
             printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
             printf("  %s--help%s               Display the  help text  you are  now reading\n\n", COL_GREEN, RESET);
             printf("%sExample:%s\n", COL_BLUE, RESET);
-            printf("  %s%s 127.0.0.1%s\n\n", COL_GREEN, argv[0], RESET);
+            printf("  %s%s 127.0.0.1%s\n", COL_GREEN, argv[0], RESET);
+            printf("  %s%s [::1]%s\n\n", COL_GREEN, argv[0], RESET);
             break;
 
         // Check a single host/port ciphers...
