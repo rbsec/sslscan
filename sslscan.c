@@ -2320,7 +2320,7 @@ int main(int argc, char *argv[])
 
             // Get port (if it exists)...
             tempInt++;
-            if (tempInt < maxSize)
+            if (tempInt < maxSize - 1)
                 options.port = atoi(hostString + tempInt);
             else if (options.port == 0) {
                 if (options.starttls_ftp)
