@@ -4,6 +4,7 @@
  *   fizz@titania.co.uk                                                    *
  *   Copyright 2010 by Michael Boman (michael@michaelboman.org)            *
  *   Copyleft 2010 by Jacob Appelbaum <jacob@appelbaum.net>                *
+ *   Copyleft 2013 by rbsec <robin@rbsec.net>                              *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -62,9 +63,10 @@
 #define ssl_all 0
 #define ssl_v2 1
 #define ssl_v3 2
-#define tls_v10 3
-#define tls_v11 4
-#define tls_v12 5
+#define tls_all 3
+#define tls_v10 4
+#define tls_v11 5
+#define tls_v12 6
 
 // Global comments:
 // The comment style:
@@ -81,12 +83,14 @@ const char *COL_RED = "[31m";
 const char *COL_YELLOW = "[33m";
 const char *COL_BLUE = "[1;34m";
 const char *COL_GREEN = "[32m";
+const char *COL_PURPLE = "[35m";
 #else
 const char *RESET = "";
 const char *COL_RED = "";
 const char *COL_YELLOW = "";
 const char *COL_BLUE = "";
 const char *COL_GREEN = "";
+const char *COL_PURPLE = "";
 #endif
 
 
@@ -96,7 +100,7 @@ const char *program_banner = "                   _\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
 const char *program_version = "1.9-rbsec";
-const char *xml_version = "1.8.3rc3";
+const char *xml_version = "1.9-rbsec";
 
 
 struct sslCipher
@@ -771,6 +775,13 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
 
                         session = *SSL_get_session(ssl);
 
+
+                        if (options->xmlOutput != 0)
+                        {
+                            fprintf(options->xmlOutput, "  <compression supported=\"%d\" />\n",
+                                    session.compress_meth);
+                        }
+
                         if (session.compress_meth == 0)
                         {
                             printf("Compression %sdisabled%s\n\n", COL_GREEN, RESET);
@@ -779,7 +790,6 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         {
                             printf("Compression %senabled%s (CRIME)\n\n", COL_RED, RESET);
                         }
-
 
                         // Disconnect SSL over socket
                         SSL_shutdown(ssl);
@@ -1237,7 +1247,11 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         printf("%s ||\n", sslCipherPointer->name);
                     else
                     {
-                        if (strstr(sslCipherPointer->name, "EXP"))
+                        if (strstr(sslCipherPointer->name, "ADH"))
+                        {                   
+                            printf("%s%s%s\n", COL_PURPLE, sslCipherPointer->name, RESET);
+                        }
+                        else if (strstr(sslCipherPointer->name, "EXP"))
                         {                   
                             printf("%s%s%s\n", COL_RED, sslCipherPointer->name, RESET);
                         }
@@ -2200,31 +2214,31 @@ int main(int argc, char *argv[])
         // StartTLS... FTP
         else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v10;
+            options.sslVersion = tls_all;
             options.starttls_ftp = true;
         }
         // StartTLS... IMAP
         else if (strcmp("--starttls-imap", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v10;
+            options.sslVersion = tls_all;
             options.starttls_imap = true;
         }
         // StartTLS... POP3
         else if (strcmp("--starttls-pop3", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v10;
+            options.sslVersion = tls_all;
             options.starttls_pop3 = true;
         }
         // StartTLS... SMTP
         else if (strcmp("--starttls-smtp", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v10;
+            options.sslVersion = tls_all;
             options.starttls_smtp = true;
         }
         // StartTLS... XMPP
         else if (strcmp("--starttls-xmpp", argv[argLoop]) == 0)
         {
-            options.sslVersion = tls_v10;
+            options.sslVersion = tls_all;
             options.starttls_xmpp = true;
         }
 
@@ -2247,6 +2261,10 @@ int main(int argc, char *argv[])
 		// TLS v12 only...
         else if (strcmp("--tls12", argv[argLoop]) == 0)
             options.sslVersion = tls_v12;
+
+		// TLS (all versions)...
+        else if (strcmp("--tlsall", argv[argLoop]) == 0)
+            options.sslVersion = tls_all;
 
         // SSL Bugs...
         else if (strcmp("--bugs", argv[argLoop]) == 0)
@@ -2377,6 +2395,7 @@ int main(int argc, char *argv[])
             printf("  %s--tls10%s              Only check TLSv1.0 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls11%s              Only check TLSv1.1 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls12%s              Only check TLSv1.2 ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--tlsall%s             Only check TLS ciphers (all versions).\n", COL_GREEN, RESET);
             printf("  %s--pk=<file>%s          A file containing the private key or a PKCS#12 file\n", COL_GREEN, RESET);
             printf("                       containing a private key/certificate pair\n");
             printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
@@ -2431,6 +2450,11 @@ int main(int argc, char *argv[])
 #endif
                 case ssl_v3:
                     populateCipherList(&options, SSLv3_client_method());
+                    break;
+                case tls_all:
+                    populateCipherList(&options, TLSv1_client_method());
+                    populateCipherList(&options, TLSv1_1_client_method());
+                    populateCipherList(&options, TLSv1_2_client_method());
                     break;
                 case tls_v10:
                     populateCipherList(&options, TLSv1_client_method());

@@ -4,6 +4,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Highlight SSLv2 ciphers in output.
 * Highlight RC4 ciphers in output.
 * Highlight weak (<40 bit) and medium (40 < n <= 56) ciphers in output.
+* Highlight anonymous (ADH) ciphers in output.
 * Hide certificate information by default (display with --get-certificate).
 * Hide rejected ciphers by default (display with --failed).
 * Added TLSv1.1 and TLSv1.2 support (merged from twwbond/sslscan).

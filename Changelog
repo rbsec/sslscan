@@ -1,6 +1,21 @@
 Changelog
 =========
 
+Version: 1.9
+Date   : 30/12/2013
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Highlight SSLv2 ciphers
+         > Highlight weak (n <= 40 bit) and medium (40 < n <= 56 bit) ciphers
+         > Highlight RC4 ciphers
+         > Highlight anonymous (ADH) ciphers
+         > Hide certificate information by default
+         > Hide rejected ciphers by default (display with --failed).
+         > Added TLSv1.1 and TLSv1.2 support (merged from twwbond/sslscan).
+         > Compiles if OpenSSL does not support SSLv2 ciphers (merged from digineo/sslscan).
+         > Supports IPv6 hostnames (can be forced with --ipv6).
+         > Check for TLS compression (CRIME, disable with --no-compression)
+
 Version: 1.8.4
 Date   : xx/xx/2010
 Author : Jacob Appelbaum <jacob@appelbaum.net>
