@@ -1247,7 +1247,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         printf("%s ||\n", sslCipherPointer->name);
                     else
                     {
-                        if (strstr(sslCipherPointer->name, "ADH"))
+                        if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
                         {                   
                             printf("%s%s%s\n", COL_PURPLE, sslCipherPointer->name, RESET);
                         }
