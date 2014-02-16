@@ -1983,7 +1983,7 @@ int testHost(struct sslCheckOptions *options)
         fprintf(options->xmlOutput, " <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
 
     // Test renegotiation
-    printf("Testing SSL server %s%s%s on port %s%d%s\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
+    printf("Testing SSL server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
 
     sslCipherPointer = options->ciphers;
     if (options->showClientCiphers == true)
@@ -2001,7 +2001,7 @@ int testHost(struct sslCheckOptions *options)
     }
     if (status == true && options->reneg )
     {
-        printf("\n  %sTLS renegotiation:%s\n", COL_BLUE, RESET);
+        printf("  %sTLS renegotiation:%s\n", COL_BLUE, RESET);
         testRenegotiation(options, TLSv1_client_method());
     }
 
