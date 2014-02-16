@@ -11,6 +11,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Compiles if OpenSSL does not support SSLv2 ciphers (merged from digineo/sslscan).
 * Supports IPv6 hostnames (can be forced with --ipv6).
 * Check for TLS compression (CRIME, disable with --no-compression)
+* Disable cipher suite checking (--no-compression)
 
 #### Building on Kali
 Note that many modern distros (including Kali) ship with a version of OpenSSL that disables support for SSLv2 ciphers. If sslscan is compiled on one of these distros, it will not be able to detect SSLv2.
