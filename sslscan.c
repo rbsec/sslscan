@@ -2151,6 +2151,7 @@ int main(int argc, char *argv[])
     options.pout = false;
     SSL_library_init();
 
+
     // Get program parameters
     for (argLoop = 1; argLoop < argc; argLoop++)
     {
@@ -2192,6 +2193,17 @@ int main(int argc, char *argv[])
         // P Output
         else if (strcmp("-p", argv[argLoop]) == 0)
             options.pout = true;
+
+        // Disable coloured output
+        else if ((strcmp("--no-colour", argv[argLoop]) == 0) || (strcmp("--no-color", argv[argLoop]) == 0))
+        {
+            RESET = "";
+            COL_RED = "";
+            COL_YELLOW = "";
+            COL_BLUE = "";
+            COL_GREEN = "";
+            COL_PURPLE = "";
+        }
 
         // Client Certificates
         else if (strncmp("--certs=", argv[argLoop], 8) == 0)
@@ -2425,6 +2437,7 @@ int main(int argc, char *argv[])
             printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
+            printf("  %s--no-colour%s          Disable coloured output.\n", COL_GREEN, RESET);
             printf("  %s--help%s               Display the  help text  you are  now reading\n\n", COL_GREEN, RESET);
             printf("%sExample:%s\n", COL_BLUE, RESET);
             printf("  %s%s 127.0.0.1%s\n", COL_GREEN, argv[0], RESET);
