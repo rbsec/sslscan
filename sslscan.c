@@ -122,6 +122,7 @@ struct sslCheckOptions
     int noFailed;
     int getCertificate;
     int showClientCiphers;
+    int ciphersuites;
     int reneg;
     int compression;
     int starttls_ftp;
@@ -1987,7 +1988,7 @@ int testHost(struct sslCheckOptions *options)
     sslCipherPointer = options->ciphers;
     if (options->showClientCiphers == true)
     {
-        printf("  %sSupported Client Cipher(s):%s\n", COL_BLUE, RESET);
+        printf("\n  %sSupported Client Cipher(s):%s\n", COL_BLUE, RESET);
         while ((sslCipherPointer != 0) && (status == true))
         {
             printf("    %s\n",sslCipherPointer->name);
@@ -2010,53 +2011,57 @@ int testHost(struct sslCheckOptions *options)
         testCompression(options, TLSv1_client_method());
     }
 
-    // Test supported ciphers...
-    printf("  %sSupported Server Cipher(s):%s\n", COL_BLUE, RESET);
-    if ((options->http == true) && (options->pout == true))
-        printf("|| Status || HTTP Code || Version || Bits || Cipher ||\n");
-    else if (options->pout == true)
-        printf("|| Status || Version || Bits || Cipher ||\n");
-    sslCipherPointer = options->ciphers;
-    while ((sslCipherPointer != 0) && (status == true))
+    if (options->ciphersuites)
     {
-
-        // Setup Context Object...
-        options->ctx = SSL_CTX_new(sslCipherPointer->sslMethod);
-        if (options->ctx != NULL)
+        // Test supported ciphers...
+        printf("  %sSupported Server Cipher(s):%s\n", COL_BLUE, RESET);
+        if ((options->http == true) && (options->pout == true))
+            printf("|| Status || HTTP Code || Version || Bits || Cipher ||\n");
+        else if (options->pout == true)
+            printf("|| Status || Version || Bits || Cipher ||\n");
+        sslCipherPointer = options->ciphers;
+        while ((sslCipherPointer != 0) && (status == true))
         {
 
-            // SSL implementation bugs/workaround
-            if (options->sslbugs)
-                SSL_CTX_set_options(options->ctx, SSL_OP_ALL | 0);
+            // Setup Context Object...
+            options->ctx = SSL_CTX_new(sslCipherPointer->sslMethod);
+            if (options->ctx != NULL)
+            {
+
+                // SSL implementation bugs/workaround
+                if (options->sslbugs)
+                    SSL_CTX_set_options(options->ctx, SSL_OP_ALL | 0);
+                else
+                    SSL_CTX_set_options(options->ctx, 0);
+
+                // Load Certs if required...
+                if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
+                    status = loadCerts(options);
+
+                // Test
+                if (status == true)
+                    status = testCipher(options, sslCipherPointer);
+
+                // Free CTX Object
+                SSL_CTX_free(options->ctx);
+            }
+
+            // Error Creating Context Object
             else
-                SSL_CTX_set_options(options->ctx, 0);
+            {
+                status = false;
+                printf("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            }
 
-            // Load Certs if required...
-            if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
-                status = loadCerts(options);
+            sslCipherPointer = sslCipherPointer->next;
 
-            // Test
-            if (status == true)
-                status = testCipher(options, sslCipherPointer);
-
-            // Free CTX Object
-            SSL_CTX_free(options->ctx);
         }
-    
-        // Error Creating Context Object
-        else
-        {
-            status = false;
-            printf("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
-        }
-
-        sslCipherPointer = sslCipherPointer->next;
+        printf("\n");
     }
-
     if (status == true)
     {
         // Test preferred ciphers...
-        printf("\n  %sPreferred Server Cipher(s):%s\n", COL_BLUE, RESET);
+        printf("  %sPreferred Server Cipher(s):%s\n", COL_BLUE, RESET);
         if (options->pout == true)
             printf("|| Version || Bits || Cipher ||\n");
         switch (options->sslVersion)
@@ -2130,6 +2135,7 @@ int main(int argc, char *argv[])
     options.noFailed = true;
     options.getCertificate = false;
     options.showClientCiphers = false;
+    options.ciphersuites = true;
     options.reneg = true;
     options.compression = true;
     options.starttls_ftp = false;
@@ -2198,6 +2204,12 @@ int main(int argc, char *argv[])
         // Private Key Password
         else if (strncmp("--pkpass=", argv[argLoop], 9) == 0)
             options.privateKeyPassword = argv[argLoop] +9;
+        
+        // Should we check for supported cipher suites
+        else if (strcmp("--no-ciphersuites", argv[argLoop]) == 0)
+        {
+            options.ciphersuites = false;
+        }
 
         // Should we check for TLS renegotiation?
         else if (strcmp("--no-renegotiation", argv[argLoop]) == 0)
@@ -2400,6 +2412,7 @@ int main(int argc, char *argv[])
             printf("                       containing a private key/certificate pair\n");
             printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted client certificates\n", COL_GREEN, RESET);
+            printf("  %s--no-ciphersuites%s    Only check for supported SSL/TLS versions, not ciphers\n", COL_GREEN, RESET);
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
