@@ -1081,7 +1081,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         if (options->pout == true)
                             printf("|| Accepted || ");
                         else
-                            printf("Accepted  ");
+                            printf("    Accepted  ");
                         if (options->http == true)
                         {
 
@@ -1389,7 +1389,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             else if (sslMethod == TLSv1_2_client_method())
                             {
                                 if (options->xmlOutput != 0)
-                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLSv2\" bits=\"");
+                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLSv1.2\" bits=\"");
                                 if (options->pout == true)
                                     printf("|| TLSv1.2 || ");
                                 else
@@ -2087,6 +2087,15 @@ int testHost(struct sslCheckOptions *options)
 #endif
             case ssl_v3:
                 status = defaultCipher(options, SSLv3_client_method());
+                break;
+            case tls_all:
+                status = true;
+                if (status != false)
+                    status = defaultCipher(options, TLSv1_client_method());
+                if (status != false)
+                    status = defaultCipher(options, TLSv1_1_client_method());
+                if (status != false)
+                    status = defaultCipher(options, TLSv1_2_client_method());
                 break;
             case tls_v10:
                 status = defaultCipher(options, TLSv1_client_method());
