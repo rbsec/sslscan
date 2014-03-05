@@ -1389,7 +1389,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             else if (sslMethod == TLSv1_2_client_method())
                             {
                                 if (options->xmlOutput != 0)
-                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLSv2\" bits=\"");
+                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLSv1.2\" bits=\"");
                                 if (options->pout == true)
                                     printf("|| TLSv1.2 || ");
                                 else
