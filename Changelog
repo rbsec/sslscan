@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Version: 1.9.1
+Date   : 06/03/2014
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Added --tlsall option to only scan TLS ciphersuites.
+         > Scan all TLS versions by default for STARTTLS services.
+         > Added support for IPv6 addresses using square bracket notation [:1].
+         > Highlight anonymous (ADH and AECDH) ciphers in output.
+         > Added option to disable colour in output (--no-colour).
+         > Removed undocumented -p output option.
+         > Removed old references to titania.co.uk domain.
+
 Version: 1.9
 Date   : 30/12/2013
 Author : rbsec <robin@rbsec.net>

@@ -13,6 +13,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Check for TLS compression (CRIME, disable with --no-compression)
 * Disable cipher suite checking (--no-compression)
 * Disable coloured output (--no-colour)
+* Removed undocumented -p output option
 
 #### Building on Kali
 Note that many modern distros (including Kali) ship with a version of OpenSSL that disables support for SSLv2 ciphers. If sslscan is compiled on one of these distros, it will not be able to detect SSLv2.
