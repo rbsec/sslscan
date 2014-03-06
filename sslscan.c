@@ -99,8 +99,8 @@ const char *program_banner = "                   _\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
-const char *program_version = "1.9-rbsec";
-const char *xml_version = "1.9-rbsec";
+const char *program_version = "1.9.1-rbsec";
+const char *xml_version = "1.9.1-rbsec";
 
 
 struct sslCipher
@@ -330,7 +330,7 @@ int tcpConnect(struct sslCheckOptions *options)
             printf("%s    ERROR: The host %s on port %d did not appear to be an SMTP service.%s\n", COL_RED, options->host, options->port, RESET);
             return 0;
         }
-        send(socketDescriptor, "EHLO titania.co.uk\r\n", 20, 0);
+        send(socketDescriptor, "EHLO example.org\r\n", 20, 0);
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
         if (strncmp(buffer, "250", 3) != 0)
@@ -2311,7 +2311,7 @@ int main(int argc, char *argv[])
         }
 
         // Output file header...
-        fprintf(options.xmlOutput, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<document title=\"SSLScan Results\" version=\"%s\" web=\"http://www.titania.co.uk\">\n", xml_version);
+        fprintf(options.xmlOutput, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<document title=\"SSLScan Results\" version=\"%s\" web=\"http://github.com/rbsec/sslscan\">\n", xml_version);
     }
 
     switch (mode)
