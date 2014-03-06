@@ -1081,7 +1081,14 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         if (options->pout == true)
                             printf("|| Accepted || ");
                         else
-                            printf("Accepted  ");
+                            if (options->noFailed == false)
+                            {
+                                printf("%sAccepted%s  ", COL_GREEN, RESET);
+                            }
+                            else
+                            {
+                                printf("Accepted  ");
+                            }
                         if (options->http == true)
                         {
 
@@ -1135,14 +1142,14 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                             if (options->pout == true)
                                 printf("|| Rejected || N/A || ");
                             else
-                                printf("    Rejected  N/A              ");
+                                printf("Rejected  N/A              ");
                         }
                         else
                         {
                             if (options->pout == true)
                                 printf("|| Rejected || ");
                             else
-                                printf("    Rejected  ");
+                                printf("Rejected  ");
                         }
                     }
                     else
@@ -1156,14 +1163,14 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                             if (options->pout == true)
                                 printf("|| Failed || N/A || ");
                             else
-                                printf("    Failed    N/A              ");
+                                printf("Failed    N/A              ");
                         }
                         else
                         {
                             if (options->pout == true)
                                 printf("|| Failed || ");
                             else
-                                printf("    Failed    ");
+                                printf("Failed    ");
                         }
                     }
                     if (options->xmlOutput != 0)
