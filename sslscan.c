@@ -2067,7 +2067,6 @@ int testHost(struct sslCheckOptions *options)
         switch (options->sslVersion)
         {
             case ssl_all:
-                status = true;
 #ifndef OPENSSL_NO_SSL2
                 status = defaultCipher(options, SSLv2_client_method());
 #endif
@@ -2089,7 +2088,6 @@ int testHost(struct sslCheckOptions *options)
                 status = defaultCipher(options, SSLv3_client_method());
                 break;
             case tls_all:
-                status = true;
                 if (status != false)
                     status = defaultCipher(options, TLSv1_client_method());
                 if (status != false)
