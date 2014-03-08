@@ -1,0 +1,97 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BUFFERSIZE	sslscan.c	61;"	d	file:
+COL_BLUE	sslscan.c	/^const char *COL_BLUE = "[1;34m";$/;"	v
+COL_BLUE	sslscan.c	/^const char *COL_BLUE = "";$/;"	v
+COL_GREEN	sslscan.c	/^const char *COL_GREEN = "[32m";$/;"	v
+COL_GREEN	sslscan.c	/^const char *COL_GREEN = "";$/;"	v
+COL_PURPLE	sslscan.c	/^const char *COL_PURPLE = "[35m";$/;"	v
+COL_PURPLE	sslscan.c	/^const char *COL_PURPLE = "";$/;"	v
+COL_RED	sslscan.c	/^const char *COL_RED = "[31m";$/;"	v
+COL_RED	sslscan.c	/^const char *COL_RED = "";$/;"	v
+COL_YELLOW	sslscan.c	/^const char *COL_YELLOW = "[33m";$/;"	v
+COL_YELLOW	sslscan.c	/^const char *COL_YELLOW = "";$/;"	v
+RESET	sslscan.c	/^const char *RESET = "[0m";            \/\/ DEFAULT$/;"	v
+RESET	sslscan.c	/^const char *RESET = "";$/;"	v
+SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION	sslscan.c	674;"	d	file:
+SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION	sslscan.c	671;"	d	file:
+bits	sslscan.c	/^    int bits;$/;"	m	struct:sslCipher	file:
+ciphers	sslscan.c	/^    struct sslCipher *ciphers;$/;"	m	struct:sslCheckOptions	typeref:struct:sslCheckOptions::sslCipher	file:
+ciphersuites	sslscan.c	/^    int ciphersuites;$/;"	m	struct:sslCheckOptions	file:
+clientCertsFile	sslscan.c	/^    char *clientCertsFile;$/;"	m	struct:sslCheckOptions	file:
+compression	sslscan.c	/^    int compression;$/;"	m	struct:sslCheckOptions	file:
+ctx	sslscan.c	/^    SSL_CTX *ctx;$/;"	m	struct:sslCheckOptions	file:
+defaultCipher	sslscan.c	/^int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f
+description	sslscan.c	/^    char description[512];$/;"	m	struct:sslCipher	file:
+false	sslscan.c	53;"	d	file:
+fileExists	sslscan.c	/^int fileExists(char *fileName)$/;"	f
+freeRenegotiationOutput	sslscan.c	/^int freeRenegotiationOutput( struct renegotiationOutput *myRenOut )$/;"	f
+getCertificate	sslscan.c	/^    int getCertificate;$/;"	m	struct:sslCheckOptions	file:
+getCertificate	sslscan.c	/^int getCertificate(struct sslCheckOptions *options)$/;"	f
+host	sslscan.c	/^    char host[512];$/;"	m	struct:sslCheckOptions	file:
+hostStruct	sslscan.c	/^    struct hostent *hostStruct;$/;"	m	struct:sslCheckOptions	typeref:struct:sslCheckOptions::hostent	file:
+http	sslscan.c	/^    int http;$/;"	m	struct:sslCheckOptions	file:
+ipv4	sslscan.c	/^    int ipv4;$/;"	m	struct:sslCheckOptions	file:
+ipv6	sslscan.c	/^    int ipv6;$/;"	m	struct:sslCheckOptions	file:
+loadCerts	sslscan.c	/^int loadCerts(struct sslCheckOptions *options)$/;"	f
+main	sslscan.c	/^int main(int argc, char *argv[])$/;"	f
+mode_help	sslscan.c	56;"	d	file:
+mode_multiple	sslscan.c	59;"	d	file:
+mode_single	sslscan.c	58;"	d	file:
+mode_version	sslscan.c	57;"	d	file:
+name	sslscan.c	/^    const char *name;$/;"	m	struct:sslCipher	file:
+newRenegotiationOutput	sslscan.c	/^struct renegotiationOutput * newRenegotiationOutput( void )$/;"	f
+next	sslscan.c	/^    struct sslCipher *next;$/;"	m	struct:sslCipher	typeref:struct:sslCipher::sslCipher	file:
+noFailed	sslscan.c	/^    int noFailed;$/;"	m	struct:sslCheckOptions	file:
+outputRenegotiation	sslscan.c	/^int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOutput *outputData)$/;"	f
+password_callback	sslscan.c	/^static int password_callback(char *buf, int size, int rwflag, void *userdata)$/;"	f	file:
+populateCipherList	sslscan.c	/^int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f
+port	sslscan.c	/^    int port;$/;"	m	struct:sslCheckOptions	file:
+privateKeyFile	sslscan.c	/^    char *privateKeyFile;$/;"	m	struct:sslCheckOptions	file:
+privateKeyPassword	sslscan.c	/^    char *privateKeyPassword;$/;"	m	struct:sslCheckOptions	file:
+program_banner	sslscan.c	/^const char *program_banner = "                   _\\n"$/;"	v
+program_version	sslscan.c	/^const char *program_version = "1.9.1-rbsec";$/;"	v
+readLine	sslscan.c	/^void readLine(FILE *input, char *lineFromFile, int maxSize)$/;"	f
+readOrLogAndClose	sslscan.c	/^int readOrLogAndClose(int fd, void* buffer, size_t len, const struct sslCheckOptions *options)$/;"	f
+reneg	sslscan.c	/^    int reneg;$/;"	m	struct:sslCheckOptions	file:
+renegotiationOutput	sslscan.c	/^struct renegotiationOutput$/;"	s	file:
+secure	sslscan.c	/^    int secure;$/;"	m	struct:renegotiationOutput	file:
+serverAddress	sslscan.c	/^    struct sockaddr_in serverAddress;$/;"	m	struct:sslCheckOptions	typeref:struct:sslCheckOptions::sockaddr_in	file:
+serverAddress6	sslscan.c	/^    struct sockaddr_in6 serverAddress6;$/;"	m	struct:sslCheckOptions	typeref:struct:sslCheckOptions::sockaddr_in6	file:
+showClientCiphers	sslscan.c	/^    int showClientCiphers;$/;"	m	struct:sslCheckOptions	file:
+sslCheckOptions	sslscan.c	/^struct sslCheckOptions$/;"	s	file:
+sslCipher	sslscan.c	/^struct sslCipher$/;"	s	file:
+sslMethod	sslscan.c	/^    const SSL_METHOD *sslMethod;$/;"	m	struct:sslCipher	file:
+sslVersion	sslscan.c	/^    int sslVersion;$/;"	m	struct:sslCheckOptions	file:
+ssl_all	sslscan.c	63;"	d	file:
+ssl_v2	sslscan.c	64;"	d	file:
+ssl_v3	sslscan.c	65;"	d	file:
+sslbugs	sslscan.c	/^    int sslbugs;$/;"	m	struct:sslCheckOptions	file:
+starttls_ftp	sslscan.c	/^    int starttls_ftp;$/;"	m	struct:sslCheckOptions	file:
+starttls_imap	sslscan.c	/^    int starttls_imap;$/;"	m	struct:sslCheckOptions	file:
+starttls_pop3	sslscan.c	/^    int starttls_pop3;$/;"	m	struct:sslCheckOptions	file:
+starttls_smtp	sslscan.c	/^    int starttls_smtp;$/;"	m	struct:sslCheckOptions	file:
+starttls_xmpp	sslscan.c	/^    int starttls_xmpp;$/;"	m	struct:sslCheckOptions	file:
+supported	sslscan.c	/^    int supported;$/;"	m	struct:renegotiationOutput	file:
+targets	sslscan.c	/^    int targets;$/;"	m	struct:sslCheckOptions	file:
+tcpConnect	sslscan.c	/^int tcpConnect(struct sslCheckOptions *options)$/;"	f
+testCipher	sslscan.c	/^int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPointer)$/;"	f
+testCompression	sslscan.c	/^int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f
+testHost	sslscan.c	/^int testHost(struct sslCheckOptions *options)$/;"	f
+testRenegotiation	sslscan.c	/^int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f
+tls_all	sslscan.c	66;"	d	file:
+tls_reneg_init	sslscan.c	/^void tls_reneg_init(struct sslCheckOptions *options)$/;"	f
+tls_v10	sslscan.c	67;"	d	file:
+tls_v11	sslscan.c	68;"	d	file:
+tls_v12	sslscan.c	69;"	d	file:
+true	sslscan.c	54;"	d	file:
+use_unsafe_renegotiation_flag	sslscan.c	/^static int use_unsafe_renegotiation_flag = 0;$/;"	v	file:
+use_unsafe_renegotiation_op	sslscan.c	/^static int use_unsafe_renegotiation_op = 0;$/;"	v	file:
+verbose	sslscan.c	/^    int verbose;$/;"	m	struct:sslCheckOptions	file:
+version	sslscan.c	/^    char *version;$/;"	m	struct:sslCipher	file:
+xmlOutput	sslscan.c	/^    FILE *xmlOutput;$/;"	m	struct:sslCheckOptions	file:
+xml_version	sslscan.c	/^const char *xml_version = "1.9.1-rbsec";$/;"	v
