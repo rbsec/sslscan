@@ -1,11 +1,16 @@
+# set gcc as default if CC is not set
+ifndef $CC
+  CC=gcc
+endif
+
 SRCS = sslscan.c
 BINPATH = /usr/bin/
 MANPATH = /usr/share/man/
 CFLAGS=-I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/
 LDFLAGS=-L/usr/local/ssl/lib/
 
-all:
-	gcc -Wall ${LDFLAGS} ${SRCS} ${CFLAGS} -lssl -lcrypto -o sslscan
+all: $(SRCS)
+	$(CC) -Wall ${LDFLAGS} ${SRCS} ${CFLAGS} -lssl -lcrypto -o sslscan
 
 install:
 	cp sslscan $(BINPATH)
