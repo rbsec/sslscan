@@ -5,6 +5,7 @@
  *   Copyright 2010 by Michael Boman (michael@michaelboman.org)            *
  *   Copyleft 2010 by Jacob Appelbaum <jacob@appelbaum.net>                *
  *   Copyleft 2013 by rbsec <robin@rbsec.net>                              *
+ *   Copyleft 2014 by Julian Kornberger <jk+github@digineo.de>             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -67,6 +68,11 @@
 #define tls_v10 4
 #define tls_v11 5
 #define tls_v12 6
+
+// Macros for various outputs
+#define printf_error(format, ...)   fprintf(stderr, format, ##__VA_ARGS__)
+#define printf_xml(format, ...)     if (options->xmlOutput) fprintf(options->xmlOutput, format, ##__VA_ARGS__)
+#define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
 
 // Global comments:
 // The comment style:
@@ -175,7 +181,7 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
 
     options->ctx = SSL_CTX_new(sslMethod);
     if (options->ctx == NULL) {
-        printf("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+        printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
         return false;
     }
 
@@ -183,7 +189,7 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
 
     ssl = SSL_new(options->ctx);
     if (ssl == NULL) {
-        printf("%sERROR: Could not create SSL object.%s\n", COL_RED, RESET);
+        printf_error("%sERROR: Could not create SSL object.%s\n", COL_RED, RESET);
         SSL_CTX_free(options->ctx);
         return false;
     }
@@ -261,11 +267,11 @@ int readOrLogAndClose(int fd, void* buffer, size_t len, const struct sslCheckOpt
     n = recv(fd, buffer, len - 1, 0);
 
     if (n < 0) {
-        printf("%s    ERROR: error reading from %s:%d: %s%s\n", COL_RED, options->host, options->port, strerror(errno), RESET);
+        printf_error("%s    ERROR: error reading from %s:%d: %s%s\n", COL_RED, options->host, options->port, strerror(errno), RESET);
         close(fd);
         return 0;
     } else if (n == 0) {
-        printf("%s    ERROR: unexpected EOF reading from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+        printf_error("%s    ERROR: unexpected EOF reading from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
         close(fd);
         return 0;
     } else {
@@ -297,7 +303,7 @@ int tcpConnect(struct sslCheckOptions *options)
 
     if(socketDescriptor < 0)
     {
-        printf("%s    ERROR: Could not open a socket.%s\n", COL_RED, RESET);
+        printf_error("%s    ERROR: Could not open a socket.%s\n", COL_RED, RESET);
         return 0;
     }
 
@@ -313,7 +319,7 @@ int tcpConnect(struct sslCheckOptions *options)
 
     if(status < 0)
     {
-        printf("%s    ERROR: Could not open a connection to host %s on port %d.%s\n", COL_RED, options->host, options->port, RESET);
+        printf_error("%s    ERROR: Could not open a connection to host %s on port %d.%s\n", COL_RED, options->host, options->port, RESET);
         return 0;
     }
 
@@ -373,11 +379,8 @@ int tcpConnect(struct sslCheckOptions *options)
         send(socketDescriptor, xmpp_setup, strlen(xmpp_setup), 0);
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
-        if (options->verbose)
-        {
-            printf("Server reported: %s\n", buffer);
-            printf("Attempting to STARTTLS\n");
-        }
+        
+        printf_verbose("Server reported: %s\nAttempting to STARTTLS\n", buffer);
 
         send(socketDescriptor, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\r\n", 53, 0);
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
@@ -388,13 +391,9 @@ int tcpConnect(struct sslCheckOptions *options)
         If we find the end of the stream features before we find tls, we may
         not have STARTTLS support. */
         if (strstr(buffer, "urn:ietf:params:xml:ns:xmpp-tls")) {
-            if (options->verbose) {
-                printf("It appears that xmpp-tls was detected.\n");
-            }
+            printf_verbose("It appears that xmpp-tls was detected.\n");
         } else if (strstr(buffer, "/stream:features")) {
-                if (options->verbose) {
-                printf("It appears that xmpp-tls was not detected.\n");
-                }
+            printf_verbose("It appears that xmpp-tls was not detected.\n");
         }
 
         if (options->verbose)
@@ -402,13 +401,10 @@ int tcpConnect(struct sslCheckOptions *options)
 
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
-        if (strstr(buffer, "<proceed")) {
-            if (options->verbose) {
-                printf("It appears that xmpp-tls is ready for TLS.\n");
-            }
-        if (options->verbose)
-            printf("Server reported: %s\n", buffer);
-        }
+        if (strstr(buffer, "<proceed"))
+            printf_verbose("It appears that xmpp-tls is ready for TLS.\n");
+        
+        printf_verbose("Server reported: %s\n", buffer);
 
     }
 
@@ -418,8 +414,8 @@ int tcpConnect(struct sslCheckOptions *options)
         tlsStarted = 1;
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
-        if (options->verbose)
-            printf("Server reported: %s\n", buffer);
+        printf_verbose("Server reported: %s\n", buffer);
+
         send(socketDescriptor, "STLS\r\n", 6, 0);
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
@@ -428,12 +424,9 @@ int tcpConnect(struct sslCheckOptions *options)
         // Or
         // '+OK Begin TLS negotiation, mate'
         if (strstr(buffer, "+OK Begin")) {
-            if (options->verbose) {
-                printf("It appears that the POP3 server is ready for TLS.\n");
-            }
+            printf_verbose("It appears that the POP3 server is ready for TLS.\n");
         }
-        if (options->verbose)
-            printf("Server reported: %s\n", buffer);
+        printf_verbose("Server reported: %s\n", buffer);
     }
 
     // Setup an IMAP STARTTLS socket
@@ -445,22 +438,17 @@ int tcpConnect(struct sslCheckOptions *options)
         // Fetch the IMAP banner
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
-        if (options->verbose)
-            printf("Server banner: %s\n", buffer);
+        printf_verbose("Server banner: %s\n", buffer);
+        
         // Attempt to STARTTLS
         send(socketDescriptor, ". STARTTLS\r\n", 12, 0);
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
-        if (strstr(buffer, ". OK") || strstr(buffer, " . OK")) {
-            if (options->verbose) {
-                printf("STARTLS IMAP setup complete.\n");
-                printf("Server reported: %s\n", buffer);
-            }
-        } else {
-            if (options->verbose) {
-                printf("STARTLS IMAP setup not complete.\n");
-                printf("Server reported: %s\n", buffer);
-            }
+        
+        if (strstr(buffer, ". OK") || strstr(buffer, " . OK")){
+            printf_verbose("STARTLS IMAP setup complete.\nServer reported: %s\n", buffer);
+        } else{
+            printf_verbose("STARTLS IMAP setup not complete.\nServer reported: %s\n", buffer);
         }
     }
 
@@ -472,22 +460,18 @@ int tcpConnect(struct sslCheckOptions *options)
         // Fetch the server banner
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
-        if (options->verbose)
-            printf("Server banner: %s\n", buffer);
+        printf_verbose("Server banner: %s\n", buffer);
 
         // Send TLS request
         send(socketDescriptor, "AUTH TLS\r\n", 10, 0);
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
         if (strstr(buffer, "234 AUTH TLS successful")) {
-            if (options->verbose)
-                printf("STARTLS FTP setup complete.\n");
+            printf_verbose("STARTLS FTP setup complete.\n");
         } else {
-            if (options->verbose)
-                printf("STARTLS FTP setup possibly not complete.\n");
+            printf_verbose("STARTLS FTP setup possibly not complete.\n");
         }
-        if (options->verbose)
-            printf("Server reported: %s\n", buffer);
+        printf_verbose("Server reported: %s\n", buffer);
     }
 
     // Return
@@ -623,7 +607,7 @@ int loadCerts(struct sslCheckOptions *options)
 int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOutput *outputData)
 {
 
-    if (options->xmlOutput != 0)
+    if (options->xmlOutput)
     {
         fprintf(options->xmlOutput, "  <renegotiation supported=\"%d\" secure=\"%d\" />\n",
                outputData->supported, outputData->secure);
@@ -683,31 +667,27 @@ void tls_reneg_init(struct sslCheckOptions *options)
 
     long version = SSLeay();
     if (version >= 0x009080c0L && version < 0x009080d0L) {
-        if (options->verbose)
-            printf("OpenSSL %s looks like version 0.9.8l; I will try SSL3_FLAGS to enable renegotation.\n",
-                SSLeay_version(SSLEAY_VERSION));
+        printf_verbose("OpenSSL %s looks like version 0.9.8l; I will try SSL3_FLAGS to enable renegotation.\n",
+            SSLeay_version(SSLEAY_VERSION));
         use_unsafe_renegotiation_flag = 1;
         use_unsafe_renegotiation_op = 1;
     } else if (version >= 0x009080d0L) {
-        if (options->verbose)
-            printf("OpenSSL %s looks like version 0.9.8m or later; "
+        printf_verbose("OpenSSL %s looks like version 0.9.8m or later; "
             "I will try SSL_OP to enable renegotiation\n",
         SSLeay_version(SSLEAY_VERSION));
         use_unsafe_renegotiation_op = 1;
     } else if (version < 0x009080c0L) {
-        if (options->verbose)
-            printf("OpenSSL %s [%lx] looks like it's older than "
-                 "0.9.8l, but some vendors have backported 0.9.8l's "
-                 "renegotiation code to earlier versions, and some have "
-                 "backported the code from 0.9.8m or 0.9.8n.  I'll set both "
-                 "SSL3_FLAGS and SSL_OP just to be safe.\n",
-                 SSLeay_version(SSLEAY_VERSION), version);
+        printf_verbose("OpenSSL %s [%lx] looks like it's older than "
+            "0.9.8l, but some vendors have backported 0.9.8l's "
+            "renegotiation code to earlier versions, and some have "
+            "backported the code from 0.9.8m or 0.9.8n.  I'll set both "
+            "SSL3_FLAGS and SSL_OP just to be safe.\n",
+            SSLeay_version(SSLEAY_VERSION), version);
         use_unsafe_renegotiation_flag = 1;
         use_unsafe_renegotiation_op = 1;
     } else {
-        if (options->verbose)
-            printf("OpenSSL %s has version %lx\n",
-               SSLeay_version(SSLEAY_VERSION), version);
+        printf_verbose("OpenSSL %s has version %lx\n",
+            SSLeay_version(SSLEAY_VERSION), version);
     }
 
 #ifdef SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
@@ -776,11 +756,8 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         session = *SSL_get_session(ssl);
 
 
-                        if (options->xmlOutput != 0)
-                        {
-                            fprintf(options->xmlOutput, "  <compression supported=\"%d\" />\n",
-                                    session.compress_meth);
-                        }
+                        printf_xml("  <compression supported=\"%d\" />\n",
+                            session.compress_meth);
 
                         if (session.compress_meth == 0)
                         {
@@ -800,14 +777,14 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                     else
                     {
                         status = false;
-                        fprintf(stderr, "%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                        printf_error("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
                     }
                 }
             }
             else
             {
                 status = false;
-                fprintf(stderr, "%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+                printf_error("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
             }
             // Free CTX Object
             SSL_CTX_free(options->ctx);
@@ -816,7 +793,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
         else
         {
             status = false;
-            fprintf(stderr, "%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
         }
 
         // Disconnect from host
@@ -825,7 +802,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     else
     {
         // Could not connect
-        fprintf(stderr, "%sERROR: Could not connect.%s\n", COL_RED, RESET);
+        printf_error("%sERROR: Could not connect.%s\n", COL_RED, RESET);
         status = false;
         exit(status);
     }
@@ -906,13 +883,11 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                       /* Yes, we know what we are doing here.  No, we do not treat a renegotiation
                        * as authenticating any earlier-received data. */
                       if (use_unsafe_renegotiation_flag) {
-                        if(options->verbose)
-                            printf("use_unsafe_renegotiation_flag\n");
+                        printf_verbose("use_unsafe_renegotiation_flag\n");
                         ssl->s3->flags |= SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
                       }
                       if (use_unsafe_renegotiation_op) {
-                        if(options->verbose)
-                            printf("use_unsafe_renegotiation_op\n");
+                        printf_verbose("use_unsafe_renegotiation_op\n");
                         SSL_set_options(ssl,
                                         SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
                       }
@@ -923,8 +898,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
 #if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                             // SSL_get_secure_renegotiation_support() appeared first in OpenSSL 0.9.8m
-                            if(options->verbose)
-                                printf("Attempting secure_renegotiation_support()");
+                            printf_verbose("Attempting secure_renegotiation_support()");
                             renOut->secure = SSL_get_secure_renegotiation_support(ssl);
                             if( renOut->secure )
                             {
@@ -941,12 +915,10 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
                                 // assume ssl is connected and error free up to here
                                 //setBlocking(ssl); // this is unnecessary if it is already blocking·
-                                if(options->verbose)
-                                    printf("Attempting SSL_renegotiate(ssl)\n");
+                                printf_verbose("Attempting SSL_renegotiate(ssl)\n");
                                 SSL_renegotiate(ssl); // Ask to renegotiate the connection
                                 // This hangs when an 'encrypted alert' is sent by the server
-                                if(options->verbose)
-                                    printf("Attempting SSL_do_handshake(ssl)\n");
+                                printf_verbose("Attempting SSL_do_handshake(ssl)\n");
                                 SSL_do_handshake(ssl); // Send renegotiation request to server //TODO :: XXX hanging here
 
                                 if (ssl->state == SSL_ST_OK)
@@ -954,7 +926,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                                     res = SSL_do_handshake(ssl); // Send renegotiation request to server
                                     if( res != 1 )
                                     {
-                                        fprintf(stderr, "\n\nSSL_do_handshake() call failed\n");
+                                        printf_error("\n\nSSL_do_handshake() call failed\n");
                                     }
                                     if (ssl->state == SSL_ST_OK)
                                     {
@@ -964,7 +936,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                                     } else {
                                         renOut->supported = false;
                                         status = false;
-                                        fprintf(stderr, "\n\nFailed to complete renegotiation\n");
+                                        printf_error("\n\nFailed to complete renegotiation\n");
                                     }
                                 } else {
                                     status = false;
@@ -984,7 +956,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                     {
                         status = false;
                         renOut->supported = false;
-                        fprintf(stderr, "%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                        printf_error("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
                     }
                 }
             }
@@ -992,7 +964,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
             {
                 status = false;
                 renOut->supported = false;
-                fprintf(stderr, "%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+                printf_error("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
             }
             // Free CTX Object
             SSL_CTX_free(options->ctx);
@@ -1002,7 +974,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
         {
             status = false;
             renOut->supported = false;
-            fprintf(stderr, "%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
         }
 
         // Disconnect from host
@@ -1011,7 +983,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
     else
     {
         // Could not connect
-        fprintf(stderr, "%sERROR: Could not connect.%s\n", COL_RED, RESET);
+        printf_error("%sERROR: Could not connect.%s\n", COL_RED, RESET);
         renOut->supported = false;
         status = false;
         freeRenegotiationOutput( renOut );
@@ -1071,11 +1043,10 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                 // Show Cipher Status
                 if (!((options->noFailed == true) && (cipherStatus != 1)))
                 {
-                    if (options->xmlOutput != 0)
-                        fprintf(options->xmlOutput, "  <cipher status=\"");
+                    printf_xml("  <cipher status=\"");
                     if (cipherStatus == 1)
                     {
-                        if (options->xmlOutput != 0)
+                        if (options->xmlOutput)
                         {
                             fprintf(options->xmlOutput, "accepted\"");
                         }
@@ -1113,7 +1084,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                                     loop++;
                                     printf(" ");
                                 }
-                                if (options->xmlOutput != 0)
+                                if (options->xmlOutput)
                                     fprintf(options->xmlOutput, " http=\"%s\"", buffer + 9);
                             }
                             else
@@ -1125,7 +1096,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     }
                     else if (cipherStatus == 0)
                     {
-                        if (options->xmlOutput != 0)
+                        if (options->xmlOutput)
                             fprintf(options->xmlOutput, "rejected\"");
                         if (options->http == true)
                         {
@@ -1138,10 +1109,8 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     }
                     else
                     {
-                        if (options->verbose == true)
-                            printf("SSL_get_error(ssl, cipherStatus) said: %d\n", SSL_get_error(ssl, cipherStatus));
-                        if (options->xmlOutput != 0)
-                            fprintf(options->xmlOutput, "failed\"");
+                        printf_verbose("SSL_get_error(ssl, cipherStatus) said: %d\n", SSL_get_error(ssl, cipherStatus));
+                        printf_xml("failed\"");
                         if (options->http == true)
                         {
                             printf("Failed    N/A              ");
@@ -1151,39 +1120,33 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                             printf("Failed    ");
                         }
                     }
-                    if (options->xmlOutput != 0)
-                        fprintf(options->xmlOutput, " sslversion=\"");
+                    printf_xml(" sslversion=\"");
 #ifndef OPENSSL_NO_SSL2
                     if (sslCipherPointer->sslMethod == SSLv2_client_method())
                     {
-                        if (options->xmlOutput != 0)
-                            fprintf(options->xmlOutput, "SSLv2\" bits=\"");
+                        printf_xml("SSLv2\" bits=\"");
                         printf("%sSSLv2%s    ", COL_RED, RESET);
                     }
                     else
 #endif
                     if (sslCipherPointer->sslMethod == SSLv3_client_method())
                     {
-                        if (options->xmlOutput != 0)
-                            fprintf(options->xmlOutput, "SSLv3\" bits=\"");
+                        printf_xml("SSLv3\" bits=\"");
                         printf("SSLv3    ");
                     }
                     else if (sslCipherPointer->sslMethod == TLSv1_client_method())
                     {
-                        if (options->xmlOutput != 0)
-                            fprintf(options->xmlOutput, "TLSv1.0\" bits=\"");
+                        printf_xml("TLSv1.0\" bits=\"");
                         printf("TLSv1.0  ");
                     }
 					else if (sslCipherPointer->sslMethod == TLSv1_1_client_method())
                     {
-                        if (options->xmlOutput != 0)
-                            fprintf(options->xmlOutput, "TLSv1.1\" bits=\"");
+                        printf_xml("TLSv1.1\" bits=\"");
                         printf("TLSv1.1  ");
                     }
 					else if (sslCipherPointer->sslMethod == TLSv1_2_client_method())
                     {
-                        if (options->xmlOutput != 0)
-                            fprintf(options->xmlOutput, "TLSv1.2\" bits=\"");
+                        printf_xml("TLSv1.2\" bits=\"");
                         printf("TLSv1.2  ");
                     }
                     if (sslCipherPointer->bits < 10)
@@ -1209,8 +1172,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         tempInt--;
                         printf(" ");
                     }
-                    if (options->xmlOutput != 0)
-                        fprintf(options->xmlOutput, "%d\" cipher=\"%s\" />\n", sslCipherPointer->bits, sslCipherPointer->name);
+                    printf_xml("%d\" cipher=\"%s\" />\n", sslCipherPointer->bits, sslCipherPointer->name);
                     if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
                     {                   
                         printf("%s%s%s\n", COL_PURPLE, sslCipherPointer->name, RESET);
@@ -1312,34 +1274,29 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 #ifndef OPENSSL_NO_SSL2
                             if (sslMethod == SSLv2_client_method())
                             {
-                                if (options->xmlOutput != 0)
-                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"SSLv2\" bits=\"");
+                                printf_xml("  <defaultcipher sslversion=\"SSLv2\" bits=\"");
                                 printf("%sSSLv2%s    ", COL_RED, RESET);
                             }
                             else
 #endif
                             if (sslMethod == SSLv3_client_method())
                             {
-                                if (options->xmlOutput != 0)
-                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"SSLv3\" bits=\"");
+                                printf_xml("  <defaultcipher sslversion=\"SSLv3\" bits=\"");
                                 printf("SSLv3    ");
                             }
                             else if (sslMethod == TLSv1_client_method())
                             {
-                                if (options->xmlOutput != 0)
-                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLSv1\" bits=\"");
+                                printf_xml("  <defaultcipher sslversion=\"TLSv1\" bits=\"");
                                 printf("TLSv1.0  ");
                             }
 							else if (sslMethod == TLSv1_1_client_method())
                             {
-                                if (options->xmlOutput != 0)
-                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLSv1.1\" bits=\"");
+                                printf_xml("  <defaultcipher sslversion=\"TLSv1.1\" bits=\"");
                                 printf("TLSv1.1  ");
                             }
                             else if (sslMethod == TLSv1_2_client_method())
                             {
-                                if (options->xmlOutput != 0)
-                                    fprintf(options->xmlOutput, "  <defaultcipher sslversion=\"TLSv1.2\" bits=\"");
+                                printf_xml("  <defaultcipher sslversion=\"TLSv1.2\" bits=\"");
                                 printf("TLSv1.2  ");
                             }
                             if (SSL_get_cipher_bits(ssl, &tempInt2) < 10)
@@ -1368,8 +1325,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                                 tempInt--;
                                 printf(" ");
                             }
-                            if (options->xmlOutput != 0)
-                                fprintf(options->xmlOutput, "%d\" cipher=\"%s\" />\n", SSL_get_cipher_bits(ssl, &tempInt2), SSL_get_cipher_name(ssl));
+                            printf_xml("%d\" cipher=\"%s\" />\n", SSL_get_cipher_bits(ssl, &tempInt2), SSL_get_cipher_name(ssl));
                             if (strstr(SSL_get_cipher_name(ssl), "EXP"))
                             {                   
                                 printf("%s%s%s\n", COL_RED, SSL_get_cipher_name(ssl), RESET);
@@ -1411,7 +1367,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         else
         {
             status = false;
-            printf("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
         }
 
         // Disconnect from host
@@ -1455,12 +1411,10 @@ int getCertificate(struct sslCheckOptions *options)
 
         // Setup Context Object...
         if( options->sslVersion == tls_v10) {
-            if (options->verbose)
-                printf("sslMethod = TLSv1_method()");
+            printf_verbose("sslMethod = TLSv1_method()");
             sslMethod = TLSv1_method();
         } else {
-            if (options->verbose)
-                printf("sslMethod = SSLv23_method()");
+            printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
         }
         options->ctx = SSL_CTX_new(sslMethod);
@@ -1510,7 +1464,7 @@ int getCertificate(struct sslCheckOptions *options)
                             // Setup BIO's
                             stdoutBIO = BIO_new(BIO_s_file());
                             BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
-                            if (options->xmlOutput != 0)
+                            if (options->xmlOutput)
                             {
                                 fileBIO = BIO_new(BIO_s_file());
                                 BIO_set_fp(fileBIO, options->xmlOutput, BIO_NOCLOSE);
@@ -1518,8 +1472,7 @@ int getCertificate(struct sslCheckOptions *options)
 
                             // Get Certificate...
                             printf("\n  %sSSL Certificate:%s\n", COL_BLUE, RESET);
-                            if (options->xmlOutput != 0)
-                                fprintf(options->xmlOutput, "  <certificate>\n");
+                            printf_xml("  <certificate>\n");
                             x509Cert = SSL_get_peer_certificate(ssl);
                             if (x509Cert != NULL)
                             {
@@ -1527,11 +1480,11 @@ int getCertificate(struct sslCheckOptions *options)
                                 // Print a base64 blob version of the cert
                                 printf("    Certificate blob:\n");
                                 PEM_write_bio_X509(stdoutBIO,x509Cert);
-                                if (options->xmlOutput != 0)
+                                if (options->xmlOutput)
                                 {
-                                    fprintf(options->xmlOutput, "   <certificate-blob>\n");
+                                    printf_xml("   <certificate-blob>\n");
                                     PEM_write_bio_X509(fileBIO,x509Cert);
-                                    fprintf(options->xmlOutput, "   </certificate-blob>\n");
+                                    printf_xml("   </certificate-blob>\n");
                                 }
 
                                 //SSL_set_verify(ssl, SSL_VERIFY_NONE|SSL_VERIFY_CLIENT_ONCE, NULL);
@@ -1541,8 +1494,7 @@ int getCertificate(struct sslCheckOptions *options)
                                 {
                                     tempLong = X509_get_version(x509Cert);
                                     printf("    Version: %lu\n", tempLong);
-                                    if (options->xmlOutput != 0)
-                                        fprintf(options->xmlOutput, "   <version>%lu</version>\n", tempLong);
+                                    printf_xml("   <version>%lu</version>\n", tempLong);
                                 }
 
                                 // Cert Serial No. - Code adapted from OpenSSL's crypto/asn1/t_x509.c
@@ -1552,7 +1504,7 @@ int getCertificate(struct sslCheckOptions *options)
 					BIO *bp;
 					BIO *xml_bp;
 					bp = BIO_new_fp(stdout, BIO_NOCLOSE);
-					if (options->xmlOutput != 0)
+					if (options->xmlOutput)
 						xml_bp = BIO_new_fp(options->xmlOutput, BIO_NOCLOSE);
 					long l;
 					int i;
@@ -1574,7 +1526,7 @@ int getCertificate(struct sslCheckOptions *options)
 							neg="";
 						if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
 							return(1);
-						if (options->xmlOutput != 0)
+						if (options->xmlOutput)
 							if (BIO_printf(xml_bp,"   <serial>%s%lu (%s0x%lx)</serial>\n",neg,l,neg,l) <= 0)
 								return(1);
 					}   
@@ -1584,7 +1536,7 @@ int getCertificate(struct sslCheckOptions *options)
 						if (BIO_printf(bp,"%1s%s","",neg) <= 0)
 							return(1);
 
-						if (options->xmlOutput != 0)
+						if (options->xmlOutput)
 							if (BIO_printf(xml_bp,"   <serial>") <= 0)
 								return(1);
 
@@ -1593,7 +1545,7 @@ int getCertificate(struct sslCheckOptions *options)
 							if (BIO_printf(bp,"%02x%c",bs->data[i],
 										((i+1 == bs->length)?'\n':':')) <= 0)
 								return(1);
-							if (options->xmlOutput != 0) {
+							if (options->xmlOutput) {
 								if (i+1 == bs->length)
 								{
 									if (BIO_printf(xml_bp,"%02x",bs->data[i]) <= 0)
@@ -1607,7 +1559,7 @@ int getCertificate(struct sslCheckOptions *options)
 							}
 						}   
 
-						if (options->xmlOutput != 0)
+						if (options->xmlOutput)
 							if (BIO_printf(xml_bp,"</serial>\n") <= 0)
 								return(1);
 
@@ -1623,11 +1575,11 @@ int getCertificate(struct sslCheckOptions *options)
                                     printf("    Signature Algorithm: ");
                                     i2a_ASN1_OBJECT(stdoutBIO, x509Cert->cert_info->signature->algorithm);
                                     printf("\n");
-                                    if (options->xmlOutput != 0)
+                                    if (options->xmlOutput)
                                     {
-                                        fprintf(options->xmlOutput, "   <signature-algorithm>");
+                                        printf_xml("   <signature-algorithm>");
                                         i2a_ASN1_OBJECT(fileBIO, x509Cert->cert_info->signature->algorithm);
-                                        fprintf(options->xmlOutput, "</signature-algorithm>\n");
+                                        printf_xml("</signature-algorithm>\n");
                                     }
                                 }
 
@@ -1636,8 +1588,7 @@ int getCertificate(struct sslCheckOptions *options)
                                 {
                                     X509_NAME_oneline(X509_get_issuer_name(x509Cert), buffer, sizeof(buffer) - 1);
                                     printf("    Issuer: %s\n", buffer);
-                                    if (options->xmlOutput != 0)
-                                        fprintf(options->xmlOutput, "   <issuer>%s</issuer>\n", buffer);
+                                    printf_xml("   <issuer>%s</issuer>\n", buffer);
                                 }
 
                                 // Validity...
@@ -1645,20 +1596,20 @@ int getCertificate(struct sslCheckOptions *options)
                                 {
                                     printf("    Not valid before: ");
                                     ASN1_TIME_print(stdoutBIO, X509_get_notBefore(x509Cert));
-                                    if (options->xmlOutput != 0)
+                                    if (options->xmlOutput)
                                     {
-                                        fprintf(options->xmlOutput, "   <not-valid-before>");
+                                        printf_xml("   <not-valid-before>");
                                         ASN1_TIME_print(fileBIO, X509_get_notBefore(x509Cert));
-                                        fprintf(options->xmlOutput, "</not-valid-before>\n");
+                                        printf_xml("</not-valid-before>\n");
                                     }
                                     printf("\n    Not valid after: ");
                                     ASN1_TIME_print(stdoutBIO, X509_get_notAfter(x509Cert));
                                     printf("\n");
-                                    if (options->xmlOutput != 0)
+                                    if (options->xmlOutput)
                                     {
-                                        fprintf(options->xmlOutput, "   <not-valid-after>");
+                                        printf_xml("   <not-valid-after>");
                                         ASN1_TIME_print(fileBIO, X509_get_notAfter(x509Cert));
-                                        fprintf(options->xmlOutput, "</not-valid-after>\n");
+                                        printf_xml("</not-valid-after>\n");
                                     }
                                 }
 
@@ -1667,8 +1618,7 @@ int getCertificate(struct sslCheckOptions *options)
                                 {
                                     X509_NAME_oneline(X509_get_subject_name(x509Cert), buffer, sizeof(buffer) - 1);
                                     printf("    Subject: %s\n", buffer);
-                                    if (options->xmlOutput != 0)
-                                        fprintf(options->xmlOutput, "   <subject>%s</subject>\n", buffer);
+                                    printf_xml("   <subject>%s</subject>\n", buffer);
                                 }
 
                                 // Public Key Algo...
@@ -1677,11 +1627,11 @@ int getCertificate(struct sslCheckOptions *options)
                                     printf("    Public Key Algorithm: ");
                                     i2a_ASN1_OBJECT(stdoutBIO, x509Cert->cert_info->key->algor->algorithm);
                                     printf("\n");
-                                    if (options->xmlOutput != 0)
+                                    if (options->xmlOutput)
                                     {
-                                        fprintf(options->xmlOutput, "   <pk-algorithm>");
+                                        printf_xml("   <pk-algorithm>");
                                         i2a_ASN1_OBJECT(fileBIO, x509Cert->cert_info->key->algor->algorithm);
-                                        fprintf(options->xmlOutput, "</pk-algorithm>\n");
+                                        printf_xml("</pk-algorithm>\n");
                                     }
 
                                     // Public Key...
@@ -1689,8 +1639,7 @@ int getCertificate(struct sslCheckOptions *options)
                                     if (publicKey == NULL)
                                     {
                                         printf("    Public Key: Could not load\n");
-                                        if (options->xmlOutput != 0)
-                                            fprintf(options->xmlOutput, "   <pk error=\"true\" />\n");
+                                        printf_xml("   <pk error=\"true\" />\n");
                                     }
                                     else
                                     {
@@ -1700,13 +1649,12 @@ int getCertificate(struct sslCheckOptions *options)
                                                 if (publicKey->pkey.rsa)
                                                 {
                                                     printf("    RSA Public Key: (%d bit)\n", BN_num_bits(publicKey->pkey.rsa->n));
-                                                    if (options->xmlOutput != 0)
-                                                        fprintf(options->xmlOutput, "   <pk error=\"false\" type=\"RSA\" bits=\"%d\">\n", BN_num_bits(publicKey->pkey.rsa->n));
+                                                    printf_xml("   <pk error=\"false\" type=\"RSA\" bits=\"%d\">\n", BN_num_bits(publicKey->pkey.rsa->n));
                                                     RSA_print(stdoutBIO, publicKey->pkey.rsa, 6);
-                                                    if (options->xmlOutput != 0)
+                                                    if (options->xmlOutput)
                                                     {
                                                         RSA_print(fileBIO, publicKey->pkey.rsa, 4);
-                                                        fprintf(options->xmlOutput, "   </pk>\n");
+                                                        printf_xml("   </pk>\n");
                                                     }
                                                 }
                                                 else
@@ -1718,13 +1666,12 @@ int getCertificate(struct sslCheckOptions *options)
                                                 if (publicKey->pkey.dsa)
                                                 {
                                                     printf("    DSA Public Key:\n");
-                                                    if (options->xmlOutput != 0)
-                                                        fprintf(options->xmlOutput, "   <pk error=\"false\" type=\"DSA\">\n");
+                                                    printf_xml("   <pk error=\"false\" type=\"DSA\">\n");
                                                     DSA_print(stdoutBIO, publicKey->pkey.dsa, 6);
-                                                    if (options->xmlOutput != 0)
+                                                    if (options->xmlOutput)
                                                     {
                                                         DSA_print(fileBIO, publicKey->pkey.dsa, 4);
-                                                        fprintf(options->xmlOutput, "   </pk>\n");
+                                                        printf_xml("   </pk>\n");
                                                     }
                                                 }
                                                 else
@@ -1736,13 +1683,12 @@ int getCertificate(struct sslCheckOptions *options)
                                                 if (publicKey->pkey.ec)
                                                 {
                                                     printf("    EC Public Key:\n");
-                                                    if (options->xmlOutput != 0)
-                                                        fprintf(options->xmlOutput, "   <pk error=\"false\" type=\"EC\">\n");
+                                                    printf_xml("   <pk error=\"false\" type=\"EC\">\n");
                                                     EC_KEY_print(stdoutBIO, publicKey->pkey.ec, 6);
-                                                    if (options->xmlOutput != 0)
+                                                    if (options->xmlOutput)
                                                     {
                                                         EC_KEY_print(fileBIO, publicKey->pkey.ec, 4);
-                                                        fprintf(options->xmlOutput, "   </pk>\n");
+                                                        printf_xml("   </pk>\n");
                                                     }
                                                 }
                                                 else
@@ -1752,8 +1698,7 @@ int getCertificate(struct sslCheckOptions *options)
                                                 break;
                                             default:
                                                 printf("    Public Key: Unknown\n");
-                                                if (options->xmlOutput != 0)
-                                                    fprintf(options->xmlOutput, "   <pk error=\"true\" type=\"unknown\" />\n");
+                                                printf_xml("   <pk error=\"true\" type=\"unknown\" />\n");
                                                 break;
                                         }
 
@@ -1767,8 +1712,7 @@ int getCertificate(struct sslCheckOptions *options)
                                     if (sk_X509_EXTENSION_num(x509Cert->cert_info->extensions) > 0)
                                     {
                                         printf("    X509v3 Extensions:\n");
-                                        if (options->xmlOutput != 0)
-                                            fprintf(options->xmlOutput, "   <X509v3-Extensions>\n");
+                                        printf_xml("   <X509v3-Extensions>\n");
                                         for (tempInt = 0; tempInt < sk_X509_EXTENSION_num(x509Cert->cert_info->extensions); tempInt++)
                                         {
                                             // Get Extension...
@@ -1780,9 +1724,9 @@ int getCertificate(struct sslCheckOptions *options)
                                             i2a_ASN1_OBJECT(stdoutBIO, asn1Object);
                                             tempInt2 = X509_EXTENSION_get_critical(extension);
                                             BIO_printf(stdoutBIO, ": %s\n", tempInt2 ? "critical" : "");
-                                            if (options->xmlOutput != 0)
+                                            if (options->xmlOutput)
                                             {
-                                                fprintf(options->xmlOutput, "    <extension name=\"");
+                                                printf_xml("    <extension name=\"");
                                                 i2a_ASN1_OBJECT(fileBIO, asn1Object);
                                                 BIO_printf(fileBIO, "\"%s>", tempInt2 ? " level=\"critical\"" : "");
                                             }
@@ -1793,16 +1737,15 @@ int getCertificate(struct sslCheckOptions *options)
                                                 printf("        ");
                                                 M_ASN1_OCTET_STRING_print(stdoutBIO, extension->value);
                                             }
-                                            if (options->xmlOutput != 0)
+                                            if (options->xmlOutput)
                                             {
                                                 if (!X509V3_EXT_print(fileBIO, extension, X509_FLAG_COMPAT, 0))
                                                     M_ASN1_OCTET_STRING_print(fileBIO, extension->value);
-                                                fprintf(options->xmlOutput, "</extension>\n");
+                                                printf_xml("</extension>\n");
                                             }
                                             printf("\n");
                                         }
-                                        if (options->xmlOutput != 0)
-                                            fprintf(options->xmlOutput, "   </X509v3-Extensions>\n");
+                                        printf_xml("   </X509v3-Extensions>\n");
                                     }
                                 }
 
@@ -1822,12 +1765,11 @@ int getCertificate(struct sslCheckOptions *options)
                                 printf("    Unable to parse certificate\n");
                        }
 
-                            if (options->xmlOutput != 0)
-                                fprintf(options->xmlOutput, "  </certificate>\n");
+                            printf_xml("  </certificate>\n");
 
                             // Free BIO
                             BIO_free(stdoutBIO);
-                            if (options->xmlOutput != 0)
+                            if (options->xmlOutput)
                                 BIO_free(fileBIO);
 
                             // Disconnect SSL over socket
@@ -1858,7 +1800,7 @@ int getCertificate(struct sslCheckOptions *options)
         else
         {
             status = false;
-            printf("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
         }
 
         // Disconnect from host
@@ -1916,8 +1858,7 @@ int testHost(struct sslCheckOptions *options)
     }
 
     // XML Output...
-    if (options->xmlOutput != 0)
-        fprintf(options->xmlOutput, " <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
+    printf_xml(" <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
 
     // Test renegotiation
     printf("Testing SSL server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
@@ -1929,9 +1870,7 @@ int testHost(struct sslCheckOptions *options)
         while ((sslCipherPointer != 0) && (status == true))
         {
             printf("    %s\n",sslCipherPointer->name);
-
-            if (options->xmlOutput != 0)
-                fprintf(options->xmlOutput, " <client-cipher cipher=\"%s\">\n", sslCipherPointer->name);
+            printf_xml(" <client-cipher cipher=\"%s\">\n", sslCipherPointer->name);
 
             sslCipherPointer = sslCipherPointer->next;
         }
@@ -1983,7 +1922,7 @@ int testHost(struct sslCheckOptions *options)
             else
             {
                 status = false;
-                printf("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+                printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
             }
 
             sslCipherPointer = sslCipherPointer->next;
@@ -2044,8 +1983,7 @@ int testHost(struct sslCheckOptions *options)
     }
 
     // XML Output...
-    if (options->xmlOutput != 0)
-        fprintf(options->xmlOutput, " </ssltest>\n");
+    printf_xml(" </ssltest>\n");
 
     // Return status...
     return status;
@@ -2306,7 +2244,7 @@ int main(int argc, char *argv[])
         options.xmlOutput = fopen(argv[xmlArg] + 6, "w");
         if (options.xmlOutput == NULL)
         {
-            printf("%sERROR: Could not open XML output file %s.%s\n", COL_RED, argv[xmlArg] + 6, RESET);
+            printf_error("%sERROR: Could not open XML output file %s.%s\n", COL_RED, argv[xmlArg] + 6, RESET);
             exit(0);
         }
 
@@ -2436,7 +2374,7 @@ int main(int argc, char *argv[])
                     // Open targets file...
                     targetsFile = fopen(argv[options.targets] + 10, "r");
                     if (targetsFile == NULL)
-                        printf("%sERROR: Could not open targets file %s.%s\n", COL_RED, argv[options.targets] + 10, RESET);
+                        printf_error("%sERROR: Could not open targets file %s.%s\n", COL_RED, argv[options.targets] + 10, RESET);
                     else
                     {
                         readLine(targetsFile, line, sizeof(line));
@@ -2464,7 +2402,7 @@ int main(int argc, char *argv[])
                     }
                 }
                 else
-                    printf("%sERROR: Targets file %s does not exist.%s\n", COL_RED, argv[options.targets] + 10, RESET);
+                    printf_error("%sERROR: Targets file %s does not exist.%s\n", COL_RED, argv[options.targets] + 10, RESET);
             }
     
             // Free Structures
