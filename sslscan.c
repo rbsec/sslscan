@@ -607,11 +607,8 @@ int loadCerts(struct sslCheckOptions *options)
 int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOutput *outputData)
 {
 
-    if (options->xmlOutput)
-    {
-        fprintf(options->xmlOutput, "  <renegotiation supported=\"%d\" secure=\"%d\" />\n",
-               outputData->supported, outputData->secure);
-    }
+    printf_xml("  <renegotiation supported=\"%d\" secure=\"%d\" />\n",
+        outputData->supported, outputData->secure);
 
     if (outputData->secure)
         printf("%sSecure%s session renegotiation supported\n", COL_GREEN, RESET);
@@ -1046,10 +1043,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     printf_xml("  <cipher status=\"");
                     if (cipherStatus == 1)
                     {
-                        if (options->xmlOutput)
-                        {
-                            fprintf(options->xmlOutput, "accepted\"");
-                        }
+                        printf_xml("accepted\"");
                         if (options->noFailed == false)
                         {
                             printf("%sAccepted%s  ", COL_GREEN, RESET);
@@ -1084,8 +1078,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                                     loop++;
                                     printf(" ");
                                 }
-                                if (options->xmlOutput)
-                                    fprintf(options->xmlOutput, " http=\"%s\"", buffer + 9);
+                                printf_xml(" http=\"%s\"", buffer + 9);
                             }
                             else
                             {
@@ -1096,8 +1089,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     }
                     else if (cipherStatus == 0)
                     {
-                        if (options->xmlOutput)
-                            fprintf(options->xmlOutput, "rejected\"");
+                        printf_xml("rejected\"");
                         if (options->http == true)
                         {
                             printf("Rejected  N/A              ");
