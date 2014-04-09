@@ -105,8 +105,8 @@ const char *program_banner = "                   _\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
-const char *program_version = "1.9.1-rbsec";
-const char *xml_version = "1.9.1-rbsec";
+const char *program_version = "1.9.2-rbsec";
+const char *xml_version = "1.9.2-rbsec";
 
 
 struct sslCipher
@@ -131,6 +131,7 @@ struct sslCheckOptions
     int ciphersuites;
     int reneg;
     int compression;
+    int heartbleed;
     int starttls_ftp;
     int starttls_imap;
     int starttls_pop3;
@@ -992,6 +993,88 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
     return status;
 
 }
+
+// Test for Heartbleed
+int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
+{
+    // Variables...
+    int status = true;
+    int socketDescriptor = 0;
+
+    // Connect to host
+    socketDescriptor = tcpConnect(options);
+
+    // Set a 3 second socket timeout
+    struct timeval tv;
+    tv.tv_sec = 3;
+    tv.tv_usec = 0;
+    setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
+
+    if (socketDescriptor != 0)
+    {
+        // Credit to Jared Stafford (jspenguin@jspenguin.org)
+        char hello[] = {0x16,0x03,0x02,0x00,0xdc,0x01,0x00,0x00,0xd8,0x03,0x02,0x53,0x43,0x5b,0x90,0x9d,0x9b,0x72,0x0b,0xbc,0x0c,0xbc,0x2b,0x92,0xa8,0x48,0x97,0xcf,0xbd,0x39,0x04,0xcc,0x16,0x0a,0x85,0x03,0x90,0x9f,0x77,0x04,0x33,0xd4,0xde,0x00,0x00,0x66,0xc0,0x14,0xc0,0x0a,0xc0,0x22,0xc0,0x21,0x00,0x39,0x00,0x38,0x00,0x88,0x00,0x87,0xc0,0x0f,0xc0,0x05,0x00,0x35,0x00,0x84,0xc0,0x12,0xc0,0x08,0xc0,0x1c,0xc0,0x1b,0x00,0x16,0x00,0x13,0xc0,0x0d,0xc0,0x03,0x00,0x0a,0xc0,0x13,0xc0,0x09,0xc0,0x1f,0xc0,0x1e,0x00,0x33,0x00,0x32,0x00,0x9a,0x00,0x99,0x00,0x45,0x00,0x44,0xc0,0x0e,0xc0,0x04,0x00,0x2f,0x00,0x96,0x00,0x41,0xc0,0x11,0xc0,0x07,0xc0,0x0c,0xc0,0x02,0x00,0x05,0x00,0x04,0x00,0x15,0x00,0x12,0x00,0x09,0x00,0x14,0x00,0x11,0x00,0x08,0x00,0x06,0x00,0x03,0x00,0xff,0x01,0x00,0x00,0x49,0x00,0x0b,0x00,0x04,0x03,0x00,0x01,0x02,0x00,0x0a,0x00,0x34,0x00,0x32,0x00,0x0e,0x00,0x0d,0x00,0x19,0x00,0x0b,0x00,0x0c,0x00,0x18,0x00,0x09,0x00,0x0a,0x00,0x16,0x00,0x17,0x00,0x08,0x00,0x06,0x00,0x07,0x00,0x14,0x00,0x15,0x00,0x04,0x00,0x05,0x00,0x12,0x00,0x13,0x00,0x01,0x00,0x02,0x00,0x03,0x00,0x0f,0x00,0x10,0x00,0x11,0x00,0x23,0x00,0x00,0x00,0x0f,0x00,0x01,0x01};
+
+        write(socketDescriptor, hello, sizeof(hello));
+
+        // Send the heartbeat
+        char hb[8] = {0x18,0x03,0x02,0x00,0x03,0x01,0x40,0x00};
+        write(socketDescriptor, hb, sizeof(hb));
+
+        while(1)
+        {
+            char hbbuf[65536];
+            memset(hbbuf, 0, sizeof(hbbuf));
+
+            int readResult = read(socketDescriptor, hbbuf, 5 );
+            if (readResult == 0)
+            {
+                break;
+            }
+
+            char typ = hbbuf[0];
+            uint16_t ln = hbbuf[3] | hbbuf[4] << 8;
+
+            memset(hbbuf, 0, sizeof(hbbuf));
+            readResult = read(socketDescriptor, hbbuf, ln );
+            if (readResult == 0)
+            {
+                break;
+            }
+
+            // Server returned error
+            if (typ == 21)
+            {
+                break;
+            }
+            // Sucessful response
+            else if (typ == 24 && ln > 3)
+            {
+                printf("%sVulnerable%s to heartbleed\n\n", COL_RED, RESET);
+                printf_xml("  <heartbleed vulnerable=\"1\" />\n");
+                close(socketDescriptor);
+                return status;
+            }
+        }
+        printf("%sNot vulnerable%s to heartbleed\n\n", COL_GREEN, RESET);
+        printf_xml("  <heartbleed vulnerable=\"0\" />\n");
+
+        // Disconnect from host
+        close(socketDescriptor);
+    }
+    else
+    {
+        // Could not connect
+        printf_error("%sERROR: Could not connect.%s\n", COL_RED, RESET);
+        status = false;
+        printf("dying");
+        exit(status);
+    }
+
+    return status;
+}
+
+
 
 // Test a cipher...
 int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPointer)
@@ -1856,6 +1939,7 @@ int testHost(struct sslCheckOptions *options)
     printf("Testing SSL server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
 
     sslCipherPointer = options->ciphers;
+
     if (options->showClientCiphers == true)
     {
         printf("\n  %sSupported Client Cipher(s):%s\n", COL_BLUE, RESET);
@@ -1877,6 +1961,12 @@ int testHost(struct sslCheckOptions *options)
     {
         printf("\n  %sTLS Compression:%s\n", COL_BLUE, RESET);
         testCompression(options, TLSv1_client_method());
+    }
+
+    if (status == true && options->heartbleed )
+    {
+        printf("  %sHeartbleed:%s\n", COL_BLUE, RESET);
+        status = testHeartbleed(options, TLSv1_client_method());
     }
 
     if (options->ciphersuites)
@@ -1901,6 +1991,7 @@ int testHost(struct sslCheckOptions *options)
                 // Load Certs if required...
                 if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
                     status = loadCerts(options);
+
 
                 // Test
                 if (status == true)
@@ -2006,6 +2097,7 @@ int main(int argc, char *argv[])
     options.ciphersuites = true;
     options.reneg = true;
     options.compression = true;
+    options.heartbleed = true;
     options.starttls_ftp = false;
     options.starttls_imap = false;
     options.starttls_pop3 = false;
@@ -2096,6 +2188,12 @@ int main(int argc, char *argv[])
         else if (strcmp("--no-compression", argv[argLoop]) == 0)
         {
             options.compression = false;
+        }
+
+        // Should we check for Heartbleed (CVE-2014-0160)
+        else if (strcmp("--no-heartbleed", argv[argLoop]) == 0)
+        {
+            options.heartbleed = false;
         }
 
         // StartTLS... FTP
@@ -2290,6 +2388,7 @@ int main(int argc, char *argv[])
             printf("  %s--no-ciphersuites%s    Only check for supported SSL/TLS versions, not ciphers\n", COL_GREEN, RESET);
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
+            printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);

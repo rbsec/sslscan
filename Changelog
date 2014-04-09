@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version: 1.9.2
+Date   : 09/04/2014
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Added check for OpenSSL Heartbleed (CVE-2014-0160)
+
 Version: 1.9.1
 Date   : 06/03/2014
 Author : rbsec <robin@rbsec.net>
