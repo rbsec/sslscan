@@ -1021,11 +1021,13 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         char hb[8] = {0x18,0x03,0x02,0x00,0x03,0x01,0x40,0x00};
         write(socketDescriptor, hb, sizeof(hb));
 
+        char hbbuf[65536];
+
         while(1)
         {
-            char hbbuf[65536];
             memset(hbbuf, 0, sizeof(hbbuf));
 
+            // Read 5 byte header
             int readResult = read(socketDescriptor, hbbuf, 5 );
             if (readResult == 0)
             {
@@ -1038,11 +1040,13 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
             uint16_t ln = hbbuf[4] | hbbuf[3] << 8;
             
             // Debugging
- /*
+/*
             uint16_t ver = hbbuf[2] | hbbuf[1] << 8;
             printf("%hhX %hhX %hhX %hhX %hhX - %d %d %d\n", hbbuf[0], hbbuf[1], hbbuf[2], hbbuf[3], hbbuf[4], typ, ver, ln);
 */
             memset(hbbuf, 0, sizeof(hbbuf));
+
+            // Read rest of record
             readResult = read(socketDescriptor, hbbuf, ln );
             if (readResult == 0)
             {
@@ -1060,7 +1064,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 printf("%svulnerable%s to heartbleed\n", COL_RED, RESET);
                 printf_xml("  <heartbleed vulnerable=\"1\" />\n");
                 close(socketDescriptor);
-                return 2;
+                return status;
             }
         }
         printf("%snot vulnerable%s to heartbleed\n", COL_GREEN, RESET);
