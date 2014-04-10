@@ -1057,13 +1057,13 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
             // Sucessful response
             else if (typ == 24 && ln > 3)
             {
-                printf("%sVulnerable%s to heartbleed\n\n", COL_RED, RESET);
+                printf("%svulnerable%s to heartbleed\n", COL_RED, RESET);
                 printf_xml("  <heartbleed vulnerable=\"1\" />\n");
                 close(socketDescriptor);
-                return status;
+                return 2;
             }
         }
-        printf("%sNot vulnerable%s to heartbleed\n\n", COL_GREEN, RESET);
+        printf("%snot vulnerable%s to heartbleed\n", COL_GREEN, RESET);
         printf_xml("  <heartbleed vulnerable=\"0\" />\n");
 
         // Disconnect from host
@@ -1973,7 +1973,14 @@ int testHost(struct sslCheckOptions *options)
     if (status == true && options->heartbleed )
     {
         printf("  %sHeartbleed:%s\n", COL_BLUE, RESET);
+        printf("TLS 1.0 ");
         status = testHeartbleed(options, TLSv1_client_method());
+        printf("TLS 1.1 ");
+        status = testHeartbleed(options, TLSv1_1_client_method());
+        printf("TLS 1.2 ");
+        status = testHeartbleed(options, TLSv1_2_client_method());
+        printf("\n");
+
     }
 
     if (options->ciphersuites)
