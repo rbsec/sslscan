@@ -1033,7 +1033,10 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
             }
 
             char typ = hbbuf[0];
-            uint16_t ln = hbbuf[3] | hbbuf[4] << 8;
+
+            // Combine 2 bytes to get payload length
+            uint16_t ln = hbbuf[4] | hbbuf[3] << 8;
+//            printf("%hhX %hhX %hhX %hhX %hhX - %d\n", hbbuf[0], hbbuf[1], hbbuf[2], hbbuf[3], hbbuf[4], ln);
 
             memset(hbbuf, 0, sizeof(hbbuf));
             readResult = read(socketDescriptor, hbbuf, ln );
