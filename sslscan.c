@@ -1082,6 +1082,10 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         exit(status);
     }
 
+    // Restore the default 20s timeout
+    tv.tv_sec = 20;
+    tv.tv_usec = 0;
+    setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
     return status;
 }
 
