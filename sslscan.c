@@ -1264,15 +1264,15 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     }
                     printf_xml("%d\" cipher=\"%s\" />\n", sslCipherPointer->bits, sslCipherPointer->name);
                     if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
-                    {                   
+                    {
                         printf("%s%s%s\n", COL_PURPLE, sslCipherPointer->name, RESET);
                     }
                     else if (strstr(sslCipherPointer->name, "EXP"))
-                    {                   
+                    {
                         printf("%s%s%s\n", COL_RED, sslCipherPointer->name, RESET);
                     }
                     else if (strstr(sslCipherPointer->name, "RC4"))
-                    {                   
+                    {
                         printf("%s%s%s\n", COL_YELLOW, sslCipherPointer->name, RESET);
                     }
                     else
@@ -1417,11 +1417,11 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             }
                             printf_xml("%d\" cipher=\"%s\" />\n", SSL_get_cipher_bits(ssl, &tempInt2), SSL_get_cipher_name(ssl));
                             if (strstr(SSL_get_cipher_name(ssl), "EXP"))
-                            {                   
+                            {
                                 printf("%s%s%s\n", COL_RED, SSL_get_cipher_name(ssl), RESET);
                             }
                             else if (strstr(SSL_get_cipher_name(ssl), "RC4"))
-                            {                   
+                            {
                                 printf("%s%s%s\n", COL_YELLOW, SSL_get_cipher_name(ssl), RESET);
                             }
                             else
@@ -1605,13 +1605,13 @@ int getCertificate(struct sslCheckOptions *options)
 						return(1);
 
 					if (bs->length <= 4)
-					{   
+					{
 						l=ASN1_INTEGER_get(bs);
 						if (l < 0)
-						{   
-							l= -l; 
+						{
+							l= -l;
 							neg="-";
-						}   
+						}
 						else
 							neg="";
 						if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
@@ -1619,9 +1619,9 @@ int getCertificate(struct sslCheckOptions *options)
 						if (options->xmlOutput)
 							if (BIO_printf(xml_bp,"   <serial>%s%lu (%s0x%lx)</serial>\n",neg,l,neg,l) <= 0)
 								return(1);
-					}   
+					}
 					else
-					{   
+					{
 						neg=(bs->type == V_ASN1_NEG_INTEGER)?" (Negative)":"";
 						if (BIO_printf(bp,"%1s%s","",neg) <= 0)
 							return(1);
@@ -1631,7 +1631,7 @@ int getCertificate(struct sslCheckOptions *options)
 								return(1);
 
 						for (i=0; i<bs->length; i++)
-						{   
+						{
 							if (BIO_printf(bp,"%02x%c",bs->data[i],
 										((i+1 == bs->length)?'\n':':')) <= 0)
 								return(1);
@@ -1647,13 +1647,13 @@ int getCertificate(struct sslCheckOptions *options)
 										return(1);
 								}
 							}
-						}   
+						}
 
 						if (options->xmlOutput)
 							if (BIO_printf(xml_bp,"</serial>\n") <= 0)
 								return(1);
 
-					} 
+					}
 					if(NULL != bp)
 						BIO_free(bp);
 					// We don't free the xml_bp because it will be used in the future
