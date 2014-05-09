@@ -7,7 +7,7 @@ Makefile build:
 
 Manual Build:
    sslscan can be built manually using the following
-   command:
+   commands:
 
       gcc -lssl -o sslscan sslscan.c
-
+      clang -lssl -o sslscan sslscan.c
