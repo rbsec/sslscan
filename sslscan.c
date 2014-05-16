@@ -2300,6 +2300,15 @@ int main(int argc, char *argv[])
             char *hostString = argv[argLoop];
 
             maxSize = strlen(hostString);
+
+            if (strncmp((char*)hostString, "https://", 8) == 0)
+            {
+                // Strip https:// from the start of the hostname
+                memmove(hostString, hostString + 8, (maxSize - 8));
+                memset(hostString + (maxSize - 8), 0, 8);
+                maxSize = strlen(hostString);
+            }
+
             int squareBrackets = false;
             if (hostString[0] == '[')
             {
