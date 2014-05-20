@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version: 1.9.3
+Date   : 20/05/2014
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Fixed broken STARTTLS SMTP check
+
 Version: 1.9.2
 Date   : 09/04/2014
 Author : rbsec <robin@rbsec.net>

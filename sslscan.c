@@ -105,7 +105,7 @@ const char *program_banner = "                   _\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
-const char *program_version = "1.9.2-rbsec";
+const char *program_version = "1.9.3-rbsec";
 const char *xml_version = "1.9.2-rbsec";
 
 
@@ -337,7 +337,7 @@ int tcpConnect(struct sslCheckOptions *options)
             printf("%s    ERROR: The host %s on port %d did not appear to be an SMTP service.%s\n", COL_RED, options->host, options->port, RESET);
             return 0;
         }
-        send(socketDescriptor, "EHLO example.org\r\n", 20, 0);
+        send(socketDescriptor, "EHLO example.org\r\n", 18, 0);
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
         if (strncmp(buffer, "250", 3) != 0)
