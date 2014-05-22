@@ -105,7 +105,7 @@ const char *program_banner = "                   _\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
-const char *program_version = "1.9.3-rbsec";
+const char *program_version = "1.9.4-rbsec";
 const char *xml_version = "1.9.2-rbsec";
 
 
@@ -2196,58 +2196,39 @@ int main(int argc, char *argv[])
         
         // Should we check for supported cipher suites
         else if (strcmp("--no-ciphersuites", argv[argLoop]) == 0)
-        {
             options.ciphersuites = false;
-        }
 
         // Should we check for TLS renegotiation?
         else if (strcmp("--no-renegotiation", argv[argLoop]) == 0)
-        {
             options.reneg = false;
-        }
 
         // Should we check for TLS Compression
         else if (strcmp("--no-compression", argv[argLoop]) == 0)
-        {
             options.compression = false;
-        }
 
         // Should we check for Heartbleed (CVE-2014-0160)
         else if (strcmp("--no-heartbleed", argv[argLoop]) == 0)
-        {
             options.heartbleed = false;
-        }
 
         // StartTLS... FTP
         else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
-        {
-            options.sslVersion = tls_all;
             options.starttls_ftp = true;
-        }
+
         // StartTLS... IMAP
         else if (strcmp("--starttls-imap", argv[argLoop]) == 0)
-        {
-            options.sslVersion = tls_all;
             options.starttls_imap = true;
-        }
+
         // StartTLS... POP3
         else if (strcmp("--starttls-pop3", argv[argLoop]) == 0)
-        {
-            options.sslVersion = tls_all;
             options.starttls_pop3 = true;
-        }
+
         // StartTLS... SMTP
         else if (strcmp("--starttls-smtp", argv[argLoop]) == 0)
-        {
-            options.sslVersion = tls_all;
             options.starttls_smtp = true;
-        }
+
         // StartTLS... XMPP
         else if (strcmp("--starttls-xmpp", argv[argLoop]) == 0)
-        {
-            options.sslVersion = tls_all;
             options.starttls_xmpp = true;
-        }
 
         // SSL v2 only...
         else if (strcmp("--ssl2", argv[argLoop]) == 0)

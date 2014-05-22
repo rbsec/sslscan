@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version: 1.9.4
+Date   : 22/05/2014
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Check for SSLv2 and SSLv3 ciphers over STARTTLS
+
 Version: 1.9.3
 Date   : 20/05/2014
 Author : rbsec <robin@rbsec.net>
