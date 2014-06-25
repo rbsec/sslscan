@@ -84,7 +84,6 @@ A file containing PEM/ASN1 formatted client certificates
 .B \-\-no\-ciphersuites
 Only check for supported SSL/TLS versions, not ciphersuites
 .TP
-.TP
 .B \-\-no\-renegotiation
 Do not check for secure TLS renegotiation
 .TP
@@ -105,6 +104,8 @@ STARTTLS setup for POP3
 .TP
 .B \-\-starttls\-smtp
 STARTTLS setup for SMTP
+.br
+Note that some servers hang when we try to use SSLv3 ciphers over STARTTLS. If you scan hangs, try using the --tlsall option.
 .TP
 .B \-\-starttls\-xmpp
 STARTTLS setup for XMPP
