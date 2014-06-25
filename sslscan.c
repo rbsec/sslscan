@@ -235,7 +235,7 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
 // File Exists
 int fileExists(char *fileName)
 {
-    return access(fileName, X_OK) == 0;
+    return access(fileName, R_OK) == 0;
 }
 
 
