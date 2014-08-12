@@ -16,12 +16,12 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Removed undocumented -p output option
 * Added check for OpenSSL HeartBleed (CVE-2014-0160, disable with --no-heartbleed)
 
-#### Building on Kali
+#### Building on Debian/Kali
 Note that many modern distros (including Kali) ship with a version of OpenSSL that disables support for SSLv2 ciphers. If sslscan is compiled on one of these distros, it will not be able to detect SSLv2.
 
-This issue can be resolved by rebuilding OpenSSL from source after removing the patch that disables SSLv2 support. See the following article for details:
+This issue can be resolved by rebuilding OpenSSL from source after removing the patch that disables SSLv2 support.
 
-http://blog.opensecurityresearch.com/2013/05/fixing-sslv2-support-in-kali-linux.html
+The build_openssl_debian.sh script automates this process for Debian systems. It has been tested on Debian Squeeze/Wheezy and Kali; it may work on other Debian based distros, but has not been tested. The built version of OpenSSL will be installed using dpkg.
 
 If it is not possible to rebuild OpenSSL, sslscan will still compile (thanks to a patch from digineo/sslscan, based on the debian patch). However, a warning will be displayed in the output to notify the user that SSLv2 ciphers will not be detected.
 
