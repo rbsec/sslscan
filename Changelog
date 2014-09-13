@@ -1,23 +1,32 @@
 Changelog
 =========
 
+Version: 1.9.5
+Date   : 13/09/2014
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Renamed --get-certificate option to --show-certficate.
+         > Display certificate signing algorithm highlighting weak algorithms.
+         > Display certificate key strength highlighting weak keys.
+         > Bumped XML version to 1.9.5 due to minor changes.
+
 Version: 1.9.4
 Date   : 22/05/2014
 Author : rbsec <robin@rbsec.net>
 Changes: The following are a list of changes
-         > Check for SSLv2 and SSLv3 ciphers over STARTTLS
+         > Check for SSLv2 and SSLv3 ciphers over STARTTLS.
 
 Version: 1.9.3
 Date   : 20/05/2014
 Author : rbsec <robin@rbsec.net>
 Changes: The following are a list of changes
-         > Fixed broken STARTTLS SMTP check
+         > Fixed broken STARTTLS SMTP check.
 
 Version: 1.9.2
 Date   : 09/04/2014
 Author : rbsec <robin@rbsec.net>
 Changes: The following are a list of changes
-         > Added check for OpenSSL Heartbleed (CVE-2014-0160)
+         > Added check for OpenSSL Heartbleed (CVE-2014-0160).
 
 Version: 1.9.1
 Date   : 06/03/2014

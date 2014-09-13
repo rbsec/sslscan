@@ -38,8 +38,11 @@ Default is to try IPv4, and if that fails then fall back to IPv6.
 Force IPv6 DNS resolution.
 Default is to try IPv4, and if that fails then fall back to IPv6.
 .TP
-.B \-\-get\-certificate
+.B \-\-show\-certificate
 Display certificate information.
+.TP
+.B \-\-no\-check\-certificate
+Don't flag certificates signed with weak algorithms (MD5 and SHA-1) or short (<2048 bit) RSA keys
 .TP
 .B \-\-failed
 Show rejected ciphers

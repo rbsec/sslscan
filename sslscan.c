@@ -105,8 +105,8 @@ const char *program_banner = "                   _\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
-const char *program_version = "1.9.4-rbsec";
-const char *xml_version = "1.9.2-rbsec";
+const char *program_version = "1.9.5-rbsec";
+const char *xml_version = "1.9.5-rbsec";
 
 
 struct sslCipher
@@ -126,7 +126,8 @@ struct sslCheckOptions
     char host[512];
     int port;
     int noFailed;
-    int getCertificate;
+    int showCertificate;
+    int checkCertificate;
     int showClientCiphers;
     int ciphersuites;
     int reneg;
@@ -1475,9 +1476,269 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     return status;
 }
 
+// Report certificate weaknesses (key length and signing algorithm)
+int checkCertificate(struct sslCheckOptions *options)
+{
+    // Variables...
+    int cipherStatus = 0;
+    int status = true;
+    int socketDescriptor = 0;
+    SSL *ssl = NULL;
+    BIO *cipherConnectionBio = NULL;
+    BIO *stdoutBIO = NULL;
+    BIO *fileBIO = NULL;
+    X509 *x509Cert = NULL;
+    EVP_PKEY *publicKey = NULL;
+    const SSL_METHOD *sslMethod = NULL;
+    char certAlgorithm[80];
+    int keyBits;
 
-// Get certificate...
-int getCertificate(struct sslCheckOptions *options)
+    // Connect to host
+    socketDescriptor = tcpConnect(options);
+    if (socketDescriptor != 0)
+    {
+
+        // Setup Context Object...
+        if( options->sslVersion == tls_v10) {
+            printf_verbose("sslMethod = TLSv1_method()");
+            sslMethod = TLSv1_method();
+        } else {
+            printf_verbose("sslMethod = SSLv23_method()");
+            sslMethod = SSLv23_method();
+        }
+        options->ctx = SSL_CTX_new(sslMethod);
+        if (options->ctx != NULL)
+        {
+
+            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            {
+
+                // Load Certs if required...
+                if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
+                    status = loadCerts(options);
+
+                if (status == true)
+                {
+                    // Create SSL object...
+                    ssl = SSL_new(options->ctx);
+                    if (ssl != NULL)
+                    {
+
+                        // Connect socket and BIO
+                        cipherConnectionBio = BIO_new_socket(socketDescriptor, BIO_NOCLOSE);
+
+                        // Connect SSL and BIO
+                        SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
+
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+                        // Based on http://does-not-exist.org/mail-archives/mutt-dev/msg13045.html
+                        // TLS Virtual-hosting requires that the server present the correct
+                        // certificate; to do this, the ServerNameIndication TLS extension is used.
+                        // If TLS is negotiated, and OpenSSL is recent enough that it might have
+                        // support, and support was enabled when OpenSSL was built, mutt supports
+                        // sending the hostname we think we're connecting to, so a server can send
+                        // back the correct certificate.
+                        // NB: finding a server which uses this for IMAP is problematic, so this is
+                        // untested.  Please report success or failure!  However, this code change
+                        // has worked fine in other projects to which the contributor has added it,
+                        // or HTTP usage.
+                        SSL_set_tlsext_host_name (ssl, options->host);
+#endif
+
+                        // Connect SSL over socket
+                        cipherStatus = SSL_connect(ssl);
+                        if (cipherStatus == 1)
+                        {
+
+                            // Setup BIO's
+                            stdoutBIO = BIO_new(BIO_s_file());
+                            BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                            if (options->xmlOutput)
+                            {
+                                fileBIO = BIO_new(BIO_s_file());
+                                BIO_set_fp(fileBIO, options->xmlOutput, BIO_NOCLOSE);
+                            }
+
+                            // Get Certificate...
+                            printf("\n  %sSSL Certificate:%s\n", COL_BLUE, RESET);
+                            printf_xml("  <certificate>\n");
+                            x509Cert = SSL_get_peer_certificate(ssl);
+                            if (x509Cert != NULL)
+                            {
+
+                                // Cert Serial No. - Code adapted from OpenSSL's crypto/asn1/t_x509.c
+                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
+                                {
+                                    BIO *bp;
+                                    bp = BIO_new_fp(stdout, BIO_NOCLOSE);
+                                    if (options->xmlOutput)
+
+                                    if(NULL != bp)
+                                        BIO_free(bp);
+                                    // We don't free the xml_bp because it will be used in the future
+                                }
+
+                                // Signature Algo...
+                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SIGNAME))
+                                {
+                                    printf("Signature Algorithm: ");
+                                    i2t_ASN1_OBJECT(certAlgorithm, sizeof(certAlgorithm), x509Cert->cert_info->signature->algorithm);
+                                    strtok(certAlgorithm, "\n");
+                                    if (strstr(certAlgorithm, "md5"))
+                                    {
+                                        printf("%s%s%s\n", COL_RED, certAlgorithm, RESET);
+                                    }
+                                    else if (strstr(certAlgorithm, "sha1"))
+                                    {
+                                        printf("%s%s%s\n", COL_YELLOW, certAlgorithm, RESET);
+                                    }
+                                    else if (strstr(certAlgorithm, "sha512") || strstr(certAlgorithm, "sha256"))
+                                    {
+                                        printf("%s%s%s\n", COL_GREEN, certAlgorithm, RESET);
+                                    }
+                                    else
+                                    {
+                                        printf("%s\n", certAlgorithm);
+                                    }
+
+                                    if (options->xmlOutput)
+                                    {
+                                        printf_xml("   <signature-algorithm>");
+                                        i2a_ASN1_OBJECT(fileBIO, x509Cert->cert_info->signature->algorithm);
+                                        printf_xml("</signature-algorithm>\n");
+                                    }
+                                }
+
+                                // Public Key...
+                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_PUBKEY))
+                                {
+                                    publicKey = X509_get_pubkey(x509Cert);
+                                    if (publicKey == NULL)
+                                    {
+                                        printf("Public Key: Could not load\n");
+                                        printf_xml("   <pk error=\"true\" />\n");
+                                    }
+                                    else
+                                    {
+                                        switch (publicKey->type)
+                                        {
+                                            case EVP_PKEY_RSA:
+                                                if (publicKey->pkey.rsa)
+                                                {
+                                                    keyBits = BN_num_bits(publicKey->pkey.rsa->n);
+                                                    if (keyBits < 2048 )
+                                                    {
+                                                        printf("RSA Key Strength: %s%d%s\n", COL_RED, keyBits, RESET);
+                                                    }
+                                                    else if (keyBits >= 4096 )
+                                                    {
+                                                        printf("RSA Key Strength: %s%d%s\n", COL_GREEN, keyBits, RESET);
+                                                    }
+                                                    else
+                                                    {
+                                                        printf("RSA Key Strength: %d\n", keyBits);
+                                                    }
+
+                                                    printf_xml("   <pk error=\"false\" type=\"RSA\" bits=\"%d\" />\n", BN_num_bits(publicKey->pkey.rsa->n));
+                                                }
+                                                else
+                                                {
+                                                    printf("    RSA Public Key: NULL\n");
+                                                }
+                                                break;
+                                            case EVP_PKEY_DSA:
+                                                if (publicKey->pkey.dsa)
+                                                {
+                                                    // TODO - display key strength
+                                                    printf_xml("   <pk error=\"false\" type=\"DSA\" />\n");
+                                                    /* DSA_print(stdoutBIO, publicKey->pkey.dsa, 6); */
+                                                }
+                                                else
+                                                {
+                                                    printf("    DSA Public Key: NULL\n");
+                                                }
+                                                break;
+                                            case EVP_PKEY_EC:
+                                                if (publicKey->pkey.ec)
+                                                {
+                                                    // TODO - display key strength
+                                                    printf_xml("   <pk error=\"false\" type=\"EC\" />\n");
+                                                    /* EC_KEY_print(stdoutBIO, publicKey->pkey.ec, 6); */
+                                                }
+                                                else
+                                                {
+                                                    printf("    EC Public Key: NULL\n");
+                                                }
+                                                break;
+                                            default:
+                                                printf("    Public Key: Unknown\n");
+                                                printf_xml("   <pk error=\"true\" type=\"unknown\" />\n");
+                                                break;
+                                        }
+
+                                        EVP_PKEY_free(publicKey);
+                                    }
+                                }
+
+                                // Free X509 Certificate...
+                                X509_free(x509Cert);
+                            }
+
+                            else {
+                                printf("    Unable to parse certificate\n");
+                            }
+
+                            printf_xml("  </certificate>\n");
+
+                            // Free BIO
+                            BIO_free(stdoutBIO);
+                            if (options->xmlOutput)
+                                BIO_free(fileBIO);
+
+                            // Disconnect SSL over socket
+                            SSL_shutdown(ssl);
+                        }
+
+                        // Free SSL object
+                        SSL_free(ssl);
+                    }
+                    else
+                    {
+                        status = false;
+                        printf("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                    }
+                }
+            }
+            else
+            {
+                status = false;
+                printf("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+            }
+
+            // Free CTX Object
+            SSL_CTX_free(options->ctx);
+        }
+
+        // Error Creating Context Object
+        else
+        {
+            status = false;
+            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+        }
+
+        // Disconnect from host
+        close(socketDescriptor);
+    }
+
+    // Could not connect
+    else
+        status = false;
+
+    return status;
+}
+
+// Print out the full certificate
+int showCertificate(struct sslCheckOptions *options)
 {
     // Variables...
     int cipherStatus = 0;
@@ -2086,11 +2347,17 @@ int testHost(struct sslCheckOptions *options)
         }
     }
 
-    if (status == true && options->getCertificate == true)
+    // Print certificate
+    if (status == true && options->showCertificate == true)
     {
-        status = getCertificate(options);
+        status = showCertificate(options);
     }
 
+    // Show weak certificate signing algorithm or key strength
+    if (status == true && options->checkCertificate == true)
+    {
+        status = checkCertificate(options);
+    }
     // XML Output...
     printf_xml(" </ssltest>\n");
 
@@ -2118,7 +2385,8 @@ int main(int argc, char *argv[])
     xmlArg = 0;
     strcpy(options.host, "127.0.0.1");
     options.noFailed = true;
-    options.getCertificate = false;
+    options.showCertificate = false;
+    options.checkCertificate = true;
     options.showClientCiphers = false;
     options.ciphersuites = true;
     options.reneg = true;
@@ -2155,9 +2423,13 @@ int main(int argc, char *argv[])
         else if (strcmp("--failed", argv[argLoop]) == 0)
             options.noFailed = false;
 
-        // Get certificate
-        else if (strcmp("--get-certificate", argv[argLoop]) == 0)
-            options.getCertificate = true;
+        // Show certificate
+        else if (strcmp("--show-certificate", argv[argLoop]) == 0)
+            options.showCertificate = true;
+
+        // Don't check certificate strength
+        else if (strcmp("--no-check-certificate", argv[argLoop]) == 0)
+            options.checkCertificate = false;
 
         // Show supported client ciphers
         else if (strcmp("--show-ciphers", argv[argLoop]) == 0)
@@ -2387,7 +2659,8 @@ int main(int argc, char *argv[])
             printf("  %s--ipv4%s               Only use IPv4\n", COL_GREEN, RESET);
             printf("  %s--ipv6%s               Only use IPv6\n", COL_GREEN, RESET);
             printf("  %s--failed%s             Show unsupported ciphers.\n", COL_GREEN, RESET);
-            printf("  %s--get-certificate%s    Get Certificate information.\n", COL_GREEN, RESET);
+            printf("  %s--show-certificate%s   Show full certificate information.\n", COL_GREEN, RESET);
+            printf("  %s--no-check-certificate%s      Don't warn about weak certificate algorithm or keys.\n", COL_GREEN, RESET);
             printf("  %s--show-ciphers%s       Show supported client ciphers.\n", COL_GREEN, RESET);
 #ifndef OPENSSL_NO_SSL2
             printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
