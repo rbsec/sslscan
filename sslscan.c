@@ -142,6 +142,7 @@ struct sslCheckOptions
     int targets;
     int sslbugs;
     int http;
+    int rdp;
     int usleep;
     int verbose;
     int ipv4;
@@ -479,6 +480,39 @@ int tcpConnect(struct sslCheckOptions *options)
             printf_verbose("STARTLS FTP setup possibly not complete.\n");
         }
         printf_verbose("Server reported: %s\n", buffer);
+    }
+
+    // Setup an RDP socket with preamble
+    // Borrowed from https://labs.portcullis.co.uk/tools/ssl-cipher-suite-enum/
+    if (options->rdp == true && tlsStarted == false)
+    {
+        unsigned char buffer[32768];
+        size_t readlen;
+
+        tlsStarted = 1;
+
+        // Send RDP preamble
+        send(socketDescriptor, "\x03\x00\x00\x13\x0e\xe0\x00\x00\x00\x00\x00\x01\x00\x08\x00\x03\x00\x00\x00", 19, 0);
+
+        // Read reply header
+        if (4 != recv(socketDescriptor, buffer, 4, 0)) {
+            printf_error("%s    ERROR: unexpected EOF reading from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+            return 0;
+        }
+
+        // Calculate remaining bytes (and check for overflows)
+        readlen = ((buffer[2] & 0x7f) << 8) + buffer[3] - 4;
+        if (readlen > sizeof(buffer)) {
+            printf_error("%s    ERROR: unexpected data from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+            return 0;
+
+        }
+
+        // Read reply data
+        if (readlen != recv(socketDescriptor, buffer, readlen, 0)) {
+            printf_error("%s    ERROR: unexpected EOF reading from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+            return 0;
+        }
     }
 
     // Return
@@ -2235,7 +2269,10 @@ int testHost(struct sslCheckOptions *options)
     printf_xml(" <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
 
     // Test renegotiation
-    printf("Testing SSL server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
+    if (options->rdp)
+        printf("Testing RDP server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
+    else
+        printf("Testing SSL server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
 
     sslCipherPointer = options->ciphers;
 
@@ -2557,6 +2594,10 @@ int main(int argc, char *argv[])
         else if (strcmp("--http", argv[argLoop]) == 0)
             options.http = 1;
 
+        // RDP Preamble...
+        else if (strcmp("--rdp", argv[argLoop]) == 0)
+            options.rdp = 1;
+
         // Sleep between connections...
         else if (strncmp("--usleep=", argv[argLoop], 9) == 0)
             options.usleep = atoi(argv[argLoop] + 9);
@@ -2707,6 +2748,7 @@ int main(int argc, char *argv[])
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
             printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
+            printf("  %s--rdp%s                Send RDP preamble before starting scan.\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
             printf("  %s--usleep=<time>%s      Set the amount of microseconds to sleep between connections.\n", COL_GREEN, RESET);
             printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
