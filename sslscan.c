@@ -142,6 +142,7 @@ struct sslCheckOptions
     int targets;
     int sslbugs;
     int http;
+    int usleep;
     int verbose;
     int ipv4;
     int ipv6;
@@ -801,6 +802,10 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
 
         // Disconnect from host
         close(socketDescriptor);
+
+        if (options->usleep > 0)
+            usleep(options->usleep);
+
     }
     else
     {
@@ -982,6 +987,10 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
         // Disconnect from host
         close(socketDescriptor);
+
+        if (options->usleep > 0)
+            usleep(options->usleep);
+
     }
     else
     {
@@ -1077,6 +1086,9 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 
         // Disconnect from host
         close(socketDescriptor);
+
+        if (options->usleep > 0)
+            usleep(options->usleep);
     }
     else
     {
@@ -1307,6 +1319,10 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
 
         // Disconnect from host
         close(socketDescriptor);
+
+        if (options->usleep > 0)
+            usleep(options->usleep);
+
     }
 
     // Could not connect
@@ -1467,6 +1483,9 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 
         // Disconnect from host
         close(socketDescriptor);
+
+        if (options->usleep > 0)
+            usleep(options->usleep);
     }
 
     // Could not connect
@@ -2538,6 +2557,10 @@ int main(int argc, char *argv[])
         else if (strcmp("--http", argv[argLoop]) == 0)
             options.http = 1;
 
+        // Sleep between connections...
+        else if (strncmp("--usleep=", argv[argLoop], 9) == 0)
+            options.usleep = atoi(argv[argLoop] + 9);
+
         // IPv4 only
         else if (strcmp("--ipv4", argv[argLoop]) == 0)
             options.ipv6 = false;
@@ -2685,6 +2708,7 @@ int main(int argc, char *argv[])
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
             printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
+            printf("  %s--usleep=<time>%s      Set the amount of microseconds to sleep between connections.\n", COL_GREEN, RESET);
             printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
