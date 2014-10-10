@@ -90,6 +90,7 @@ const char *COL_YELLOW = "[33m";
 const char *COL_BLUE = "[1;34m";
 const char *COL_GREEN = "[32m";
 const char *COL_PURPLE = "[35m";
+const char *COL_RED_BG = "[41m";
 #else
 const char *RESET = "";
 const char *COL_RED = "";
@@ -97,6 +98,7 @@ const char *COL_YELLOW = "";
 const char *COL_BLUE = "";
 const char *COL_GREEN = "";
 const char *COL_PURPLE = "";
+const char *COL_RED_BG = "";
 #endif
 
 
@@ -105,7 +107,7 @@ const char *program_banner = "                   _\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
-const char *program_version = "1.9.5-rbsec";
+const char *program_version = "1.9.6-rbsec";
 const char *xml_version = "1.9.5-rbsec";
 
 
@@ -1250,7 +1252,11 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         tempInt = 1;
                     else
                         tempInt = 0;
-                    if (sslCipherPointer->bits > 56)
+                    if (sslCipherPointer->bits == 0)
+                    {
+                        printf("%s%d%s bits  ", COL_RED_BG, sslCipherPointer->bits, RESET);
+                    }
+                    else if (sslCipherPointer->bits > 56)
                     {
                         printf("%s%d%s bits  ", COL_GREEN, sslCipherPointer->bits, RESET);
                     }
@@ -1268,7 +1274,11 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         printf(" ");
                     }
                     printf_xml("%d\" cipher=\"%s\" />\n", sslCipherPointer->bits, sslCipherPointer->name);
-                    if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
+                    if (strstr(sslCipherPointer->name, "NULL"))
+                    {
+                        printf("%s%s%s\n", COL_RED_BG, sslCipherPointer->name, RESET);
+                    }
+                    else if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
                     {
                         printf("%s%s%s\n", COL_PURPLE, sslCipherPointer->name, RESET);
                     }
