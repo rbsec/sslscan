@@ -2782,7 +2782,14 @@ int main(int argc, char *argv[])
                                 // Get port (if it exists)...
                                 tempInt++;
                                 if (strlen(line + tempInt) > 0)
+                                {
                                     options.port = atoi(line + tempInt);
+                                }
+                                // Otherwise assume 443
+                                else
+                                {
+                                    options.port = 443;
+                                }
 
                                 // Test the host...
                                 testHost(&options);
