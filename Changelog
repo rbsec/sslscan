@@ -6,6 +6,7 @@ Date   : 10/10/2014
 Author : rbsec <robin@rbsec.net>
 Changes: The following are a list of changes
          > Highlight NULL ciphers in output
+         > Highlight SSLv3 ciphers
 
 Version: 1.9.5
 Date   : 13/09/2014

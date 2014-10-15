@@ -1229,7 +1229,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     if (sslCipherPointer->sslMethod == SSLv3_client_method())
                     {
                         printf_xml("SSLv3\" bits=\"");
-                        printf("SSLv3    ");
+                        printf("%sSSLv3%s    ", COL_RED, RESET);
                     }
                     else if (sslCipherPointer->sslMethod == TLSv1_client_method())
                     {
