@@ -286,6 +286,11 @@ int readOrLogAndClose(int fd, void* buffer, size_t len, const struct sslCheckOpt
     return 1;
 }
 
+// Write a null-terminated string to a socket
+ssize_t sendString(int sockfd, const char str[])
+{
+    return send(sockfd, str, strlen(str), 0);
+}
 
 // Create a TCP socket
 int tcpConnect(struct sslCheckOptions *options)
@@ -341,7 +346,7 @@ int tcpConnect(struct sslCheckOptions *options)
             printf("%s    ERROR: The host %s on port %d did not appear to be an SMTP service.%s\n", COL_RED, options->host, options->port, RESET);
             return 0;
         }
-        send(socketDescriptor, "EHLO example.org\r\n", 18, 0);
+        sendString(socketDescriptor, "EHLO example.org\r\n");
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
         if (strncmp(buffer, "250", 3) != 0)
@@ -350,7 +355,7 @@ int tcpConnect(struct sslCheckOptions *options)
             printf("%s    ERROR: The SMTP service on %s port %d did not respond with status 250 to our HELO.%s\n", COL_RED, options->host, options->port, RESET);
             return 0;
         }
-        send(socketDescriptor, "STARTTLS\r\n", 10, 0);
+        sendString(socketDescriptor, "STARTTLS\r\n");
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
         if (strncmp(buffer, "220", 3) != 0)
@@ -385,13 +390,13 @@ int tcpConnect(struct sslCheckOptions *options)
             abort();
         }
         tlsStarted = 1;
-        send(socketDescriptor, xmpp_setup, strlen(xmpp_setup), 0);
+        sendString(socketDescriptor, xmpp_setup);
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
         
         printf_verbose("Server reported: %s\nAttempting to STARTTLS\n", buffer);
 
-        send(socketDescriptor, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\r\n", 53, 0);
+        sendString(socketDescriptor, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\r\n");
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
 
@@ -425,7 +430,7 @@ int tcpConnect(struct sslCheckOptions *options)
             return 0;
         printf_verbose("Server reported: %s\n", buffer);
 
-        send(socketDescriptor, "STLS\r\n", 6, 0);
+        sendString(socketDescriptor, "STLS\r\n");
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
         // We probably want to confirm that we see something like:
@@ -450,7 +455,7 @@ int tcpConnect(struct sslCheckOptions *options)
         printf_verbose("Server banner: %s\n", buffer);
         
         // Attempt to STARTTLS
-        send(socketDescriptor, ". STARTTLS\r\n", 12, 0);
+        sendString(socketDescriptor, ". STARTTLS\r\n");
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
         
@@ -472,7 +477,7 @@ int tcpConnect(struct sslCheckOptions *options)
         printf_verbose("Server banner: %s\n", buffer);
 
         // Send TLS request
-        send(socketDescriptor, "AUTH TLS\r\n", 10, 0);
+        sendString(socketDescriptor, "AUTH TLS\r\n");
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
         if (strstr(buffer, "234 AUTH TLS successful")) {
