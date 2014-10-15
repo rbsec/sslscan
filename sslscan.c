@@ -1387,7 +1387,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             if (sslMethod == SSLv3_client_method())
                             {
                                 printf_xml("  <defaultcipher sslversion=\"SSLv3\" bits=\"");
-                                printf("SSLv3    ");
+                                printf("%sSSLv3%s    ", COL_RED, RESET);
                             }
                             else if (sslMethod == TLSv1_client_method())
                             {
