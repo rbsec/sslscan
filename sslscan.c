@@ -1542,12 +1542,12 @@ int checkCertificate(struct sslCheckOptions *options)
     {
 
         // Setup Context Object...
-        if( options->sslVersion == tls_v10) {
-            printf_verbose("sslMethod = TLSv1_method()");
-            sslMethod = TLSv1_method();
-        } else {
+        if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3) {
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
+        } else {
+            printf_verbose("sslMethod = TLSv2_method()");
+            sslMethod = TLSv1_method();
         }
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
