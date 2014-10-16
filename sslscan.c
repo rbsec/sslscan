@@ -156,6 +156,7 @@ struct sslCheckOptions
     struct hostent *hostStruct;
     struct sockaddr_in serverAddress;
     struct sockaddr_in6 serverAddress6;
+    struct timeval timeout;
 
     // SSL Variables...
     SSL_CTX *ctx;
@@ -242,7 +243,6 @@ int fileExists(char *fileName)
     return access(fileName, R_OK) == 0;
 }
 
-
 // Read a line from the input...
 void readLine(FILE *input, char *lineFromFile, int maxSize)
 {
@@ -311,6 +311,9 @@ int tcpConnect(struct sslCheckOptions *options)
         printf_error("%s    ERROR: Could not open a socket.%s\n", COL_RED, RESET);
         return 0;
     }
+
+    // Set socket timeout
+    setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&options->timeout,sizeof(struct timeval));
 
     // Connect
     if (options->hostStruct->h_addrtype == AF_INET)
@@ -1044,11 +1047,6 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     // Connect to host
     socketDescriptor = tcpConnect(options);
 
-    // Set a 3 second socket timeout
-    struct timeval tv;
-    tv.tv_sec = 3;
-    tv.tv_usec = 0;
-    setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
 
     if (socketDescriptor != 0)
     {
@@ -1122,10 +1120,6 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         exit(status);
     }
 
-    // Restore the default 20s timeout
-    tv.tv_sec = 20;
-    tv.tv_usec = 0;
-    setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
     return status;
 }
 
@@ -2443,6 +2437,10 @@ int main(int argc, char *argv[])
     options.verbose = false;
     options.ipv4 = true;
     options.ipv6 = true;
+    
+    // Default socket timeout 3s
+    options.timeout.tv_sec = 3;
+    options.timeout.tv_usec = 0;
 
     options.sslVersion = ssl_all;
     SSL_library_init();
@@ -2576,6 +2574,10 @@ int main(int argc, char *argv[])
         // SSL Bugs...
         else if (strcmp("--bugs", argv[argLoop]) == 0)
             options.sslbugs = 1;
+
+        // Socket Timeout
+        else if (strncmp("--timeout=", argv[argLoop], 10) == 0)
+            options.timeout.tv_sec = atoi(argv[argLoop] + 10);
 
         // SSL HTTP Get...
         else if (strcmp("--http", argv[argLoop]) == 0)
@@ -2735,6 +2737,7 @@ int main(int argc, char *argv[])
             printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
             printf("  %s--rdp%s                Send RDP preamble before starting scan.\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
+            printf("  %s--timeout=<seconds>%s  Set socket timeout. Default is 3s.\n", COL_GREEN, RESET);
             printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
