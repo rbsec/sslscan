@@ -2695,6 +2695,10 @@ int main(int argc, char *argv[])
             printf("\t\t%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
             printf("\t\t%sSSLv2 ciphers will not be detected%s\n", COL_RED, RESET);
 #endif
+#ifdef OPENSSL_NO_SSL3
+            printf("\t\t%sOpenSSL version does not support SSLv3%s\n", COL_RED, RESET);
+            printf("\t\t%sSSLv3 ciphers will not be detected%s\n", COL_RED, RESET);
+#endif
 
             break;
 
@@ -2706,6 +2710,10 @@ int main(int argc, char *argv[])
 #ifdef OPENSSL_NO_SSL2
             printf("%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
             printf("%sSSLv2 ciphers will not be detected%s\n\n", COL_RED, RESET);
+#endif
+#ifdef OPENSSL_NO_SSL3
+            printf("%sOpenSSL version does not support SSLv3%s\n", COL_RED, RESET);
+            printf("%sSSLv3 ciphers will not be detected%s\n", COL_RED, RESET);
 #endif
             printf("%sCommand:%s\n", COL_BLUE, RESET);
             printf("  %s%s [Options] [host:port | host]%s\n\n", COL_GREEN, argv[0], RESET);
@@ -2761,6 +2769,10 @@ int main(int argc, char *argv[])
 #ifdef OPENSSL_NO_SSL2
             printf("%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
             printf("%sSSLv2 ciphers will not be detected%s\n\n", COL_RED, RESET);
+#endif
+#ifdef OPENSSL_NO_SSL3
+            printf("%sOpenSSL version does not support SSLv3%s\n", COL_RED, RESET);
+            printf("%sSSLv3 ciphers will not be detected%s\n", COL_RED, RESET);
 #endif
 
             SSLeay_add_all_algorithms();
