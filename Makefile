@@ -14,7 +14,7 @@ LDFLAGS =-L/usr/local/ssl/lib/
 DEFINES =-DVERSION=\"$(GIT_VERSION)\"
 
 all: $(SRCS)
-	$(CC) -Wall ${LDFLAGS} ${SRCS} ${CFLAGS} ${DEFINES} -lssl -lcrypto -o sslscan
+	$(CC) -Wall -Wformat=2 ${LDFLAGS} ${SRCS} ${CFLAGS} ${DEFINES} -lssl -lcrypto -o sslscan
 
 install:
 	cp sslscan $(BINPATH)

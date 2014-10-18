@@ -1045,8 +1045,10 @@ const char* printableSslMethod(const SSL_METHOD *sslMethod)
     if (sslMethod == SSLv2_client_method())
         return "SSLv2";
 #endif
+#ifndef OPENSSL_NO_SSL3
     if (sslMethod == SSLv3_client_method())
         return "SSLv3";
+#endif
     if (sslMethod == TLSv1_client_method())
         return "TLSv1.0";
     if (sslMethod == TLSv1_1_client_method())
@@ -2365,8 +2367,10 @@ int testHost(struct sslCheckOptions *options)
 #ifndef OPENSSL_NO_SSL2
                 status = defaultCipher(options, SSLv2_client_method());
 #endif
+#ifndef OPENSSL_NO_SSL3
                 if (status != false)
                     status = defaultCipher(options, SSLv3_client_method());
+#endif
                 if (status != false)
                     status = defaultCipher(options, TLSv1_client_method());
                 if (status != false)
@@ -2379,9 +2383,11 @@ int testHost(struct sslCheckOptions *options)
                 status = defaultCipher(options, SSLv2_client_method());
                 break;
 #endif
+#ifndef OPENSSL_NO_SSL3
             case ssl_v3:
                 status = defaultCipher(options, SSLv3_client_method());
                 break;
+#endif
             case tls_all:
                 if (status != false)
                     status = defaultCipher(options, TLSv1_client_method());
@@ -2742,7 +2748,9 @@ int main(int argc, char *argv[])
 #ifndef OPENSSL_NO_SSL2
             printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
 #endif
+#ifndef OPENSSL_NO_SSL3
             printf("  %s--ssl3%s               Only check SSLv3 ciphers.\n", COL_GREEN, RESET);
+#endif
             printf("  %s--tls10%s              Only check TLSv1.0 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls11%s              Only check TLSv1.1 ciphers.\n", COL_GREEN, RESET);
             printf("  %s--tls12%s              Only check TLSv1.2 ciphers.\n", COL_GREEN, RESET);
@@ -2798,7 +2806,9 @@ int main(int argc, char *argv[])
 #ifndef OPENSSL_NO_SSL2
                     populateCipherList(&options, SSLv2_client_method());
 #endif
+#ifndef OPENSSL_NO_SSL3
                     populateCipherList(&options, SSLv3_client_method());
+#endif
                     populateCipherList(&options, TLSv1_client_method());
                     populateCipherList(&options, TLSv1_1_client_method());
                     populateCipherList(&options, TLSv1_2_client_method());
@@ -2808,9 +2818,11 @@ int main(int argc, char *argv[])
                     populateCipherList(&options, SSLv2_client_method());
                     break;
 #endif
+#ifndef OPENSSL_NO_SSL3
                 case ssl_v3:
                     populateCipherList(&options, SSLv3_client_method());
                     break;
+#endif
                 case tls_all:
                     populateCipherList(&options, TLSv1_client_method());
                     populateCipherList(&options, TLSv1_1_client_method());
