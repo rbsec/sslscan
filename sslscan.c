@@ -1039,6 +1039,23 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
 }
 
+const char* printableSslMethod(const SSL_METHOD *sslMethod)
+{
+#ifndef OPENSSL_NO_SSL2
+    if (sslMethod == SSLv2_client_method())
+        return "SSLv2";
+#endif
+    if (sslMethod == SSLv3_client_method())
+        return "SSLv3";
+    if (sslMethod == TLSv1_client_method())
+        return "TLSv1.0";
+    if (sslMethod == TLSv1_1_client_method())
+        return "TLSv1.1";
+    if (sslMethod == TLSv1_2_client_method())
+        return "TLSv1.2";
+    return "unknown SSL_METHOD";
+}
+
 // Test for Heartbleed
 int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
@@ -1102,13 +1119,13 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
             else if (typ == 24 && ln > 3)
             {
                 printf("%svulnerable%s to heartbleed\n", COL_RED, RESET);
-                printf_xml("  <heartbleed vulnerable=\"1\" />\n");
+                printf_xml("  <heartbleed sslversion=\"%s\" vulnerable=\"1\" />\n", printableSslMethod(sslMethod));
                 close(socketDescriptor);
                 return status;
             }
         }
         printf("%snot vulnerable%s to heartbleed\n", COL_GREEN, RESET);
-        printf_xml("  <heartbleed vulnerable=\"0\" />\n");
+        printf_xml("  <heartbleed sslversion=\"%s\" vulnerable=\"0\" />\n", printableSslMethod(sslMethod));
 
         // Disconnect from host
         close(socketDescriptor);
@@ -1141,6 +1158,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
     char requestBuffer[200];
     char buffer[50];
     int resultSize = 0;
+    const char *sslMethod = printableSslMethod(sslCipherPointer->sslMethod);
 
     // Create request buffer...
     memset(requestBuffer, 0, 200);
@@ -1246,33 +1264,31 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                             printf("Failed    ");
                         }
                     }
-                    printf_xml(" sslversion=\"");
+                    printf_xml(" sslversion=\"%s\"", sslMethod);
 #ifndef OPENSSL_NO_SSL2
                     if (sslCipherPointer->sslMethod == SSLv2_client_method())
                     {
-                        printf_xml("SSLv2\" bits=\"");
                         printf("%sSSLv2%s    ", COL_RED, RESET);
                     }
                     else
 #endif
+#ifndef OPENSSL_NO_SSL3
                     if (sslCipherPointer->sslMethod == SSLv3_client_method())
                     {
-                        printf_xml("SSLv3\" bits=\"");
                         printf("%sSSLv3%s    ", COL_RED, RESET);
                     }
-                    else if (sslCipherPointer->sslMethod == TLSv1_client_method())
+                    else
+#endif
+                    if (sslCipherPointer->sslMethod == TLSv1_client_method())
                     {
-                        printf_xml("TLSv1.0\" bits=\"");
                         printf("TLSv1.0  ");
                     }
                     else if (sslCipherPointer->sslMethod == TLSv1_1_client_method())
                     {
-                        printf_xml("TLSv1.1\" bits=\"");
                         printf("TLSv1.1  ");
                     }
                     else if (sslCipherPointer->sslMethod == TLSv1_2_client_method())
                     {
-                        printf_xml("TLSv1.2\" bits=\"");
                         printf("TLSv1.2  ");
                     }
                     if (sslCipherPointer->bits < 10)
@@ -1302,7 +1318,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         tempInt--;
                         printf(" ");
                     }
-                    printf_xml("%d\" cipher=\"%s\" />\n", sslCipherPointer->bits, sslCipherPointer->name);
+                    printf_xml(" bits=\"%d\" cipher=\"%s\" />\n", sslCipherPointer->bits, sslCipherPointer->name);
                     if (strstr(sslCipherPointer->name, "NULL"))
                     {
                         printf("%s%s%s\n", COL_RED_BG, sslCipherPointer->name, RESET);
