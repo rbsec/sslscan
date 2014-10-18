@@ -3,14 +3,18 @@ ifndef $CC
   CC=gcc
 endif
 
-SRCS = sslscan.c
+GIT_VERSION ?= $(shell git describe --tags --always --dirty=-wip	)
+
+SRCS    = sslscan.c
 BINPATH = /usr/bin/
 MANPATH = /usr/share/man/
-CFLAGS=-I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/
-LDFLAGS=-L/usr/local/ssl/lib/
+CFLAGS  =-I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/
+LDFLAGS =-L/usr/local/ssl/lib/
+
+DEFINES =-DVERSION=\"$(GIT_VERSION)\"
 
 all: $(SRCS)
-	$(CC) -Wall ${LDFLAGS} ${SRCS} ${CFLAGS} -lssl -lcrypto -o sslscan
+	$(CC) -Wall ${LDFLAGS} ${SRCS} ${CFLAGS} ${DEFINES} -lssl -lcrypto -o sslscan
 
 install:
 	cp sslscan $(BINPATH)

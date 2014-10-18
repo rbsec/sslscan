@@ -107,9 +107,6 @@ const char *program_banner = "                   _\n"
                              "          / __/ __| / __|/ __/ _` | '_ \\\n"
                              "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
                              "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
-const char *program_version = "1.9.6-rbsec";
-const char *xml_version = "1.9.5-rbsec";
-
 
 struct sslCipher
 {
@@ -2683,13 +2680,13 @@ int main(int argc, char *argv[])
         }
 
         // Output file header...
-        fprintf(options.xmlOutput, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<document title=\"SSLScan Results\" version=\"%s\" web=\"http://github.com/rbsec/sslscan\">\n", xml_version);
+        fprintf(options.xmlOutput, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<document title=\"SSLScan Results\" version=\"%s\" web=\"http://github.com/rbsec/sslscan\">\n", VERSION);
     }
 
     switch (mode)
     {
         case mode_version:
-            printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, program_version,
+            printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, VERSION,
                     SSLeay_version(SSLEAY_VERSION), RESET);
 #ifdef OPENSSL_NO_SSL2
             printf("\t\t%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
@@ -2705,7 +2702,7 @@ int main(int argc, char *argv[])
         case mode_help:
             // Program version banner...
             printf("%s%s%s\n", COL_BLUE, program_banner, RESET);
-            printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, program_version,
+            printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, VERSION,
                     SSLeay_version(SSLEAY_VERSION), RESET);
 #ifdef OPENSSL_NO_SSL2
             printf("%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
@@ -2764,7 +2761,7 @@ int main(int argc, char *argv[])
         // Check a single host/port ciphers...
         case mode_single:
         case mode_multiple:
-            printf("Version: %s%s%s\n%s\n%s\n", COL_GREEN, program_version, RESET,
+            printf("Version: %s%s%s\n%s\n%s\n", COL_GREEN, VERSION, RESET,
                     SSLeay_version(SSLEAY_VERSION), RESET);
 #ifdef OPENSSL_NO_SSL2
             printf("%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
