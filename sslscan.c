@@ -396,7 +396,7 @@ int tcpConnect(struct sslCheckOptions *options)
         sendString(socketDescriptor, xmpp_setup);
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
-        
+
         printf_verbose("Server reported: %s\nAttempting to STARTTLS\n", buffer);
 
         sendString(socketDescriptor, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\r\n");
@@ -420,7 +420,7 @@ int tcpConnect(struct sslCheckOptions *options)
             return 0;
         if (strstr(buffer, "<proceed"))
             printf_verbose("It appears that xmpp-tls is ready for TLS.\n");
-        
+
         printf_verbose("Server reported: %s\n", buffer);
 
     }
@@ -456,12 +456,12 @@ int tcpConnect(struct sslCheckOptions *options)
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
         printf_verbose("Server banner: %s\n", buffer);
-        
+
         // Attempt to STARTTLS
         sendString(socketDescriptor, ". STARTTLS\r\n");
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
-        
+
         if (strstr(buffer, ". OK") || strstr(buffer, " . OK")){
             printf_verbose("STARTLS IMAP setup complete.\nServer reported: %s\n", buffer);
         } else{
@@ -1081,7 +1081,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 
             // Combine 2 bytes to get payload length
             uint16_t ln = hbbuf[4] | hbbuf[3] << 8;
-            
+
             // Debugging
 /*
             uint16_t ver = hbbuf[2] | hbbuf[1] << 8;
@@ -1268,12 +1268,12 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         printf_xml("TLSv1.0\" bits=\"");
                         printf("TLSv1.0  ");
                     }
-					else if (sslCipherPointer->sslMethod == TLSv1_1_client_method())
+                    else if (sslCipherPointer->sslMethod == TLSv1_1_client_method())
                     {
                         printf_xml("TLSv1.1\" bits=\"");
                         printf("TLSv1.1  ");
                     }
-					else if (sslCipherPointer->sslMethod == TLSv1_2_client_method())
+                    else if (sslCipherPointer->sslMethod == TLSv1_2_client_method())
                     {
                         printf_xml("TLSv1.2\" bits=\"");
                         printf("TLSv1.2  ");
@@ -1426,7 +1426,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                                 printf_xml("  <defaultcipher sslversion=\"TLSv1\" bits=\"");
                                 printf("TLSv1.0  ");
                             }
-							else if (sslMethod == TLSv1_1_client_method())
+                            else if (sslMethod == TLSv1_1_client_method())
                             {
                                 printf_xml("  <defaultcipher sslversion=\"TLSv1.1\" bits=\"");
                                 printf("TLSv1.1  ");
@@ -1495,11 +1495,11 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 status = false;
                 printf("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
             }
-            
+
             // Free CTX Object
             SSL_CTX_free(options->ctx);
         }
-    
+
         // Error Creating Context Object
         else
         {
@@ -1895,76 +1895,76 @@ int showCertificate(struct sslCheckOptions *options)
                                 }
 
                                 // Cert Serial No. - Code adapted from OpenSSL's crypto/asn1/t_x509.c
-				if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
-				{
-					ASN1_INTEGER *bs;
-					BIO *bp;
-					BIO *xml_bp;
-					bp = BIO_new_fp(stdout, BIO_NOCLOSE);
-					if (options->xmlOutput)
-						xml_bp = BIO_new_fp(options->xmlOutput, BIO_NOCLOSE);
-					long l;
-					int i;
-					const char *neg;
-					bs=X509_get_serialNumber(x509Cert);
+                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
+                {
+                    ASN1_INTEGER *bs;
+                    BIO *bp;
+                    BIO *xml_bp;
+                    bp = BIO_new_fp(stdout, BIO_NOCLOSE);
+                    if (options->xmlOutput)
+                        xml_bp = BIO_new_fp(options->xmlOutput, BIO_NOCLOSE);
+                    long l;
+                    int i;
+                    const char *neg;
+                    bs=X509_get_serialNumber(x509Cert);
 
-					if (BIO_write(bp,"    Serial Number:",18) <= 0)
-						return(1);
+                    if (BIO_write(bp,"    Serial Number:",18) <= 0)
+                        return(1);
 
-					if (bs->length <= 4)
-					{
-						l=ASN1_INTEGER_get(bs);
-						if (l < 0)
-						{
-							l= -l;
-							neg="-";
-						}
-						else
-							neg="";
-						if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
-							return(1);
-						if (options->xmlOutput)
-							if (BIO_printf(xml_bp,"   <serial>%s%lu (%s0x%lx)</serial>\n",neg,l,neg,l) <= 0)
-								return(1);
-					}
-					else
-					{
-						neg=(bs->type == V_ASN1_NEG_INTEGER)?" (Negative)":"";
-						if (BIO_printf(bp,"%1s%s","",neg) <= 0)
-							return(1);
+                    if (bs->length <= 4)
+                    {
+                        l=ASN1_INTEGER_get(bs);
+                        if (l < 0)
+                        {
+                            l= -l;
+                            neg="-";
+                        }
+                        else
+                            neg="";
+                        if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
+                            return(1);
+                        if (options->xmlOutput)
+                            if (BIO_printf(xml_bp,"   <serial>%s%lu (%s0x%lx)</serial>\n",neg,l,neg,l) <= 0)
+                                return(1);
+                    }
+                    else
+                    {
+                        neg=(bs->type == V_ASN1_NEG_INTEGER)?" (Negative)":"";
+                        if (BIO_printf(bp,"%1s%s","",neg) <= 0)
+                            return(1);
 
-						if (options->xmlOutput)
-							if (BIO_printf(xml_bp,"   <serial>") <= 0)
-								return(1);
+                        if (options->xmlOutput)
+                            if (BIO_printf(xml_bp,"   <serial>") <= 0)
+                                return(1);
 
-						for (i=0; i<bs->length; i++)
-						{
-							if (BIO_printf(bp,"%02x%c",bs->data[i],
-										((i+1 == bs->length)?'\n':':')) <= 0)
-								return(1);
-							if (options->xmlOutput) {
-								if (i+1 == bs->length)
-								{
-									if (BIO_printf(xml_bp,"%02x",bs->data[i]) <= 0)
-										return(1);
-								}
-								else
-								{
-									if (BIO_printf(xml_bp,"%02x%c",bs->data[i], ':') <= 0)
-										return(1);
-								}
-							}
-						}
+                        for (i=0; i<bs->length; i++)
+                        {
+                            if (BIO_printf(bp,"%02x%c",bs->data[i],
+                                        ((i+1 == bs->length)?'\n':':')) <= 0)
+                                return(1);
+                            if (options->xmlOutput) {
+                                if (i+1 == bs->length)
+                                {
+                                    if (BIO_printf(xml_bp,"%02x",bs->data[i]) <= 0)
+                                        return(1);
+                                }
+                                else
+                                {
+                                    if (BIO_printf(xml_bp,"%02x%c",bs->data[i], ':') <= 0)
+                                        return(1);
+                                }
+                            }
+                        }
 
-						if (options->xmlOutput)
-							if (BIO_printf(xml_bp,"</serial>\n") <= 0)
-								return(1);
+                        if (options->xmlOutput)
+                            if (BIO_printf(xml_bp,"</serial>\n") <= 0)
+                                return(1);
 
-					}
-					if(NULL != bp)
-						BIO_free(bp);
-					// We don't free the xml_bp because it will be used in the future
-				}
+                    }
+                    if(NULL != bp)
+                        BIO_free(bp);
+                    // We don't free the xml_bp because it will be used in the future
+                }
 
                                 // Signature Algo...
                                 if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SIGNAME))
@@ -2220,7 +2220,7 @@ int testHost(struct sslCheckOptions *options)
     int status = true;
 
     // Resolve Host Name
-    
+
     if (options->ipv4)
     {
         options->hostStruct = gethostbyname2(options->host, AF_INET);
@@ -2236,9 +2236,9 @@ int testHost(struct sslCheckOptions *options)
         printf("%sERROR: Could not resolve hostname %s.%s\n", COL_RED, options->host, RESET);
         return false;
     }
-    
+
     // Configure Server Address and Port
-    
+
     if (options->hostStruct->h_addrtype == AF_INET6)
     {
         options->serverAddress6.sin6_family = options->hostStruct->h_addrtype;
@@ -2442,7 +2442,7 @@ int main(int argc, char *argv[])
     options.verbose = false;
     options.ipv4 = true;
     options.ipv6 = true;
-    
+
     // Default socket timeout 3s
     options.timeout.tv_sec = 3;
     options.timeout.tv_usec = 0;
@@ -2515,7 +2515,7 @@ int main(int argc, char *argv[])
         // Private Key Password
         else if (strncmp("--pkpass=", argv[argLoop], 9) == 0)
             options.privateKeyPassword = argv[argLoop] +9;
-        
+
         // Should we check for supported cipher suites
         else if (strcmp("--no-ciphersuites", argv[argLoop]) == 0)
             options.ciphersuites = false;
@@ -2563,16 +2563,16 @@ int main(int argc, char *argv[])
         // TLS v1 only...
         else if (strcmp("--tls10", argv[argLoop]) == 0)
             options.sslVersion = tls_v10;
-			
+
         // TLS v11 only...
         else if (strcmp("--tls11", argv[argLoop]) == 0)
             options.sslVersion = tls_v11;
 
-		// TLS v12 only...
+        // TLS v12 only...
         else if (strcmp("--tls12", argv[argLoop]) == 0)
             options.sslVersion = tls_v12;
 
-		// TLS (all versions)...
+        // TLS (all versions)...
         else if (strcmp("--tlsall", argv[argLoop]) == 0)
             options.sslVersion = tls_all;
 
@@ -2788,7 +2788,7 @@ int main(int argc, char *argv[])
                     populateCipherList(&options, SSLv3_client_method());
                     populateCipherList(&options, TLSv1_client_method());
                     populateCipherList(&options, TLSv1_1_client_method());
-					populateCipherList(&options, TLSv1_2_client_method());
+                    populateCipherList(&options, TLSv1_2_client_method());
                     break;
 #ifndef OPENSSL_NO_SSL2
                 case ssl_v2:
@@ -2861,7 +2861,7 @@ int main(int argc, char *argv[])
                 else
                     printf_error("%sERROR: Targets file %s does not exist.%s\n", COL_RED, argv[options.targets] + 10, RESET);
             }
-    
+
             // Free Structures
             while (options.ciphers != 0)
             {
@@ -2882,3 +2882,4 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+/* vim :set ts=4 sw=4 sts=4 et : */
