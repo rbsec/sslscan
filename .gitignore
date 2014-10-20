@@ -1,1 +1,8 @@
+# compiled binary
 sslscan
+
+# custom openssl build
+openssl-*/
+openssl_*
+libcrypto*
+libssl*
