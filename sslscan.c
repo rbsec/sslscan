@@ -50,130 +50,21 @@
 #include <netinet/in.h>
 #endif
 
-// Defines...
-#define false 0
-#define true 1
+#include "sslscan.h"
 
-#define mode_help 0
-#define mode_version 1
-#define mode_single 2
-#define mode_multiple 3
+/* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
+ * many versions and releases of OpenSSL. */
+/** Does the run-time openssl version look like we need
+ * SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION? */
+static int use_unsafe_renegotiation_op = 0;
 
-#define BUFFERSIZE 1024
-
-#define ssl_all 0
-#define ssl_v2 1
-#define ssl_v3 2
-#define tls_all 3
-#define tls_v10 4
-#define tls_v11 5
-#define tls_v12 6
-
-// Macros for various outputs
-#define printf_error(format, ...)   fprintf(stderr, format, ##__VA_ARGS__)
-#define printf_xml(format, ...)     if (options->xmlOutput) fprintf(options->xmlOutput, format, ##__VA_ARGS__)
-#define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
-
-// Global comments:
-// The comment style:
-//   // Call foo()
-//   foo()
-// is crappy, but I haven't removed them unless I was otherwise reworking the
-// code.
-
-// Colour Console Output...
-#if !defined(__WIN32__)
-// Always better to do "const char RESET[] = " because it saves relocation records.
-const char *RESET = "[0m";            // DEFAULT
-const char *COL_RED = "[31m";
-const char *COL_YELLOW = "[33m";
-const char *COL_BLUE = "[1;34m";
-const char *COL_GREEN = "[32m";
-const char *COL_PURPLE = "[35m";
-const char *COL_RED_BG = "[41m";
-#else
-const char *RESET = "";
-const char *COL_RED = "";
-const char *COL_YELLOW = "";
-const char *COL_BLUE = "";
-const char *COL_GREEN = "";
-const char *COL_PURPLE = "";
-const char *COL_RED_BG = "";
-#endif
-
-
-const char *program_banner = "                   _\n"
-                             "           ___ ___| |___  ___ __ _ _ __\n"
-                             "          / __/ __| / __|/ __/ _` | '_ \\\n"
-                             "          \\__ \\__ \\ \\__ \\ (_| (_| | | | |\n"
-                             "          |___/___/_|___/\\___\\__,_|_| |_|\n\n";
-
-struct sslCipher
-{
-    // Cipher Properties...
-    const char *name;
-    char *version;
-    int bits;
-    char description[512];
-    const SSL_METHOD *sslMethod;
-    struct sslCipher *next;
-};
-
-struct sslCheckOptions
-{
-    // Program Options...
-    char host[512];
-    int port;
-    int noFailed;
-    int showCertificate;
-    int checkCertificate;
-    int showClientCiphers;
-    int ciphersuites;
-    int reneg;
-    int compression;
-    int heartbleed;
-    int starttls_ftp;
-    int starttls_imap;
-    int starttls_pop3;
-    int starttls_smtp;
-    int starttls_xmpp;
-    int sslVersion;
-    int targets;
-    int sslbugs;
-    int http;
-    int rdp;
-    int verbose;
-    int ipv4;
-    int ipv6;
-
-    // File Handles...
-    FILE *xmlOutput;
-
-    // TCP Connection Variables...
-    struct hostent *hostStruct;
-    struct sockaddr_in serverAddress;
-    struct sockaddr_in6 serverAddress6;
-    struct timeval timeout;
-
-    // SSL Variables...
-    SSL_CTX *ctx;
-    struct sslCipher *ciphers;
-    char *clientCertsFile;
-    char *privateKeyFile;
-    char *privateKeyPassword;
-};
-
-// store renegotiation test data
-struct renegotiationOutput
-{
-    int supported;
-    int secure;
-};
+/** Does the run-time openssl version look like we need
+ * SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION? */
+static int use_unsafe_renegotiation_flag = 0;
 
 // Adds Ciphers to the Cipher List structure
 int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
-    // Variables...
     int returnCode = true;
     struct sslCipher *sslCipherPointer;
     int tempInt;
@@ -681,26 +572,6 @@ int freeRenegotiationOutput( struct renegotiationOutput *myRenOut )
     return true;
 }
 
-/* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
- * many versions and releases of OpenSSL. */
-/** Does the run-time openssl version look like we need
- * SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION? */
-static int use_unsafe_renegotiation_op = 0;
-/** Does the run-time openssl version look like we need
- * SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION? */
-static int use_unsafe_renegotiation_flag = 0;
-
-/* We redefine these so that we can run correctly even if the vendor gives us
- * a version of OpenSSL that does not match its header files.  (Apple: I am
- * looking at you.)
- */
-#ifndef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
-#define SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION 0x00040000L
-#endif
-#ifndef SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
-#define SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION 0x0010
-#endif
-
 void tls_reneg_init(struct sslCheckOptions *options)
 {
     /* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
@@ -737,7 +608,6 @@ void tls_reneg_init(struct sslCheckOptions *options)
   SSL_CTX_set_options(options->ctx,
                       SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
 #endif
-
 }
 
 // Check if the server supports compression
@@ -756,7 +626,6 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     socketDescriptor = tcpConnect(options);
     if (socketDescriptor != 0)
     {
-
         // Setup Context Object...
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
@@ -795,9 +664,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         // Connect SSL over socket
                         SSL_connect(ssl);
 
-
                         session = *SSL_get_session(ssl);
-
 
                         printf_xml("  <compression supported=\"%d\" />\n",
                             session.compress_meth);
@@ -851,7 +718,6 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     }
 
     return status;
-
 }
 
 // Check if the server supports renegotiation
@@ -1390,7 +1256,6 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     socketDescriptor = tcpConnect(options);
     if (socketDescriptor != 0)
     {
-
         // Setup Context Object...
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
@@ -1536,7 +1401,6 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 // Report certificate weaknesses (key length and signing algorithm)
 int checkCertificate(struct sslCheckOptions *options)
 {
-    // Variables...
     int cipherStatus = 0;
     int status = true;
     int socketDescriptor = 0;
@@ -1554,7 +1418,6 @@ int checkCertificate(struct sslCheckOptions *options)
     socketDescriptor = tcpConnect(options);
     if (socketDescriptor != 0)
     {
-
         // Setup Context Object...
         if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3) {
             printf_verbose("sslMethod = SSLv23_method()");
@@ -1569,7 +1432,6 @@ int checkCertificate(struct sslCheckOptions *options)
 
             if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
             {
-
                 // Load Certs if required...
                 if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
                     status = loadCerts(options);
@@ -1580,7 +1442,6 @@ int checkCertificate(struct sslCheckOptions *options)
                     ssl = SSL_new(options->ctx);
                     if (ssl != NULL)
                     {
-
                         // Connect socket and BIO
                         cipherConnectionBio = BIO_new_socket(socketDescriptor, BIO_NOCLOSE);
 
@@ -1606,7 +1467,6 @@ int checkCertificate(struct sslCheckOptions *options)
                         cipherStatus = SSL_connect(ssl);
                         if (cipherStatus == 1)
                         {
-
                             // Setup BIO's
                             stdoutBIO = BIO_new(BIO_s_file());
                             BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
@@ -1622,7 +1482,6 @@ int checkCertificate(struct sslCheckOptions *options)
                             x509Cert = SSL_get_peer_certificate(ssl);
                             if (x509Cert != NULL)
                             {
-
                                 // Cert Serial No. - Code adapted from OpenSSL's crypto/asn1/t_x509.c
                                 if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
                                 {
@@ -1762,20 +1621,19 @@ int checkCertificate(struct sslCheckOptions *options)
                     else
                     {
                         status = false;
-                        printf("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                        printf("%s    ERROR: Could not create SSL object.%s\n", COL_RED, RESET);
                     }
                 }
             }
             else
             {
                 status = false;
-                printf("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+                printf("%s    ERROR: Could not set cipher.%s\n", COL_RED, RESET);
             }
 
             // Free CTX Object
             SSL_CTX_free(options->ctx);
         }
-
         // Error Creating Context Object
         else
         {
@@ -1832,10 +1690,8 @@ int showCertificate(struct sslCheckOptions *options)
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
         {
-
             if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
             {
-
                 // Load Certs if required...
                 if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
                     status = loadCerts(options);
@@ -1846,7 +1702,6 @@ int showCertificate(struct sslCheckOptions *options)
                     ssl = SSL_new(options->ctx);
                     if (ssl != NULL)
                     {
-
                         // Connect socket and BIO
                         cipherConnectionBio = BIO_new_socket(socketDescriptor, BIO_NOCLOSE);
 
@@ -1872,7 +1727,6 @@ int showCertificate(struct sslCheckOptions *options)
                         cipherStatus = SSL_connect(ssl);
                         if (cipherStatus == 1)
                         {
-
                             // Setup BIO's
                             stdoutBIO = BIO_new(BIO_s_file());
                             BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
@@ -1910,76 +1764,76 @@ int showCertificate(struct sslCheckOptions *options)
                                 }
 
                                 // Cert Serial No. - Code adapted from OpenSSL's crypto/asn1/t_x509.c
-                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
-                {
-                    ASN1_INTEGER *bs;
-                    BIO *bp;
-                    BIO *xml_bp;
-                    bp = BIO_new_fp(stdout, BIO_NOCLOSE);
-                    if (options->xmlOutput)
-                        xml_bp = BIO_new_fp(options->xmlOutput, BIO_NOCLOSE);
-                    long l;
-                    int i;
-                    const char *neg;
-                    bs=X509_get_serialNumber(x509Cert);
-
-                    if (BIO_write(bp,"    Serial Number:",18) <= 0)
-                        return(1);
-
-                    if (bs->length <= 4)
-                    {
-                        l=ASN1_INTEGER_get(bs);
-                        if (l < 0)
-                        {
-                            l= -l;
-                            neg="-";
-                        }
-                        else
-                            neg="";
-                        if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
-                            return(1);
-                        if (options->xmlOutput)
-                            if (BIO_printf(xml_bp,"   <serial>%s%lu (%s0x%lx)</serial>\n",neg,l,neg,l) <= 0)
-                                return(1);
-                    }
-                    else
-                    {
-                        neg=(bs->type == V_ASN1_NEG_INTEGER)?" (Negative)":"";
-                        if (BIO_printf(bp,"%1s%s","",neg) <= 0)
-                            return(1);
-
-                        if (options->xmlOutput)
-                            if (BIO_printf(xml_bp,"   <serial>") <= 0)
-                                return(1);
-
-                        for (i=0; i<bs->length; i++)
-                        {
-                            if (BIO_printf(bp,"%02x%c",bs->data[i],
-                                        ((i+1 == bs->length)?'\n':':')) <= 0)
-                                return(1);
-                            if (options->xmlOutput) {
-                                if (i+1 == bs->length)
+                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
                                 {
-                                    if (BIO_printf(xml_bp,"%02x",bs->data[i]) <= 0)
-                                        return(1);
-                                }
-                                else
-                                {
-                                    if (BIO_printf(xml_bp,"%02x%c",bs->data[i], ':') <= 0)
-                                        return(1);
-                                }
-                            }
-                        }
+                                    ASN1_INTEGER *bs;
+                                    BIO *bp;
+                                    BIO *xml_bp;
+                                    bp = BIO_new_fp(stdout, BIO_NOCLOSE);
+                                    if (options->xmlOutput)
+                                        xml_bp = BIO_new_fp(options->xmlOutput, BIO_NOCLOSE);
+                                    long l;
+                                    int i;
+                                    const char *neg;
+                                    bs=X509_get_serialNumber(x509Cert);
 
-                        if (options->xmlOutput)
-                            if (BIO_printf(xml_bp,"</serial>\n") <= 0)
-                                return(1);
+                                    if (BIO_write(bp,"    Serial Number:",18) <= 0)
+                                        return(1);
 
-                    }
-                    if(NULL != bp)
-                        BIO_free(bp);
-                    // We don't free the xml_bp because it will be used in the future
-                }
+                                    if (bs->length <= 4)
+                                    {
+                                        l=ASN1_INTEGER_get(bs);
+                                        if (l < 0)
+                                        {
+                                            l= -l;
+                                            neg="-";
+                                        }
+                                        else
+                                            neg="";
+                                        if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
+                                            return(1);
+                                        if (options->xmlOutput)
+                                            if (BIO_printf(xml_bp,"   <serial>%s%lu (%s0x%lx)</serial>\n",neg,l,neg,l) <= 0)
+                                                return(1);
+                                    }
+                                    else
+                                    {
+                                        neg=(bs->type == V_ASN1_NEG_INTEGER)?" (Negative)":"";
+                                        if (BIO_printf(bp,"%1s%s","",neg) <= 0)
+                                            return(1);
+
+                                        if (options->xmlOutput)
+                                            if (BIO_printf(xml_bp,"   <serial>") <= 0)
+                                                return(1);
+
+                                        for (i=0; i<bs->length; i++)
+                                        {
+                                            if (BIO_printf(bp,"%02x%c",bs->data[i],
+                                                        ((i+1 == bs->length)?'\n':':')) <= 0)
+                                                return(1);
+                                            if (options->xmlOutput) {
+                                                if (i+1 == bs->length)
+                                                {
+                                                    if (BIO_printf(xml_bp,"%02x",bs->data[i]) <= 0)
+                                                        return(1);
+                                                }
+                                                else
+                                                {
+                                                    if (BIO_printf(xml_bp,"%02x%c",bs->data[i], ':') <= 0)
+                                                        return(1);
+                                                }
+                                            }
+                                        }
+
+                                        if (options->xmlOutput)
+                                            if (BIO_printf(xml_bp,"</serial>\n") <= 0)
+                                                return(1);
+
+                                    }
+                                    if(NULL != bp)
+                                        BIO_free(bp);
+                                    // We don't free the xml_bp because it will be used in the future
+                                }
 
                                 // Signature Algo...
                                 if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SIGNAME))
@@ -2173,9 +2027,9 @@ int showCertificate(struct sslCheckOptions *options)
                                 X509_free(x509Cert);
                             }
 
-                       else {
+                            else {
                                 printf("    Unable to parse certificate\n");
-                       }
+                            }
 
                             printf_xml("  </certificate>\n");
 
@@ -2253,14 +2107,12 @@ int testHost(struct sslCheckOptions *options)
     }
 
     // Configure Server Address and Port
-
     if (options->hostStruct->h_addrtype == AF_INET6)
     {
         options->serverAddress6.sin6_family = options->hostStruct->h_addrtype;
         memcpy((char *) &options->serverAddress6.sin6_addr, options->hostStruct->h_addr, options->hostStruct->h_length);
         options->serverAddress6.sin6_port = htons(options->port);
     }
-
     else
     {
         options->serverAddress.sin_family = options->hostStruct->h_addrtype;
