@@ -14,6 +14,16 @@ ciphers that are supported.
 
 SSLScan is designed to be easy, lean and fast. The output includes preferred
 ciphers of the SSL/TLS service, and text and XML output formats are supported. It is TLS SNI aware when used with a supported version of OpenSSL.
+
+Output is colour coded to indicate security issues. Colours are as follows:
+
+Red Background  NULL cipher (no encryption)
+.br
+Red             Broken cipher (<= 40 bit), broken protocol (SSLv2 or SSLv3) or broken certificate signing algorithm (MD5)
+.br
+Yellow          Weak cipher (<= 56 bit or RC4) or weak certificate signing algorithm (SHA-1)
+.br
+Purple          Anonymous cipher (ADH or AECDH)
 .SH OPTIONS
 .TP
 .B \-\-help
