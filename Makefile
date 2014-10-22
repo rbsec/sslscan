@@ -3,18 +3,35 @@ ifndef $CC
   CC=gcc
 endif
 
-GIT_VERSION ?= $(shell git describe --tags --always --dirty=-wip	)
+GIT_VERSION = $(shell git describe --tags --always --dirty=-wip)
 
-SRCS    = sslscan.c
-BINPATH = /usr/bin/
-MANPATH = /usr/share/man/
-CFLAGS  =-I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/
-LDFLAGS =-L/usr/local/ssl/lib/
+SRCS      = sslscan.c
+BINPATH   = /usr/bin/
+MANPATH   = /usr/share/man/
 
-DEFINES =-DVERSION=\"$(GIT_VERSION)\"
+WARNINGS 	= -Wall -Wformat=2
+DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
 
-all: $(SRCS)
-	$(CC) -Wall -Wformat=2 ${LDFLAGS} ${SRCS} ${CFLAGS} ${DEFINES} -lssl -lcrypto -o sslscan
+# for dynamic linkung
+LDFLAGS   = -L/usr/local/ssl/lib/
+CFLAGS    = -I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/
+LIBS      = -lssl -lcrypto
+
+# for static linking
+ifeq ($(STATIC_BUILD), TRUE)
+PWD          = $(shell pwd)/openssl
+LDFLAGS      = -L${PWD}/
+CFLAGS       = -I${PWD}/include/ -I${PWD}/
+LIBS         = -ldl -lssl -lcrypto
+GIT_VERSION  = $(shell git describe --tags --always --dirty=-wip)-static
+endif
+
+.PHONY: sslscan clean
+
+all: sslscan
+
+sslscan: $(SRCS)
+	$(CC) -o $@ ${WARNINGS} ${LDFLAGS} ${CFLAGS} ${DEFINES} ${SRCS} ${LIBS}
 
 install:
 	cp sslscan $(BINPATH)
@@ -24,5 +41,18 @@ uninstall:
 	rm -f $(BINPATH)sslscan
 	rm -f $(MANPATH)man1/sslscan.1
 
+openssl/Makefile:
+	[ -d openssl -a -d openssl/.git ] && true || git clone https://github.com/openssl/openssl ./openssl
+
+openssl/libcrypto.a: openssl/Makefile
+	cd ./openssl; ./config no-shares
+	$(MAKE) -C openssl depend
+	$(MAKE) -C openssl all
+	$(MAKE) -C openssl test
+
+static: openssl/libcrypto.a
+	$(MAKE) sslscan STATIC_BUILD=TRUE
+
 clean:
+	[ -d openssl -a -d openssl/.git ] && ( cd ./openssl; git clean -fx )
 	rm -f sslscan
