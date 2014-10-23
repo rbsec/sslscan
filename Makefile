@@ -22,7 +22,7 @@ ifeq ($(STATIC_BUILD), TRUE)
 PWD          = $(shell pwd)/openssl
 LDFLAGS      = -L${PWD}/
 CFLAGS       = -I${PWD}/include/ -I${PWD}/
-LIBS         = -ldl -lssl -lcrypto
+LIBS         = -lssl -lcrypto -ldl
 GIT_VERSION  = $(shell git describe --tags --always --dirty=-wip)-static
 endif
 

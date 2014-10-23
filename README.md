@@ -62,6 +62,11 @@ then run
 which will clone the [OpenSSL repository](https://github.com/openssl/openssl),
 and configure/compile/test OpenSSL prior to compiling `sslscan`.
 
+**Please note:** Out of the box, OpenSSL cannot compiled with `clang` without
+further customization (which is not done by the provided `Makefile`).
+For more information on this, see [Modifying Build Settings](http://wiki.openssl.org/index.php/Compilation_and_Installation#Modifying_Build_Settings)
+in the OpenSSL wiki.
+
 You can verify whether you have a statically linked OpenSSL version, if
 
     ./sslscan --version
