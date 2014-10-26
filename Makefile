@@ -5,11 +5,16 @@ endif
 
 GIT_VERSION = $(shell git describe --tags --always --dirty=-wip)
 
+# Ugly hack to get version if git isn't installed
+ifeq ($(GIT_VERSION),)
+  GIT_VERSION = $(shell grep -E -o -m 1 "[0-9]+\.[0-9]+\.[0-9]+" Changelog)
+endif
+
 SRCS      = sslscan.c
 BINPATH   = /usr/bin/
 MANPATH   = /usr/share/man/
 
-WARNINGS 	= -Wall -Wformat=2
+WARNINGS  = -Wall -Wformat=2
 DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
 
 # for dynamic linkung
@@ -42,7 +47,7 @@ uninstall:
 	rm -f $(MANPATH)man1/sslscan.1
 
 openssl/Makefile:
-	[ -d openssl -a -d openssl/.git ] && true || git clone https://github.com/openssl/openssl ./openssl
+	[ -d openssl -a -d openssl/.git ] && true || git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_1-stable
 
 openssl/libcrypto.a: openssl/Makefile
 	cd ./openssl; ./config no-shares

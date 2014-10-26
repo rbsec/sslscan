@@ -18,6 +18,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Flag certificates signed with MD5 or SHA-1, or with short (<2048 bit) RSA keys
 * Support scanning RDP servers with --rdp (credit skettler)
 * Added option to specify socket timeout.
+* Added option for static compilation (credit dmke)
 
 ### OpenSSL issues
 
@@ -49,11 +50,11 @@ SSLv3 ciphers. In comparison to the aforementioned method of repackaging the
 Debian build, this custom OpenSSL build won't affect other tools on the same
 system, as they would use the version packaged by the distro's maintainers.
 
-To compile your own OpenSSL version, you'll propaply need to install the
+To compile your own OpenSSL version, you'll probably need to install the
 OpenSSL build dependencies:
 
     apt-get install build-essentials git
-    apt-get build-deb openssl
+    apt-get build-dep openssl
 
 then run
 

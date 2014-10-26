@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version: 1.9.7
+Date   : 26/10/2014
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Added option for static compilation with OpenSSL (credit dmke)
+         > Added "sslmethod" attribute to Heartbleed XML output (credit dmke)
+         > Split headers into sslscan.h (credit dmke)
+
 Version: 1.9.6
 Date   : 10/10/2014
 Author : rbsec <robin@rbsec.net>
