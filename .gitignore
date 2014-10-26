@@ -1,1 +1,11 @@
+# compiled binary
 sslscan
+
+# debian build of openssl
+openssl-*/
+openssl_*
+libcrypto*
+libssl*
+
+# custom openssl build
+openssl/

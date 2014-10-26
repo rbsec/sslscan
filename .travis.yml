@@ -4,5 +4,16 @@ compiler:
   - clang
   - gcc
 
+env:
+  - TARGET=sslscan
+  - TARGET=static
+
 script:
-  - make CC=$CC
+  - make $TARGET CC=$CC
+
+matrix:
+  exclude:
+    # OpenSSL can't be compiled out-of-the box with clang, see
+    # http://wiki.openssl.org/index.php/Compilation_and_Installation#Modifying_Build_Settings
+    - compiler: clang
+      env: TARGET=static
