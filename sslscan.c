@@ -255,10 +255,6 @@ int tcpConnect(struct sslCheckOptions *options)
             printf("%s    ERROR: The SMTP service on %s port %d did not appear to support STARTTLS.%s\n", COL_RED, options->host, options->port, RESET);
             return 0;
         }
-        if (options->sslVersion == ssl_v3 || options->sslVersion == ssl_all)
-        {
-            printf_verbose("Some servers will fail to response to SSLv3 ciphers over STARTTLS\nIf your scan hangs, try using the --tlsall option\n");
-        }
     }
 
     // We could use an XML parser but frankly it seems like a security disaster
@@ -2123,6 +2119,12 @@ int testHost(struct sslCheckOptions *options)
 
     // XML Output...
     printf_xml(" <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
+
+    // Verbose warning about STARTTLS and SSLv3
+    if (options->sslVersion == ssl_v3 || options->sslVersion == ssl_all)
+    {
+        printf_verbose("Some servers will fail to response to SSLv3 ciphers over STARTTLS\nIf your scan hangs, try using the --tlsall option\n\n");
+    }
 
     // Test renegotiation
     printf("Testing SSL server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
