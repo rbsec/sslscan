@@ -2335,7 +2335,7 @@ int main(int argc, char *argv[])
     for (argLoop = 1; argLoop < argc; argLoop++)
     {
         // Help
-        if (strcmp("--help", argv[argLoop]) == 0)
+        if ((strcmp("--help", argv[argLoop]) == 0) || (strcmp("-h", argv[argLoop]) == 0))
             mode = mode_help;
 
         // targets
