@@ -134,6 +134,7 @@ struct sslCheckOptions
     struct sockaddr_in serverAddress;
     struct sockaddr_in6 serverAddress6;
     struct timeval timeout;
+    struct timespec sleep;
 
     // SSL Variables...
     SSL_CTX *ctx;

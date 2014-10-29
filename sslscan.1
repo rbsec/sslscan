@@ -140,9 +140,13 @@ the server response code
 .br
 Enables workarounds for SSL bugs
 .TP
-.B \-\-timeout=<seconds>
+.B \-\-timeout=<sec>
 .br
 Set socket timeout. Useful for hosts that fail to respond to ciphers they don't understand. Default is 3s.
+.TP
+.B \-\-sleep=<msec>
+.br
+Pause between connections. Useful on STARTTLS SMTP services, or anything else that's performing rate limiting. Defaultis disalbed.
 .TP
 .B \-\-xml=<file>
 .br

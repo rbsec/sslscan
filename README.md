@@ -10,15 +10,16 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Added TLSv1.1 and TLSv1.2 support (merged from twwbond/sslscan).
 * Compiles if OpenSSL does not support SSLv2 ciphers (merged from digineo/sslscan).
 * Supports IPv6 hostnames (can be forced with --ipv6).
-* Check for TLS compression (CRIME, disable with --no-compression)
-* Disable cipher suite checking (--no-ciphersuites)
-* Disable coloured output (--no-colour)
-* Removed undocumented -p output option
-* Added check for OpenSSL HeartBleed (CVE-2014-0160, disable with --no-heartbleed)
-* Flag certificates signed with MD5 or SHA-1, or with short (<2048 bit) RSA keys
-* Support scanning RDP servers with --rdp (credit skettler)
+* Check for TLS compression (CRIME, disable with --no-compression).
+* Disable cipher suite checking (--no-ciphersuites).
+* Disable coloured output (--no-colour).
+* Removed undocumented -p output option.
+* Added check for OpenSSL HeartBleed (CVE-2014-0160, disable with --no-heartbleed).
+* Flag certificates signed with MD5 or SHA-1, or with short (<2048 bit) RSA keys.
+* Support scanning RDP servers with --rdp (credit skettler).
 * Added option to specify socket timeout.
-* Added option for static compilation (credit dmke)
+* Added option for static compilation (credit dmke).
+* Added --sleep option to pause between requests.
 
 ### OpenSSL issues
 

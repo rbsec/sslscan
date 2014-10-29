@@ -183,6 +183,12 @@ ssize_t sendString(int sockfd, const char str[])
 // Create a TCP socket
 int tcpConnect(struct sslCheckOptions *options)
 {
+    //Sleep if required
+    if (options->sleep.tv_sec)
+    {
+        nanosleep(&options->sleep, NULL);
+    }
+    
     // Variables...
     int socketDescriptor;
     int tlsStarted = 0;
@@ -2291,6 +2297,7 @@ int main(int argc, char *argv[])
     int maxSize;
     int xmlArg;
     int mode = mode_help;
+    int msec;
     FILE *targetsFile;
     char line[1024];
 
@@ -2456,6 +2463,14 @@ int main(int argc, char *argv[])
         // Socket Timeout
         else if (strncmp("--timeout=", argv[argLoop], 10) == 0)
             options.timeout.tv_sec = atoi(argv[argLoop] + 10);
+
+        // Sleep between requests (ms)
+        else if (strncmp("--sleep=", argv[argLoop], 8) == 0)
+        {
+            msec = atoi(argv[argLoop] + 8);
+            options.sleep.tv_sec = msec / 1000;
+            options.sleep.tv_nsec = (msec - (options.sleep.tv_sec * 1000)) * 1000000;
+        }
 
         // SSL HTTP Get...
         else if (strcmp("--http", argv[argLoop]) == 0)
@@ -2625,7 +2640,8 @@ int main(int argc, char *argv[])
             printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
             printf("  %s--rdp%s                Send RDP preamble before starting scan.\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
-            printf("  %s--timeout=<seconds>%s  Set socket timeout. Default is 3s.\n", COL_GREEN, RESET);
+            printf("  %s--timeout=<sec>%s      Set socket timeout. Default is 3s.\n", COL_GREEN, RESET);
+            printf("  %s--sleep=<msec>%s       Pause between connection request. Default is disabled.\n", COL_GREEN, RESET);
             printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
