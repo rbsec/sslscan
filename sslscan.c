@@ -673,11 +673,11 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
 
                         if (session.compress_meth == 0)
                         {
-                            printf("Compression %sdisabled%s\n\n", COL_GREEN, RESET);
+                            printf("Compression %sdisabled%s\n", COL_GREEN, RESET);
                         }
                         else
                         {
-                            printf("Compression %senabled%s (CRIME)\n\n", COL_RED, RESET);
+                            printf("Compression %senabled%s (CRIME)\n", COL_RED, RESET);
                         }
 
                         // Disconnect SSL over socket
@@ -1682,12 +1682,13 @@ int showCertificate(struct sslCheckOptions *options)
     {
 
         // Setup Context Object...
-        if( options->sslVersion == tls_v10) {
-            printf_verbose("sslMethod = TLSv1_method()");
-            sslMethod = TLSv1_method();
-        } else {
+        if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3) {
+            
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
+        } else {
+            printf_verbose("sslMethod = TLSv1_method()");
+            sslMethod = TLSv1_method();
         }
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
@@ -2162,15 +2163,27 @@ int testHost(struct sslCheckOptions *options)
 
     if (status == true && options->heartbleed )
     {
-        printf("  %sHeartbleed:%s\n", COL_BLUE, RESET);
-        printf("TLS 1.0 ");
-        status = testHeartbleed(options, TLSv1_client_method());
-        printf("TLS 1.1 ");
-        status = testHeartbleed(options, TLSv1_1_client_method());
-        printf("TLS 1.2 ");
-        status = testHeartbleed(options, TLSv1_2_client_method());
-        printf("\n");
-
+        printf("\n  %sHeartbleed:%s\n", COL_BLUE, RESET);
+        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10)
+        {
+            printf("TLS 1.0 ");
+            status = testHeartbleed(options, TLSv1_client_method());
+        }
+        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v11)
+        {
+            printf("TLS 1.1 ");
+            status = testHeartbleed(options, TLSv1_1_client_method());
+        }
+        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v12)
+        {
+            printf("TLS 1.2 ");
+            status = testHeartbleed(options, TLSv1_2_client_method());
+        }
+        if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3)
+        {
+            printf("%sAll TLS protocols disabled, cannot check for heartbleed.\n%s", COL_RED, RESET);
+        }
+            printf("\n");
     }
 
     if (options->ciphersuites)
