@@ -1,5 +1,5 @@
 # set gcc as default if CC is not set
-ifndef $CC
+ifndef CC
   CC=gcc
 endif
 
