@@ -1201,7 +1201,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     {
                         printf("%s%s%s\n", COL_PURPLE, sslCipherPointer->name, RESET);
                     }
-                    else if (strstr(sslCipherPointer->name, "EXP"))
+                    else if (strstr(sslCipherPointer->name, "EXP") || (sslCipherPointer->sslMethod == SSLv3_client_method() && strstr(sslCipherPointer->name, "CBC")))
                     {
                         printf("%s%s%s\n", COL_RED, sslCipherPointer->name, RESET);
                     }
@@ -1351,7 +1351,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                                 printf(" ");
                             }
                             printf_xml("%d\" cipher=\"%s\" />\n", SSL_get_cipher_bits(ssl, &tempInt2), SSL_get_cipher_name(ssl));
-                            if (strstr(SSL_get_cipher_name(ssl), "EXP"))
+                            if (strstr(SSL_get_cipher_name(ssl), "EXP") || (sslMethod == SSLv3_client_method() && strstr(SSL_get_cipher_name(ssl), "CBC")))
                             {
                                 printf("%s%s%s\n", COL_RED, SSL_get_cipher_name(ssl), RESET);
                             }
