@@ -1632,7 +1632,11 @@ int checkCertificate(struct sslCheckOptions *options)
                             // Disconnect SSL over socket
                             SSL_shutdown(ssl);
                         }
-
+                        else
+                        {
+                            printf("\n%sFailed to connect to get certificate.%s\n", COL_RED, RESET);
+                            printf("Most likley cause is server not supporting TLSv1.0, try manually specifying version");
+                        }
                         // Free SSL object
                         SSL_free(ssl);
                     }
