@@ -1430,8 +1430,18 @@ int checkCertificate(struct sslCheckOptions *options)
         if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3) {
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
-        } else {
-            printf_verbose("sslMethod = TLSv2_method()");
+        }
+        else if( options->sslVersion == tls_v11) {
+            printf_verbose("sslMethod = TLSv1_1_method()");
+            sslMethod = TLSv1_1_method();
+        }
+        else if( options->sslVersion == tls_v12) {
+            printf_verbose("sslMethod = TLSv1_2_method()");
+            sslMethod = TLSv1_2_method();
+        }
+        else {
+            printf_verbose("sslMethod = TLSv1_method()\n");
+            printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
             sslMethod = TLSv1_method();
         }
         options->ctx = SSL_CTX_new(sslMethod);
@@ -1622,7 +1632,11 @@ int checkCertificate(struct sslCheckOptions *options)
                             // Disconnect SSL over socket
                             SSL_shutdown(ssl);
                         }
-
+                        else
+                        {
+                            printf("\n%sFailed to connect to get certificate.%s\n", COL_RED, RESET);
+                            printf("Most likley cause is server not supporting TLSv1.0, try manually specifying version");
+                        }
                         // Free SSL object
                         SSL_free(ssl);
                     }
@@ -1689,11 +1703,20 @@ int showCertificate(struct sslCheckOptions *options)
 
         // Setup Context Object...
         if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3) {
-            
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
-        } else {
-            printf_verbose("sslMethod = TLSv1_method()");
+        }
+        else if( options->sslVersion == tls_v11) {
+            printf_verbose("sslMethod = TLSv1_1_method()");
+            sslMethod = TLSv1_1_method();
+        }
+        else if( options->sslVersion == tls_v12) {
+            printf_verbose("sslMethod = TLSv1_2_method()");
+            sslMethod = TLSv1_2_method();
+        }
+        else {
+            printf_verbose("sslMethod = TLSv1_method()\n");
+            printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
             sslMethod = TLSv1_method();
         }
         options->ctx = SSL_CTX_new(sslMethod);
