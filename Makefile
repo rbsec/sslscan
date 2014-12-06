@@ -17,7 +17,7 @@ MANPATH   = /usr/share/man/
 WARNINGS  = -Wall -Wformat=2
 DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
 
-# for dynamic linkung
+# for dynamic linking
 LDFLAGS   = -L/usr/local/ssl/lib/ -L/usr/local/opt/openssl/lib
 CFLAGS    = -I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/ -I/usr/local/opt/openssl/include
 LIBS      = -lssl -lcrypto
