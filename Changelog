@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Version: 1.9.8
+Date   : 08/12/2014
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Added --sleep option to pause between request
+         > Only check for heartbleed against specified TLS version
+         > Added --sleep option to pause between request
+         > Fix issues compiling against OpenSSL 0.9.8
+         > Highlight CBC ciphersuites on SSLv3 (POODLE)
+         > Experimental build support on OSX (credit MikeSchroll)
+
 Version: 1.9.7
 Date   : 26/10/2014
 Author : rbsec <robin@rbsec.net>
