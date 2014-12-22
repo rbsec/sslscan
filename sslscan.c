@@ -1614,6 +1614,18 @@ int checkCertificate(struct sslCheckOptions *options)
                                     }
                                 }
 
+                                // SSL Certificate Issuer...
+                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_ISSUER))
+                                {
+                                    int cnindex = 0;
+
+                                    X509_NAME *subj = X509_get_issuer_name(x509Cert);
+                                    cnindex = X509_NAME_get_index_by_NID(subj, NID_commonName, cnindex);
+                                    X509_NAME_ENTRY *e = X509_NAME_get_entry(subj, cnindex);
+                                    ASN1_STRING *d = X509_NAME_ENTRY_get_data(e);
+                                    unsigned char *str = ASN1_STRING_data(d);
+                                    printf("Issuer: %s\n", str);
+                                }
                                 // Free X509 Certificate...
                                 X509_free(x509Cert);
                             }
