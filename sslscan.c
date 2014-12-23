@@ -1209,6 +1209,10 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     {
                         printf("%s%s%s\n", COL_YELLOW, sslCipherPointer->name, RESET);
                     }
+                    else if (strstr(sslCipherPointer->name, "GCM"))
+                    {
+                        printf("%s%s%s\n", COL_GREEN, sslCipherPointer->name, RESET);
+                    }
                     else
                     {
                         printf("%s\n", sslCipherPointer->name);
@@ -1358,6 +1362,10 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             else if (strstr(SSL_get_cipher_name(ssl), "RC4"))
                             {
                                 printf("%s%s%s\n", COL_YELLOW, SSL_get_cipher_name(ssl), RESET);
+                            }
+                            else if (strstr(SSL_get_cipher_name(ssl), "GCM"))
+                            {
+                                printf("%s%s%s\n", COL_GREEN, SSL_get_cipher_name(ssl), RESET);
                             }
                             else
                             {
