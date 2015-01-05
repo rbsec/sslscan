@@ -1625,7 +1625,7 @@ int checkCertificate(struct sslCheckOptions *options)
                                 // SSL Certificate Issuer...
                                 if (!(X509_FLAG_COMPAT & X509_FLAG_NO_ISSUER))
                                 {
-                                    int cnindex = 0;
+                                    int cnindex = -1;
 
                                     X509_NAME *subj = X509_get_issuer_name(x509Cert);
                                     cnindex = X509_NAME_get_index_by_NID(subj, NID_commonName, cnindex);
