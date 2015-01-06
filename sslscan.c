@@ -1629,18 +1629,33 @@ int checkCertificate(struct sslCheckOptions *options)
 
                                     X509_NAME *subj = X509_get_issuer_name(x509Cert);
                                     cnindex = X509_NAME_get_index_by_NID(subj, NID_commonName, cnindex);
-                                    X509_NAME_ENTRY *e = X509_NAME_get_entry(subj, cnindex);
-                                    ASN1_STRING *d = X509_NAME_ENTRY_get_data(e);
-                                    const char *str = (char *) ASN1_STRING_data(d);
-                                    // If Issuer is same as hostname we scanned, flag as self-signed
-                                    if (strcmp(str, options->host) == 0)
+                                    
+                                    // Issuer cert doesn't have a CN, so just print whole thing
+                                    if (cnindex == -1)
                                     {
-                                        printf("Issuer: %s%s%s\n", COL_RED, str, RESET);
+                                        char *issuer = X509_NAME_oneline(X509_get_issuer_name(x509Cert), NULL, 0);
+                                        printf("Issuer: %s", issuer);
 
                                     }
                                     else
                                     {
-                                        printf("Issuer: %s\n", str);
+                                        X509_NAME_ENTRY *e = X509_NAME_get_entry(subj, cnindex);
+                                        ASN1_STRING *d = X509_NAME_ENTRY_get_data(e);
+                                        const char *str = (char *) ASN1_STRING_data(d);
+
+                                        // If Issuer is same as hostname we scanned or is *, flag as self-signed
+                                        if (
+                                                strcmp(str, options->host) == 0
+                                                || strcmp(str, "*") == 0
+                                           )
+                                        {
+                                            printf("Issuer: %s%s%s\n", COL_RED, str, RESET);
+
+                                        }
+                                        else
+                                        {
+                                            printf("Issuer: %s\n", str);
+                                        }
                                     }
                                 }
                                 // Free X509 Certificate...
