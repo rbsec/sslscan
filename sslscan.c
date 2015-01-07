@@ -1625,36 +1625,64 @@ int checkCertificate(struct sslCheckOptions *options)
                                 // SSL Certificate Issuer...
                                 if (!(X509_FLAG_COMPAT & X509_FLAG_NO_ISSUER))
                                 {
-                                    int cnindex = -1;
+                                    int cnindex;
+                                    X509_NAME *subj;
+                                    X509_NAME_ENTRY *e;
+                                    ASN1_STRING *d;
+                                    const char *subject;
+                                    const char *issuer;
+                                    
+                                    // Get SSL cert CN
+                                    cnindex = -1;
+                                    subj = X509_get_subject_name(x509Cert);
+                                    cnindex = X509_NAME_get_index_by_NID(subj, NID_commonName, cnindex);
 
-                                    X509_NAME *subj = X509_get_issuer_name(x509Cert);
+                                    // SSL cert doesn't have a CN, so just print whole thing
+                                    if (cnindex == -1)
+                                    {
+                                        char *subject = X509_NAME_oneline(X509_get_subject_name(x509Cert), NULL, 0);
+                                        printf("Subject: %s", subject);
+
+                                    }
+                                    else
+                                    {
+                                        e = X509_NAME_get_entry(subj, cnindex);
+                                        d = X509_NAME_ENTRY_get_data(e);
+                                        subject = (char *) ASN1_STRING_data(d);
+                                        printf("Subject: %s\n", subject);
+                                    }
+                                    
+                                    // Get SSL cert issuer
+                                    cnindex = -1;
+                                    subj = X509_get_issuer_name(x509Cert);
                                     cnindex = X509_NAME_get_index_by_NID(subj, NID_commonName, cnindex);
                                     
                                     // Issuer cert doesn't have a CN, so just print whole thing
                                     if (cnindex == -1)
                                     {
                                         char *issuer = X509_NAME_oneline(X509_get_issuer_name(x509Cert), NULL, 0);
-                                        printf("Issuer: %s", issuer);
+                                        printf("Issuer:  %s", issuer);
 
                                     }
                                     else
                                     {
-                                        X509_NAME_ENTRY *e = X509_NAME_get_entry(subj, cnindex);
-                                        ASN1_STRING *d = X509_NAME_ENTRY_get_data(e);
-                                        const char *str = (char *) ASN1_STRING_data(d);
+                                        e = X509_NAME_get_entry(subj, cnindex);
+                                        d = X509_NAME_ENTRY_get_data(e);
+                                        issuer = (char *) ASN1_STRING_data(d);
 
-                                        // If Issuer is same as hostname we scanned or is *, flag as self-signed
+                                        // If issuer is same as hostname we scanned or is *, flag as self-signed
                                         if (
-                                                strcmp(str, options->host) == 0
-                                                || strcmp(str, "*") == 0
+                                                strcmp(issuer, options->host) == 0
+                                                || strcmp(issuer, subject) == 0
+                                                || strcmp(issuer, "*") == 0
                                            )
                                         {
-                                            printf("Issuer: %s%s%s\n", COL_RED, str, RESET);
+                                            printf("Issuer:  %s%s%s\n", COL_RED, issuer, RESET);
 
                                         }
                                         else
                                         {
-                                            printf("Issuer: %s\n", str);
+                                            printf("Issuer:  %s\n", issuer);
                                         }
                                     }
                                 }
