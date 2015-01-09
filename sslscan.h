@@ -130,7 +130,7 @@ struct sslCheckOptions
     FILE *xmlOutput;
 
     // TCP Connection Variables...
-    struct hostent *hostStruct;
+    short h_addrtype;
     struct sockaddr_in serverAddress;
     struct sockaddr_in6 serverAddress6;
     struct timeval timeout;

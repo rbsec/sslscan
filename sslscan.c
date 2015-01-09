@@ -196,7 +196,7 @@ int tcpConnect(struct sslCheckOptions *options)
     int status;
 
     // Create Socket
-    if (options->hostStruct->h_addrtype == AF_INET)
+    if (options->h_addrtype == AF_INET)
     {
         socketDescriptor = socket(AF_INET, SOCK_STREAM, 0);
     }
@@ -215,7 +215,7 @@ int tcpConnect(struct sslCheckOptions *options)
     setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&options->timeout,sizeof(struct timeval));
 
     // Connect
-    if (options->hostStruct->h_addrtype == AF_INET)
+    if (options->h_addrtype == AF_INET)
     {
         status = connect(socketDescriptor, (struct sockaddr *) &options->serverAddress, sizeof(options->serverAddress));
     }
@@ -2189,41 +2189,52 @@ int showCertificate(struct sslCheckOptions *options)
 int testHost(struct sslCheckOptions *options)
 {
     // Variables...
-    struct sslCipher *sslCipherPointer;
+    struct sslCipher *sslCipherPointer = NULL;
     int status = true;
+    struct addrinfo *addrinfoResult = NULL;
+    struct addrinfo hints;
+
+    memset(&hints, 0, sizeof(struct addrinfo));
 
     // Resolve Host Name
-
-    if (options->ipv4)
+    options->h_addrtype = 0;
+    if (options->ipv4 && options->ipv6)
     {
-        options->hostStruct = gethostbyname2(options->host, AF_INET);
+       // If both IPv4 and IPv6 are enabled, we restrict nothing in the
+       // results (i.e.: we'll accept either type of address).
     }
-    if (options->hostStruct == NULL && options->ipv6)
+    else if (options->ipv4)  // Only IPv4 is acceptable...
     {
-        options->hostStruct = gethostbyname2(options->host, AF_INET6);
+        hints.ai_family = AF_INET;
+    }
+    else if (options->ipv6)  // Only IPv6 is acceptable...
+    {
+        hints.ai_family = AF_INET6;
         printf("Trying %sIPv6%s lookup\n\n", COL_GREEN, RESET);
-
     }
-    if (options->hostStruct == NULL)
+
+    // Perform the actual lookup.
+    if (getaddrinfo(options->host, NULL, &hints, &addrinfoResult) != 0)
     {
         printf("%sERROR: Could not resolve hostname %s.%s\n", COL_RED, options->host, RESET);
         return false;
     }
 
     // Configure Server Address and Port
-    if (options->hostStruct->h_addrtype == AF_INET6)
+    if (addrinfoResult->ai_family == AF_INET6)
     {
-        options->serverAddress6.sin6_family = options->hostStruct->h_addrtype;
-        memcpy((char *) &options->serverAddress6.sin6_addr, options->hostStruct->h_addr, options->hostStruct->h_length);
+        options->serverAddress6.sin6_family = addrinfoResult->ai_family;
+        memcpy((char *) &options->serverAddress6, addrinfoResult->ai_addr, addrinfoResult->ai_addrlen);
         options->serverAddress6.sin6_port = htons(options->port);
     }
     else
     {
-        options->serverAddress.sin_family = options->hostStruct->h_addrtype;
-        memcpy((char *) &options->serverAddress.sin_addr, options->hostStruct->h_addr, options->hostStruct->h_length);
+        options->serverAddress.sin_family = addrinfoResult->ai_family;
+        memcpy((char *) &options->serverAddress, addrinfoResult->ai_addr, addrinfoResult->ai_addrlen);
         options->serverAddress.sin_port = htons(options->port);
-
     }
+    options->h_addrtype = addrinfoResult->ai_family;
+    freeaddrinfo(addrinfoResult); addrinfoResult = NULL;
 
     // XML Output...
     printf_xml(" <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
