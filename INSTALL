@@ -11,3 +11,11 @@ Manual Build:
 
       gcc -lssl -o sslscan sslscan.c
       clang -lssl -o sslscan sslscan.c
+
+Windows Build (MinGW):
+   1.) Compile OpenSSL with the following:
+      ./Configure mingw
+      make
+
+   2.) Compile sslscan with the path to the OpenSSL directory:
+      make -f Makefile.mingw OPENSSL_PATH=../openssl-1.0.1k

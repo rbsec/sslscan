@@ -1,5 +1,9 @@
+# object files
+*.o
+
 # compiled binary
 sslscan
+sslscan.exe
 
 # debian build of openssl
 openssl-*/

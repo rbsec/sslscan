@@ -1,0 +1,15 @@
+ifndef CC
+  CC=gcc
+endif
+
+VERSION = $(shell grep -E -o -m 1 "[0-9]+\.[0-9]+\.[0-9]+" Changelog)
+
+
+all: sslscan
+
+sslscan:
+	$(CC) -fPIE -I$(OPENSSL_PATH)/include -DVERSION=\"$(VERSION)\" -o sslscan sslscan.c $(OPENSSL_PATH)/libssl.a $(OPENSSL_PATH)/libcrypto.a -lws2_32 -lgdi32
+	strip sslscan.exe
+
+clean:
+	rm -f *.o sslscan.exe
