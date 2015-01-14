@@ -43,21 +43,42 @@
   #include <winsock2.h>
   #include <ws2tcpip.h>
   #include <stdint.h>
-  #ifdef WONKY_LINUX_MINGW
-    // For some reason, the 32-bit Linux MinGW doesn't have a definition for
-    // this timespec struct.  This is a workaround.
+  #if defined(WONKY_LINUX_MINGW) || defined(_MSC_VER)
+    // The 32-bit Linux MinGW doesn't have a definition for
+    // this timespec struct, and neither does Visual Studio.
+    // This is a workaround.
     #include <time.h>
     struct timespec {
       time_t tv_sec;
       long tv_nsec;
     };
   #endif
+  #ifdef _MSC_VER
+    // For access().
+    #include <io.h>
+
+    // Flag for access() call.
+    #define R_OK 4
+
+    // access() happens to be deprecated, so use the secure version instead.
+    #define access _access_s
+
+    // There is no snprintf(), but _snprintf() instead.
+    #define snprintf _snprintf
+
+    // Calling close() on a socket descriptor instead of closesocket() causes
+    // a crash!
+    #define close closesocket
+
+    // Visual Studio doesn't have ssize_t...
+    typedef int ssize_t;
+  #endif
 #else
   #include <netdb.h>
   #include <sys/socket.h>
+  #include <unistd.h>
 #endif
 #include <string.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>

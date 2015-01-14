@@ -62,7 +62,7 @@
 #define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
 
 // Colour Console Output...
-#if !defined(__WIN32__)
+#if !defined(_WIN32)
 // Always better to do "const char RESET[] = " because it saves relocation records.
 const char *RESET = "[0m";            // DEFAULT
 const char *COL_RED = "[31m";

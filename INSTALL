@@ -14,60 +14,100 @@ Manual Build:
 
 ----
 
-There are two main ways to build a Windows executable.  The first is by using
-MinGW or Mingw-w64 in a Windows environment.  The other is by cross-compiling
-from Linux.  In both cases, it is necessary to compile OpenSSL to ensure that
-all protocols and algorithms are enabled (note that some systems that package
+There are three ways to build a Windows executable:
+
+  1.) By cross-compiling on a Linux build machine using MinGW or Mingw-w64.
+
+  2.) By compiling on a Windows build machine using MinGW or Mingw-w64.
+
+  3.) By compiling on a Windows build machine using Visual Studio 2013
+      (other versions may also work, but are untested).
+
+  If you have a Debian-like Linux machine (such as Ubuntu), option #1 is BY
+FAR the easiest.  Note that installing Visual Studio and additional tools
+requires downloading gigabytes of data!
+
+  In any case, it is necessary to compile OpenSSL to ensure that all
+protocols and algorithms are enabled (note that some systems that package
 OpenSSL have some deprecated features such as SSLv2 turned off for safety
 reasons; we actually need those to test with). 
 
 
-On a Windows build machine, to compile a 64-bit Windows executable:
+I. Cross-compiling from Linux
 
-   0.) Install Mingw-w64 from http://mingw-w64.sourceforge.net/.  Install MSYS from
-       http://www.mingw.org/.
+  A. Building a 64-bit Windows executable
 
-   1.) In an MSYS shell, compile OpenSSL with the following:
-      ./Configure mingw64 -fstack-protector-all -D_FORTIFY_SOURCE=2 shared
-      make
+    0.) Install Mingw-w64.  On Debian-like systems, this can be done with:
+        apt-get install mingw-w64
 
-   2.) In an MSYS shell, compile sslscan with the path to the OpenSSL directory:
-      make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
+    1.) Compile OpenSSL with the following:
+        ./Configure --cross-compile-prefix=x86_64-w64-mingw32- \
+            -fstack-protector-all -D_FORTIFY_SOURCE=2 mingw64 shared
+        make
 
-
-On a Windows build machine, to compile a 32-bit Windows executable:
-
-   0.) Install MinGW and MSYS from http://www.mingw.org/.
-
-   1.) In an MSYS shell, compile OpenSSL with the following:
-      ./Configure mingw -fstack-protector-all -D_FORTIFY_SOURCE=2 shared
-      make
-
-   2.) In an MSYS shell, compile sslscan with the path to the OpenSSL directory:
-      make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
+    2.) Compile sslscan with the path to the OpenSSL directory:
+        make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
 
 
-On a Linux build machine, to build compile a 64-bit Windows executable:
+  B. Building a 32-bit Windows executable
 
-   0.) Install Mingw-w64.  On Debian-like systems, this can be done with:
-       apt-get install mingw-w64
+    0.) Install MinGW.  On Debian-like systems, this can be done with:
+        apt-get install mingw32
 
-   1.) Compile OpenSSL with the following:
-       ./Configure --cross-compile-prefix=x86_64-w64-mingw32- -fstack-protector-all -D_FORTIFY_SOURCE=2 mingw64 shared
+    1.) Compile OpenSSL with the following:
+        ./Configure --cross-compile-prefix=i586-mingw32msvc- \
+            -fstack-protector-all -D_FORTIFY_SOURCE=2 mingw shared
+        make
+
+    2.) Compile sslscan with the path to the OpenSSL directory:
+        DEFINES="-DWONKY_LINUX_MINGW=1" make -f Makefile.mingw \
+            OPENSSL_PATH=../path/to/openssl
+
+
+II. Compiling on Windows using Mingw
+
+  A. Building a 64-bit Windows executable
+
+    0.) Install Mingw-w64 from http://mingw-w64.sourceforge.net/.  Install
+        MSYS from http://www.mingw.org/.
+
+    1.) In an MSYS shell, compile OpenSSL with the following:
+       ./Configure mingw64 -fstack-protector-all -D_FORTIFY_SOURCE=2 shared
        make
 
-   2.) Compile sslscan with the path to the OpenSSL directory:
+    2.) In an MSYS shell, compile sslscan with the path to the OpenSSL
+           directory:
        make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
 
 
-On a Linux build machine, to compile a 32-bit Windows executable:
+  B. Building a 32-bit Windows executable
 
-   0.) Install MinGW.  On Debian-like systems, this can be done with:
-       apt-get install mingw32
+    0.) Install MinGW and MSYS from http://www.mingw.org/.
 
-   1.) Compile OpenSSL with the following:
-       ./Configure --cross-compile-prefix=i586-mingw32msvc- -fstack-protector-all -D_FORTIFY_SOURCE=2 mingw shared
+    1.) In an MSYS shell, compile OpenSSL with the following:
+       ./Configure mingw -fstack-protector-all -D_FORTIFY_SOURCE=2 shared
        make
 
-   2.) Compile sslscan with the path to the OpenSSL directory:
-       DEFINES="-DWONKY_LINUX_MINGW=1" make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
+    2.) In an MSYS shell, compile sslscan with the path to the OpenSSL
+           directory:
+       make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
+
+
+III. Compiling on Windows using Visual Studio 2013 Express for Windows Desktop
+
+  A. Install Visual Studio 2013 Express for Windows Desktop:
+         http://go.microsoft.com/?linkid=9832280
+
+  B. Install the Windows Driver Kit 8.1:
+         http://go.microsoft.com/fwlink/p/?linkid=393659
+
+  C. Install ActivePerl Community Edition:
+         http://www.activestate.com/activeperl/downloads
+
+  D. In the VS2013 x64 Cross Tools Command Prompt, compile OpenSSL with:
+    perl Configure VC-WIN64A
+    ms\do_win64a
+    nmake -f ms\nt.mak
+
+  E. Inside the sslscan folder, compile sslscan with:
+    nmake -f Makefile.vs OPENSSL_PATH=path/to/openssl

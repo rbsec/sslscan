@@ -1,5 +1,6 @@
 # object files
 *.o
+*.obj
 
 # compiled binary
 sslscan
