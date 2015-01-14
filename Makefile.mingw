@@ -18,10 +18,10 @@ endif
 .PHONY: clean
 
 # Enable security options like stack protectors and variable formatting checks.
-SECURITY_OPTIONS=-D_FORTIFY_SOURCE=2 -Wformat -Wformat-security
+SECURITY_OPTIONS=-fstack-protector-all -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security
 
 # Turn on linker optimizations, and DEP support (--nxcompat)
-LINK_OPTIONS=-Wl,-O1 -Wl,--discard-all -Wl,--no-undefined -Wl,--dynamicbase -Wl,--nxcompat
+LINK_OPTIONS=-Wl,-O1 -Wl,--discard-all -Wl,--no-undefined -Wl,--dynamicbase -Wl,--nxcompat -static
 
 # Set ARCHITECTURE to either x86 or x86_64...
 ARCHITECTURE=32-bit

@@ -28,7 +28,7 @@ On a Windows build machine, to compile a 64-bit Windows executable:
        http://www.mingw.org/.
 
    1.) In an MSYS shell, compile OpenSSL with the following:
-      ./Configure mingw64 -D_FORTIFY_SOURCE=2 shared
+      ./Configure mingw64 -fstack-protector-all -D_FORTIFY_SOURCE=2 shared
       make
 
    2.) In an MSYS shell, compile sslscan with the path to the OpenSSL directory:
@@ -40,7 +40,7 @@ On a Windows build machine, to compile a 32-bit Windows executable:
    0.) Install MinGW and MSYS from http://www.mingw.org/.
 
    1.) In an MSYS shell, compile OpenSSL with the following:
-      ./Configure mingw -D_FORTIFY_SOURCE=2 shared
+      ./Configure mingw -fstack-protector-all -D_FORTIFY_SOURCE=2 shared
       make
 
    2.) In an MSYS shell, compile sslscan with the path to the OpenSSL directory:
@@ -53,7 +53,7 @@ On a Linux build machine, to build compile a 64-bit Windows executable:
        apt-get install mingw-w64
 
    1.) Compile OpenSSL with the following:
-       ./Configure --cross-compile-prefix=x86_64-w64-mingw32- mingw64 shared
+       ./Configure --cross-compile-prefix=x86_64-w64-mingw32- -fstack-protector-all -D_FORTIFY_SOURCE=2 mingw64 shared
        make
 
    2.) Compile sslscan with the path to the OpenSSL directory:
@@ -66,7 +66,7 @@ On a Linux build machine, to compile a 32-bit Windows executable:
        apt-get install mingw32
 
    1.) Compile OpenSSL with the following:
-       ./Configure --cross-compile-prefix=i586-mingw32msvc- mingw shared
+       ./Configure --cross-compile-prefix=i586-mingw32msvc- -fstack-protector-all -D_FORTIFY_SOURCE=2 mingw shared
        make
 
    2.) Compile sslscan with the path to the OpenSSL directory:
