@@ -1,3 +1,16 @@
+# If we're in Linux, lets see if we can find the path to Mingw automatically...
+ifeq ($(shell uname), Linux)
+  MINGW32=$(shell which i586-mingw32msvc-gcc)
+  ifneq ($(MINGW32),)
+    CC=$(MINGW32)
+  endif
+
+  MINGW64=$(shell which x86_64-w64-mingw32-gcc)
+  ifneq ($(MINGW64),)
+    CC=$(MINGW64)
+  endif
+endif
+
 ifndef CC
   CC=gcc
 endif
@@ -23,7 +36,7 @@ VERSION = "$(shell grep -E -o -m 1 "[0-9]+\.[0-9]+\.[0-9]+" Changelog) Windows $
 all: sslscan
 
 sslscan: sslscan.c
-	$(CC) -I$(OPENSSL_PATH)/include -DVERSION=\"$(VERSION)\" $(SECURITY_OPTIONS) $(LINK_OPTIONS) -o sslscan.exe sslscan.c $(OPENSSL_PATH)/libssl.a $(OPENSSL_PATH)/libcrypto.a -lws2_32 -lgdi32
+	$(CC) -I$(OPENSSL_PATH)/include -DVERSION=\"$(VERSION)\" $(DEFINES) $(SECURITY_OPTIONS) $(LINK_OPTIONS) -o sslscan.exe sslscan.c $(OPENSSL_PATH)/libssl.a $(OPENSSL_PATH)/libcrypto.a -lws2_32 -lgdi32
 	strip sslscan.exe
 
 clean:

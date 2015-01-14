@@ -43,6 +43,15 @@
   #include <winsock2.h>
   #include <ws2tcpip.h>
   #include <stdint.h>
+  #ifdef WONKY_LINUX_MINGW
+    // For some reason, the Linux MinGW doesn't have a definition for this
+    // timespec struct.  This is a workaround.
+    #include <time.h>
+    struct timespec {
+      time_t tv_sec;
+      long tv_nsec;
+    };
+  #endif
 #else
   #include <netdb.h>
   #include <sys/socket.h>
@@ -196,7 +205,11 @@ int tcpConnect(struct sslCheckOptions *options)
     //Sleep if required
     if (options->sleep.tv_sec)
     {
+#ifdef _WIN32
+        Sleep(options->sleep.tv_sec * 1000);
+#else
         nanosleep(&options->sleep, NULL);
+#endif
     }
     
     // Variables...

@@ -14,11 +14,12 @@ Manual Build:
 
 ----
 
-There are two main ways to build a Windows executable.  The first is by using MinGW or
-Mingw-w64 in a Windows environment.  The other is by cross-compiling from Linux.  In
-both cases, it is necessary to compile OpenSSL to ensure that all protocols and algorithms
-are enabled (note that some systems that package OpenSSL have some deprecated features
-such as SSLv2 turned off for safety reasons; we actually need those to test with). 
+There are two main ways to build a Windows executable.  The first is by using
+MinGW or Mingw-w64 in a Windows environment.  The other is by cross-compiling
+from Linux.  In both cases, it is necessary to compile OpenSSL to ensure that
+all protocols and algorithms are enabled (note that some systems that package
+OpenSSL have some deprecated features such as SSLv2 turned off for safety
+reasons; we actually need those to test with). 
 
 
 On a Windows build machine, to compile a 64-bit Windows executable:
@@ -56,7 +57,7 @@ On a Linux build machine, to build compile a 64-bit Windows executable:
        make
 
    2.) Compile sslscan with the path to the OpenSSL directory:
-       make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
+       DEFINES="-DWONKY_LINUX_MINGW=1" make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
 
 
 On a Linux build machine, to compile a 32-bit Windows executable:
@@ -69,4 +70,4 @@ On a Linux build machine, to compile a 32-bit Windows executable:
        make
 
    2.) Compile sslscan with the path to the OpenSSL directory:
-       make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
+       DEFINES="-DWONKY_LINUX_MINGW=1" make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
