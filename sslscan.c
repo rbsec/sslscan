@@ -76,7 +76,6 @@
 #else
   #include <netdb.h>
   #include <sys/socket.h>
-  #include <unistd.h>
 #endif
 #include <string.h>
 #include <sys/stat.h>
@@ -85,6 +84,12 @@
 #include <openssl/pkcs12.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+
+// If we're not compiling with Visual Studio, include unistd.h.  VS
+// doesn't have this header.
+#ifndef _MSC_VER
+  #include <unistd.h>
+#endif
 
 #ifdef __FreeBSD__
 #include <netinet/in.h>
