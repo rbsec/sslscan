@@ -44,8 +44,8 @@
   #include <ws2tcpip.h>
   #include <stdint.h>
   #ifdef WONKY_LINUX_MINGW
-    // For some reason, the Linux MinGW doesn't have a definition for this
-    // timespec struct.  This is a workaround.
+    // For some reason, the 32-bit Linux MinGW doesn't have a definition for
+    // this timespec struct.  This is a workaround.
     #include <time.h>
     struct timespec {
       time_t tv_sec;

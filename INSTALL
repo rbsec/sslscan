@@ -57,7 +57,7 @@ On a Linux build machine, to build compile a 64-bit Windows executable:
        make
 
    2.) Compile sslscan with the path to the OpenSSL directory:
-       DEFINES="-DWONKY_LINUX_MINGW=1" make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
+       make -f Makefile.mingw OPENSSL_PATH=../path/to/openssl
 
 
 On a Linux build machine, to compile a 32-bit Windows executable:
