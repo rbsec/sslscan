@@ -23,6 +23,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Added option for static compilation (credit dmke).
 * Added --sleep option to pause between requests.
 * Experimental build support on OSX (credit MikeSchroll)
+* Flag some self-signed SSL certificates.
 
 ### OpenSSL issues
 
