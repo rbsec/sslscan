@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version: 1.9.9
+Date   : 22/01/2015
+Author : kyprizel <eldar@kyprizel.net>
+Changes: The following are a list of changes
+         > Added --show-client-auth option to determine trusted CAs
+         for client authentication
+         > Added --quiet option to disable any output except specified
+
 Version: 1.9.8
 Date   : 08/12/2014
 Author : rbsec <robin@rbsec.net>
