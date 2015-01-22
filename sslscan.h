@@ -126,7 +126,7 @@ struct sslCheckOptions
     int verbose;
     int ipv4;
     int ipv6;
-    int skipPreferredCiphers;
+    int getPreferredCiphers;
 
     // File Handles...
     FILE *xmlOutput;
