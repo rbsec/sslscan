@@ -2299,7 +2299,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
 
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
-                        if (cipherStatus == 1)
+                        if (cipherStatus >= 0)
                         {
                             // Setup BIO's
                             stdoutBIO = BIO_new(BIO_s_file());
@@ -2526,7 +2526,7 @@ int testHost(struct sslCheckOptions *options)
         }
         printf("\n");
     }
-    if (status == true && options->skipPreferredCiphers != true)
+    if (status == true && options->getPreferredCiphers == true)
     {
         // Test preferred ciphers...
         printf("  %sPreferred Server Cipher(s):%s\n", COL_BLUE, RESET);
@@ -2645,7 +2645,7 @@ int main(int argc, char *argv[])
     options.verbose = false;
     options.ipv4 = true;
     options.ipv6 = true;
-    options.skipPreferredCiphers = false;
+    options.getPreferredCiphers = true;
 
     // Default socket timeout 3s
     options.timeout.tv_sec = 3;
@@ -2686,7 +2686,7 @@ int main(int argc, char *argv[])
             options.showClientCiphers = true;
 
         // Show client auth trusted CAs
-        else if (strcmp("--show-client-auth", argv[argLoop]) == 0)
+        else if (strcmp("--show-client-cas", argv[argLoop]) == 0)
             options.showTrustedCAs = true;
 
         // Version
@@ -2739,6 +2739,10 @@ int main(int argc, char *argv[])
         // Should we check for Heartbleed (CVE-2014-0160)
         else if (strcmp("--no-heartbleed", argv[argLoop]) == 0)
             options.heartbleed = false;
+
+        // Don't determine preferred ciphers
+        else if (strcmp("--no-preferred", argv[argLoop]) == 0)
+            options.getPreferredCiphers = false;
 
         // StartTLS... FTP
         else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
@@ -2817,9 +2821,6 @@ int main(int argc, char *argv[])
         else if (strcmp("--ipv6", argv[argLoop]) == 0)
             options.ipv4 = false;
 
-        // Don't do preferred ciphers check
-        else if (strcmp("--quiet", argv[argLoop]) == 0)
-            options.skipPreferredCiphers = true;
 
         // Host (maybe port too)...
         else if (argLoop + 1 == argc)
@@ -2951,7 +2952,7 @@ int main(int argc, char *argv[])
             printf("  %s--failed%s             Show unsupported ciphers.\n", COL_GREEN, RESET);
             printf("  %s--show-certificate%s   Show full certificate information.\n", COL_GREEN, RESET);
             printf("  %s--no-check-certificate%s      Don't warn about weak certificate algorithm or keys.\n", COL_GREEN, RESET);
-            printf("  %s--show-client-auth%s   Show trusted CAs for TLS client auth.\n", COL_GREEN, RESET);
+            printf("  %s--show-client-cas%s   Show trusted CAs for TLS client auth.\n", COL_GREEN, RESET);
             printf("  %s--show-ciphers%s       Show supported client ciphers.\n", COL_GREEN, RESET);
 #ifndef OPENSSL_NO_SSL2
             printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
@@ -2973,6 +2974,7 @@ int main(int argc, char *argv[])
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
             printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
+            printf("  %s--no-preferred%s       Do not determine preferred ciphers", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
