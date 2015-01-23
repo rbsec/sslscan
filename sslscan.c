@@ -227,6 +227,7 @@ int tcpConnect(struct sslCheckOptions *options)
     if(status < 0)
     {
         printf_error("%s    ERROR: Could not open a connection to host %s on port %d.%s\n", COL_RED, options->host, options->port, RESET);
+        close(socketDescriptor);
         return 0;
     }
 
