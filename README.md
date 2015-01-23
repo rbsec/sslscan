@@ -1,4 +1,7 @@
 # README
+
+[![Build Status](https://travis-ci.org/rbsec/sslscan.svg?branch=master)](https://travis-ci.org/rbsec/sslscan)
+
 This is a fork of ioerror's version of sslscan (the original readme of which is included below). Changes are as follows:
 
 * Highlight SSLv2 and SSLv3 ciphers in output.
