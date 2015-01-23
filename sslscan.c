@@ -1570,15 +1570,15 @@ int checkCertificate(struct sslCheckOptions *options)
                                                     keyBits = BN_num_bits(publicKey->pkey.rsa->n);
                                                     if (keyBits < 2048 )
                                                     {
-                                                        printf("RSA Key Strength: %s%d%s\n", COL_RED, keyBits, RESET);
+                                                        printf("RSA Key Strength:    %s%d%s\n", COL_RED, keyBits, RESET);
                                                     }
                                                     else if (keyBits >= 4096 )
                                                     {
-                                                        printf("RSA Key Strength: %s%d%s\n", COL_GREEN, keyBits, RESET);
+                                                        printf("RSA Key Strength:    %s%d%s\n", COL_GREEN, keyBits, RESET);
                                                     }
                                                     else
                                                     {
-                                                        printf("RSA Key Strength: %d\n", keyBits);
+                                                        printf("RSA Key Strength:    %d\n", keyBits);
                                                     }
 
                                                     printf_xml("   <pk error=\"false\" type=\"RSA\" bits=\"%d\" />\n", BN_num_bits(publicKey->pkey.rsa->n));
@@ -1587,6 +1587,7 @@ int checkCertificate(struct sslCheckOptions *options)
                                                 {
                                                     printf("    RSA Public Key: NULL\n");
                                                 }
+                                                printf("\n");
                                                 break;
                                             case EVP_PKEY_DSA:
                                                 if (publicKey->pkey.dsa)
