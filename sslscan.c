@@ -1420,6 +1420,7 @@ int checkCertificate(struct sslCheckOptions *options)
     int cipherStatus = 0;
     int status = true;
     int socketDescriptor = 0;
+    int keyBits;
     SSL *ssl = NULL;
     BIO *cipherConnectionBio = NULL;
     BIO *stdoutBIO = NULL;
@@ -1428,7 +1429,7 @@ int checkCertificate(struct sslCheckOptions *options)
     EVP_PKEY *publicKey = NULL;
     const SSL_METHOD *sslMethod = NULL;
     char certAlgorithm[80];
-    int keyBits;
+    X509_EXTENSION *extension = NULL;
 
     // Connect to host
     socketDescriptor = tcpConnect(options);
@@ -1642,7 +1643,7 @@ int checkCertificate(struct sslCheckOptions *options)
                                     if (cnindex == -1)
                                     {
                                         char *subject = X509_NAME_oneline(X509_get_subject_name(x509Cert), NULL, 0);
-                                        printf("Subject: %s\n", subject);
+                                        printf("Subject:  %s\n", subject);
                                         printf_xml("   <subject>%s</subject>\n", subject);
 
                                     }
@@ -1651,21 +1652,47 @@ int checkCertificate(struct sslCheckOptions *options)
                                         e = X509_NAME_get_entry(subj, cnindex);
                                         d = X509_NAME_ENTRY_get_data(e);
                                         subject = (char *) ASN1_STRING_data(d);
-                                        printf("Subject: %s\n", subject);
+                                        printf("Subject:  %s\n", subject);
                                         printf_xml("   <subject>%s</subject>\n", subject);
                                     }
-                                    
+
+                                    // Get certificate altnames if supported
+                                    if (!(X509_FLAG_COMPAT & X509_FLAG_NO_EXTENSIONS))
+                                    {
+                                        if (sk_X509_EXTENSION_num(x509Cert->cert_info->extensions) > 0)
+                                        {
+                                            cnindex = X509_get_ext_by_NID (x509Cert, NID_subject_alt_name, -1);
+                                            if (cnindex != -1)
+                                            {
+                                                extension = X509v3_get_ext(x509Cert->cert_info->extensions,cnindex);
+
+                                                printf("Altnames: ");
+                                                if (!X509V3_EXT_print(stdoutBIO, extension, X509_FLAG_COMPAT, 0))
+                                                {
+                                                    M_ASN1_OCTET_STRING_print(stdoutBIO, extension->value);
+                                                }
+                                                if (options->xmlOutput)
+                                                {
+                                                    printf_xml("   <altnames>");
+                                                    if (!X509V3_EXT_print(fileBIO, extension, X509_FLAG_COMPAT, 0))
+                                                        M_ASN1_OCTET_STRING_print(fileBIO, extension->value);
+                                                }
+                                                printf_xml("</altnames>\n");
+                                                printf("\n");
+                                            }
+                                        }
+                                    }
 
                                     // Get SSL cert issuer
                                     cnindex = -1;
                                     subj = X509_get_issuer_name(x509Cert);
                                     cnindex = X509_NAME_get_index_by_NID(subj, NID_commonName, cnindex);
-                                    
+
                                     // Issuer cert doesn't have a CN, so just print whole thing
                                     if (cnindex == -1)
                                     {
                                         char *issuer = X509_NAME_oneline(X509_get_issuer_name(x509Cert), NULL, 0);
-                                        printf("Issuer:  %s", issuer);
+                                        printf("Issuer:   %s", issuer);
                                         printf_xml("   <issuer>%s</issuer>\n", issuer);
 
                                     }
@@ -1682,14 +1709,14 @@ int checkCertificate(struct sslCheckOptions *options)
                                                 || strcmp(issuer, "*") == 0
                                            )
                                         {
-                                            printf("Issuer:  %s%s%s\n", COL_RED, issuer, RESET);
+                                            printf("Issuer:   %s%s%s\n", COL_RED, issuer, RESET);
                                             printf_xml("   <issuer>%s</issuer>\n", issuer);
                                             printf_xml("   <self-signed>true</self-signed>\n");
 
                                         }
                                         else
                                         {
-                                            printf("Issuer:  %s\n", issuer);
+                                            printf("Issuer:   %s\n", issuer);
                                             printf_xml("   <issuer>%s</issuer>\n", issuer);
                                             printf_xml("   <self-signed>false</self-signed>\n");
                                         }
