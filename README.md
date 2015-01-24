@@ -25,6 +25,8 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Added option to specify socket timeout.
 * Added option for static compilation (credit dmke).
 * Added --sleep option to pause between requests.
+* Disable output for anything than specified checks (--no-preferred).
+* Determine the list of CAs acceptable for client certificates (--show-client-cas).
 * Experimental build support on OSX (credit MikeSchroll)
 * Flag some self-signed SSL certificates.
 

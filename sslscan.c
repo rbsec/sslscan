@@ -227,6 +227,7 @@ int tcpConnect(struct sslCheckOptions *options)
     if(status < 0)
     {
         printf_error("%s    ERROR: Could not open a connection to host %s on port %d.%s\n", COL_RED, options->host, options->port, RESET);
+        close(socketDescriptor);
         return 0;
     }
 
@@ -2221,6 +2222,164 @@ int showCertificate(struct sslCheckOptions *options)
 }
 
 
+// Print out the list of trusted CAs
+int showTrustedCAs(struct sslCheckOptions *options)
+{
+    // Variables...
+    int cipherStatus = 0;
+    int status = true;
+    int socketDescriptor = 0;
+    SSL *ssl = NULL;
+    BIO *cipherConnectionBio = NULL;
+    BIO *stdoutBIO = NULL;
+    BIO *fileBIO = NULL;
+    const SSL_METHOD *sslMethod = NULL;
+    char buffer[1024];
+    int tempInt = 0;
+    STACK_OF(X509_NAME) *sk2;
+    X509_NAME *xn;
+
+
+    // Connect to host
+    socketDescriptor = tcpConnect(options);
+    if (socketDescriptor != 0)
+    {
+
+        // Setup Context Object...
+        if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3) {
+            printf_verbose("sslMethod = SSLv23_method()");
+            sslMethod = SSLv23_method();
+        }
+        else if( options->sslVersion == tls_v11) {
+            printf_verbose("sslMethod = TLSv1_1_method()");
+            sslMethod = TLSv1_1_method();
+        }
+        else if( options->sslVersion == tls_v12) {
+            printf_verbose("sslMethod = TLSv1_2_method()");
+            sslMethod = TLSv1_2_method();
+        }
+        else {
+            printf_verbose("sslMethod = TLSv1_method()\n");
+            printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
+            sslMethod = TLSv1_method();
+        }
+        options->ctx = SSL_CTX_new(sslMethod);
+        if (options->ctx != NULL)
+        {
+            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            {
+                // Load Certs if required...
+                if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
+                    status = loadCerts(options);
+
+                if (status == true)
+                {
+                    // Create SSL object...
+                    ssl = SSL_new(options->ctx);
+                    if (ssl != NULL)
+                    {
+                        // Connect socket and BIO
+                        cipherConnectionBio = BIO_new_socket(socketDescriptor, BIO_NOCLOSE);
+
+                        // Connect SSL and BIO
+                        SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
+
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+                        // Based on http://does-not-exist.org/mail-archives/mutt-dev/msg13045.html
+                        // TLS Virtual-hosting requires that the server present the correct
+                        // certificate; to do this, the ServerNameIndication TLS extension is used.
+                        // If TLS is negotiated, and OpenSSL is recent enough that it might have
+                        // support, and support was enabled when OpenSSL was built, mutt supports
+                        // sending the hostname we think we're connecting to, so a server can send
+                        // back the correct certificate.
+                        // NB: finding a server which uses this for IMAP is problematic, so this is
+                        // untested.  Please report success or failure!  However, this code change
+                        // has worked fine in other projects to which the contributor has added it,
+                        // or HTTP usage.
+                        SSL_set_tlsext_host_name (ssl, options->host);
+#endif
+
+                        // Connect SSL over socket
+                        cipherStatus = SSL_connect(ssl);
+                        if (cipherStatus >= 0)
+                        {
+                            // Setup BIO's
+                            stdoutBIO = BIO_new(BIO_s_file());
+                            BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                            if (options->xmlOutput)
+                            {
+                                fileBIO = BIO_new(BIO_s_file());
+                                BIO_set_fp(fileBIO, options->xmlOutput, BIO_NOCLOSE);
+                            }
+
+                            sk2=SSL_get_client_CA_list(ssl);
+                            if ((sk2 != NULL) && (sk_X509_NAME_num(sk2) > 0))
+                            {
+                                printf("\n  %sAcceptable client certificate CA names:%s\n", COL_BLUE, RESET);
+                                for (tempInt=0; tempInt<sk_X509_NAME_num(sk2); tempInt++)
+                                {
+                                    xn=sk_X509_NAME_value(sk2,tempInt);
+                                    X509_NAME_oneline(xn,buffer,sizeof(buffer));
+                                    if (options->xmlOutput)
+                                    {
+                                        printf_xml("  <ca>\n");
+                                        BIO_printf(fileBIO, "%s", buffer);
+                                        BIO_printf(fileBIO, "\n");
+                                        printf_xml("  </ca>\n");
+                                    }
+                                    printf("%s", buffer);
+                                    printf("\n");
+                                }
+                            }
+
+                            // Free BIO
+                            BIO_free(stdoutBIO);
+                            if (options->xmlOutput)
+                                BIO_free(fileBIO);
+
+                            // Disconnect SSL over socket
+                            SSL_shutdown(ssl);
+                        }
+
+                        // Free SSL object
+                        SSL_free(ssl);
+                    }
+                    else
+                    {
+                        status = false;
+                        printf("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                    }
+                }
+            }
+            else
+            {
+                status = false;
+                printf("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+            }
+
+            // Free CTX Object
+            SSL_CTX_free(options->ctx);
+        }
+
+        // Error Creating Context Object
+        else
+        {
+            status = false;
+            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+        }
+
+        // Disconnect from host
+        close(socketDescriptor);
+    }
+
+    // Could not connect
+    else
+        status = false;
+
+    return status;
+}
+
+
 // Test a single host and port for ciphers...
 int testHost(struct sslCheckOptions *options)
 {
@@ -2369,7 +2528,7 @@ int testHost(struct sslCheckOptions *options)
         }
         printf("\n");
     }
-    if (status == true)
+    if (status == true && options->getPreferredCiphers == true)
     {
         // Test preferred ciphers...
         printf("  %sPreferred Server Cipher(s):%s\n", COL_BLUE, RESET);
@@ -2437,6 +2596,13 @@ int testHost(struct sslCheckOptions *options)
     {
         status = checkCertificate(options);
     }
+
+    // Print client auth trusted CAs
+    if (status == true && options->showTrustedCAs == true)
+    {
+        status = showTrustedCAs(options);
+    }
+
     // XML Output...
     printf_xml(" </ssltest>\n");
 
@@ -2466,6 +2632,7 @@ int main(int argc, char *argv[])
     strcpy(options.host, "127.0.0.1");
     options.noFailed = true;
     options.showCertificate = false;
+    options.showTrustedCAs = false;
     options.checkCertificate = true;
     options.showClientCiphers = false;
     options.ciphersuites = true;
@@ -2480,6 +2647,7 @@ int main(int argc, char *argv[])
     options.verbose = false;
     options.ipv4 = true;
     options.ipv6 = true;
+    options.getPreferredCiphers = true;
 
     // Default socket timeout 3s
     options.timeout.tv_sec = 3;
@@ -2518,6 +2686,10 @@ int main(int argc, char *argv[])
         // Show supported client ciphers
         else if (strcmp("--show-ciphers", argv[argLoop]) == 0)
             options.showClientCiphers = true;
+
+        // Show client auth trusted CAs
+        else if (strcmp("--show-client-cas", argv[argLoop]) == 0)
+            options.showTrustedCAs = true;
 
         // Version
         else if (strcmp("--version", argv[argLoop]) == 0)
@@ -2569,6 +2741,10 @@ int main(int argc, char *argv[])
         // Should we check for Heartbleed (CVE-2014-0160)
         else if (strcmp("--no-heartbleed", argv[argLoop]) == 0)
             options.heartbleed = false;
+
+        // Don't determine preferred ciphers
+        else if (strcmp("--no-preferred", argv[argLoop]) == 0)
+            options.getPreferredCiphers = false;
 
         // StartTLS... FTP
         else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
@@ -2646,6 +2822,7 @@ int main(int argc, char *argv[])
         // IPv6 only
         else if (strcmp("--ipv6", argv[argLoop]) == 0)
             options.ipv4 = false;
+
 
         // Host (maybe port too)...
         else if (argLoop + 1 == argc)
@@ -2777,6 +2954,7 @@ int main(int argc, char *argv[])
             printf("  %s--failed%s             Show unsupported ciphers.\n", COL_GREEN, RESET);
             printf("  %s--show-certificate%s   Show full certificate information.\n", COL_GREEN, RESET);
             printf("  %s--no-check-certificate%s      Don't warn about weak certificate algorithm or keys.\n", COL_GREEN, RESET);
+            printf("  %s--show-client-cas%s   Show trusted CAs for TLS client auth.\n", COL_GREEN, RESET);
             printf("  %s--show-ciphers%s       Show supported client ciphers.\n", COL_GREEN, RESET);
 #ifndef OPENSSL_NO_SSL2
             printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
@@ -2798,6 +2976,7 @@ int main(int argc, char *argv[])
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
             printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
+            printf("  %s--no-preferred%s       Do not determine preferred ciphers", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
