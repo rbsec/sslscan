@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version: 1.9.10
+Date   : 24/01/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Display certificate CN, Altnames and Issuer in default output.
+         > Flag certificates where CN == issuer, or CN = *
+         > Highlight GCM ciphersuites as good
+
 Version: 1.9.9
 Date   : 22/01/2015
 Author : kyprizel <eldar@kyprizel.net>

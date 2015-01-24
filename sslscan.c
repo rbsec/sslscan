@@ -1744,7 +1744,7 @@ int checkCertificate(struct sslCheckOptions *options)
                         else
                         {
                             printf("\n%sFailed to connect to get certificate.%s\n", COL_RED, RESET);
-                            printf("Most likley cause is server not supporting TLSv1.0, try manually specifying version");
+                            printf("Most likley cause is server not supporting TLSv1.0, try manually specifying version\n");
                         }
                         // Free SSL object
                         SSL_free(ssl);

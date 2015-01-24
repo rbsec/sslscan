@@ -54,6 +54,9 @@ Display certificate information.
 .B \-\-no\-check\-certificate
 Don't flag certificates signed with weak algorithms (MD5 and SHA-1) or short (<2048 bit) RSA keys
 .TP
+.B \-\-show\-client\-cas
+Show a list of CAs that the server allows for client authentication. Will be blank for IIS/Schannel servers.
+.TP
 .B \-\-failed
 Show rejected ciphers
 (default is to listing only accepted ciphers)
@@ -110,6 +113,10 @@ Do not check for TLS compression (CRIME)
 .B \-\-no\-heartbleed
 Do not check for OpenSSL Heartbleed (CVE-2014-0160)
 .TP
+.B \-\-no\-preferred
+Do not check for preferred ciphersuites
+.TP
+.B \-\-starttls\-ftp
 .B \-\-starttls\-ftp
 STARTTLS setup for FTP
 .TP
