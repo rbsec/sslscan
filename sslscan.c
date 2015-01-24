@@ -2976,7 +2976,7 @@ int main(int argc, char *argv[])
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
             printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
-            printf("  %s--no-preferred%s       Do not determine preferred ciphers", COL_GREEN, RESET);
+            printf("  %s--no-preferred%s       Do not determine preferred ciphers\n", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
