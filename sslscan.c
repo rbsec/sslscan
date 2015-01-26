@@ -2953,8 +2953,8 @@ int main(int argc, char *argv[])
             printf("  %s--ipv6%s               Only use IPv6\n", COL_GREEN, RESET);
             printf("  %s--failed%s             Show unsupported ciphers.\n", COL_GREEN, RESET);
             printf("  %s--show-certificate%s   Show full certificate information.\n", COL_GREEN, RESET);
-            printf("  %s--no-check-certificate%s      Don't warn about weak certificate algorithm or keys.\n", COL_GREEN, RESET);
-            printf("  %s--show-client-cas%s   Show trusted CAs for TLS client auth.\n", COL_GREEN, RESET);
+            printf("  %s--no-check-certificate%s  Don't warn about weak certificate algorithm or keys.\n", COL_GREEN, RESET);
+            printf("  %s--show-client-cas%s    Show trusted CAs for TLS client auth.\n", COL_GREEN, RESET);
             printf("  %s--show-ciphers%s       Show supported client ciphers.\n", COL_GREEN, RESET);
 #ifndef OPENSSL_NO_SSL2
             printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
