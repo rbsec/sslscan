@@ -11,24 +11,26 @@ ifeq ($(GIT_VERSION),)
 endif
 
 SRCS      = sslscan.c
-BINPATH   = /usr/bin/
-MANPATH   = /usr/share/man/
+BINPATH   = $(DESTDIR)/usr/bin/
+MANPATH   = $(DESTDIR)/usr/share/man/
 
 WARNINGS  = -Wall -Wformat=2
 DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
 
 # for dynamic linking
-LDFLAGS   = -L/usr/local/ssl/lib/ -L/usr/local/opt/openssl/lib
-CFLAGS    = -I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/ -I/usr/local/opt/openssl/include
 LIBS      = -lssl -lcrypto
 
 # for static linking
 ifeq ($(STATIC_BUILD), TRUE)
 PWD          = $(shell pwd)/openssl
-LDFLAGS      = -L${PWD}/
-CFLAGS       = -I${PWD}/include/ -I${PWD}/
+LDFLAGS      += -L${PWD}/
+CFLAGS       += -I${PWD}/include/ -I${PWD}/
 LIBS         = -lssl -lcrypto -ldl
 GIT_VERSION  = $(shell git describe --tags --always --dirty=-wip)-static
+else
+# for dynamic linking
+LDFLAGS   += -L/usr/local/ssl/lib/ -L/usr/local/opt/openssl/lib
+CFLAGS    += -I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/ -I/usr/local/opt/openssl/include
 endif
 
 .PHONY: sslscan clean
@@ -36,11 +38,13 @@ endif
 all: sslscan
 
 sslscan: $(SRCS)
-	$(CC) -o $@ ${WARNINGS} ${LDFLAGS} ${CFLAGS} ${DEFINES} ${SRCS} ${LIBS}
+	$(CC) -o $@ ${WARNINGS} ${LDFLAGS} ${CFLAGS} ${CPPFLAGS} ${DEFINES} ${SRCS} ${LIBS}
 
 install:
+	mkdir -p $(BINPATH)
+	mkdir -p $(MANPATH)man1/
 	cp sslscan $(BINPATH)
-	cp sslscan.1 $(MANPATH)man1
+	cp sslscan.1 $(MANPATH)man1/
 
 uninstall:
 	rm -f $(BINPATH)sslscan
@@ -59,5 +63,5 @@ static: openssl/libcrypto.a
 	$(MAKE) sslscan STATIC_BUILD=TRUE
 
 clean:
-	[ -d openssl -a -d openssl/.git ] && ( cd ./openssl; git clean -fx )
+	if [ -d openssl -a -d openssl/.git ]; then ( cd ./openssl; git clean -fx ); fi;
 	rm -f sslscan
