@@ -32,31 +32,12 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 
 ### OpenSSL issues
 
-#### Building on Debian/Kali
-
-Note that many modern distros (including Kali) ship with a version of OpenSSL
-that disables support for SSLv2 ciphers. If `sslscan` is compiled on one of
-these distros, it will not be able to detect SSLv2.
-
-This issue can be resolved by rebuilding OpenSSL from source after removing
-the patch that disables SSLv2 support.
-
-The `build_openssl_debian.sh` script automates this process for Debian systems.
-It has been tested on Debian Squeeze/Wheezy and Kali; it may work on other
-Debian based distros, but has not been tested. The built version of OpenSSL
-will be installed using `dpkg`.
-
-If it is not possible to rebuild OpenSSL, `sslscan` will still compile
-(thanks to a patch from [digineo/sslscan](https://github.com/digineo/sslscan),
-based on the debian patch). However, a warning will be displayed in the
-output to notify the user that SSLv2 ciphers will not be detected.
-
 #### Statically linking a custom OpenSSL build
 
 It is possible to ignore the OpenSSL system installation and ship your own
 version. Although this results in a more resource-heavy `sslscan` binary
 (file size, memory consumption, etc.), this allows to enable both SSLv2 and
-SSLv3 ciphers. In comparison to the aforementioned method of repackaging the
+SSLv3 ciphers. In comparison to the method of repackaging the
 Debian build, this custom OpenSSL build won't affect other tools on the same
 system, as they would use the version packaged by the distro's maintainers.
 
@@ -88,6 +69,33 @@ looks a bit like
         OpenSSL 1.1.0-dev xx XXX xxxx
 
 (pay attention to the `-static` suffix and the `1.1.0-dev` OpenSSL version).
+
+
+#### Building on Debian
+Kali now ships with a statically built version of sslscan which supports SSLv2.
+
+The package can be found in the [Kali Git Repository](http://git.kali.org/gitweb/?p=packages/sslscan.git;a=summary).
+
+If for whatever reason you can't install this package, follow the instructions below for building on Debian.
+
+#### Building on Debian
+
+Note that many modern distros (including Debian) ship with a version of OpenSSL
+that disables support for SSLv2 ciphers. If `sslscan` is compiled on one of
+these distros, it will not be able to detect SSLv2.
+
+This issue can be resolved by rebuilding OpenSSL from source after removing
+the patch that disables SSLv2 support.
+
+The `build_openssl_debian.sh` script automates this process for Debian systems.
+It has been tested on Debian Squeeze/Wheezy; it may work on other
+Debian based distros, but has not been tested. The built version of OpenSSL
+will be installed using `dpkg`.
+
+If it is not possible to rebuild OpenSSL, `sslscan` will still compile
+(thanks to a patch from [digineo/sslscan](https://github.com/digineo/sslscan),
+based on the debian patch). However, a warning will be displayed in the
+output to notify the user that SSLv2 ciphers will not be detected.
 
 
 # Original (ioerror) README

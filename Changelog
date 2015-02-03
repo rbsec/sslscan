@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version: 1.9.11
+Date   : 03/02/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Makefile updates to assist packaging in Kali.
+         > Fix missing static build number when compiling from tarball.
+
 Version: 1.9.10
 Date   : 24/01/2015
 Author : rbsec <robin@rbsec.net>

@@ -26,7 +26,7 @@ PWD          = $(shell pwd)/openssl
 LDFLAGS      += -L${PWD}/
 CFLAGS       += -I${PWD}/include/ -I${PWD}/
 LIBS         = -lssl -lcrypto -ldl
-GIT_VERSION  = $(shell git describe --tags --always --dirty=-wip)-static
+GIT_VERSION  := $(GIT_VERSION)-static
 else
 # for dynamic linking
 LDFLAGS   += -L/usr/local/ssl/lib/ -L/usr/local/opt/openssl/lib
