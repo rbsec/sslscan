@@ -279,7 +279,7 @@ int tcpConnect(struct sslCheckOptions *options)
            expected hostname.
         */
         if (snprintf(xmpp_setup, sizeof(xmpp_setup), "<?xml version='1.0' ?>\r\n"
-               "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host) >= sizeof(xmpp_setup)) {
+               "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:server' to='%s' version='1.0'>\r\n", options->host) >= sizeof(xmpp_setup)) {
             printf("(internal error: xmpp_setup buffer too small)\n");
             abort();
         }
@@ -307,8 +307,8 @@ int tcpConnect(struct sslCheckOptions *options)
         if (options->verbose)
             printf("Server reported: %s\n", buffer);
 
-        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
-            return 0;
+        //if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+        //    return 0;
         if (strstr(buffer, "<proceed"))
             printf_verbose("It appears that xmpp-tls is ready for TLS.\n");
 
