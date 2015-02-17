@@ -278,10 +278,24 @@ int tcpConnect(struct sslCheckOptions *options)
            It may be useful to provide a commandline switch to provide the
            expected hostname.
         */
-        if (snprintf(xmpp_setup, sizeof(xmpp_setup), "<?xml version='1.0' ?>\r\n"
-               "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host) >= sizeof(xmpp_setup)) {
-            printf("(internal error: xmpp_setup buffer too small)\n");
-            abort();
+        // Server to server handshake
+        printf("%d", options->xmpp_server);
+        if (options->xmpp_server)
+        {
+            if (snprintf(xmpp_setup, sizeof(xmpp_setup), "<?xml version='1.0' ?>\r\n"
+                        "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:server' to='%s' version='1.0'>\r\n", options->host) >= sizeof(xmpp_setup)) {
+                printf("(internal error: xmpp_setup buffer too small)\n");
+                abort();
+            }
+        }
+        // Client to server handshake (default)
+        else
+        {
+            if (snprintf(xmpp_setup, sizeof(xmpp_setup), "<?xml version='1.0' ?>\r\n"
+                        "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host) >= sizeof(xmpp_setup)) {
+                printf("(internal error: xmpp_setup buffer too small)\n");
+                abort();
+            }
         }
         tlsStarted = 1;
         sendString(socketDescriptor, xmpp_setup);
@@ -307,8 +321,11 @@ int tcpConnect(struct sslCheckOptions *options)
         if (options->verbose)
             printf("Server reported: %s\n", buffer);
 
-        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
-            return 0;
+        if (options->xmpp_server)
+        {
+            if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+                return 0;
+        }
         if (strstr(buffer, "<proceed"))
             printf_verbose("It appears that xmpp-tls is ready for TLS.\n");
 
@@ -2644,6 +2661,7 @@ int main(int argc, char *argv[])
     options.starttls_pop3 = false;
     options.starttls_smtp = false;
     options.starttls_xmpp = false;
+    options.xmpp_server = false;
     options.verbose = false;
     options.ipv4 = true;
     options.ipv6 = true;
@@ -2790,6 +2808,10 @@ int main(int argc, char *argv[])
         // TLS (all versions)...
         else if (strcmp("--tlsall", argv[argLoop]) == 0)
             options.sslVersion = tls_all;
+
+        // Use a server-to-server XMPP handshake
+        else if (strcmp("--xmpp-server", argv[argLoop]) == 0)
+            options.xmpp_server = true;
 
         // SSL Bugs...
         else if (strcmp("--bugs", argv[argLoop]) == 0)
@@ -2982,6 +3004,7 @@ int main(int argc, char *argv[])
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
+            printf("  %s--xmpp-server%s        Use a server-to-server XMPP handshake.\n", COL_GREEN, RESET);
             printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
             printf("  %s--rdp%s                Send RDP preamble before starting scan.\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
