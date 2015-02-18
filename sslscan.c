@@ -159,7 +159,7 @@ int readOrLogAndClose(int fd, void* buffer, size_t len, const struct sslCheckOpt
 
     n = recv(fd, buffer, len - 1, 0);
 
-    if (n < 0) {
+    if (n < 0 && errno != 11) {
         printf_error("%s    ERROR: error reading from %s:%d: %s%s\n", COL_RED, options->host, options->port, strerror(errno), RESET);
         close(fd);
         return 0;
@@ -279,7 +279,6 @@ int tcpConnect(struct sslCheckOptions *options)
            expected hostname.
         */
         // Server to server handshake
-        printf("%d", options->xmpp_server);
         if (options->xmpp_server)
         {
             if (snprintf(xmpp_setup, sizeof(xmpp_setup), "<?xml version='1.0' ?>\r\n"
@@ -321,7 +320,7 @@ int tcpConnect(struct sslCheckOptions *options)
         if (options->verbose)
             printf("Server reported: %s\n", buffer);
 
-        if (options->xmpp_server)
+        if (!options->xmpp_server)
         {
             if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
                 return 0;
@@ -568,11 +567,11 @@ int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOu
         outputData->supported, outputData->secure);
 
     if (outputData->secure)
-        printf("%sSecure%s session renegotiation supported\n", COL_GREEN, RESET);
+        printf("%sSecure%s session renegotiation supported\n\n", COL_GREEN, RESET);
     else if (outputData->supported)
-        printf("%sInsecure%s session renegotiation supported\n", COL_RED, RESET);
+        printf("%sInsecure%s session renegotiation supported\n\n", COL_RED, RESET);
     else
-       printf("Session renegotiation %snot supported%s\n", COL_GREEN, RESET);
+       printf("Session renegotiation %snot supported%s\n\n", COL_GREEN, RESET);
 
     return true;
 }
@@ -691,11 +690,11 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
 
                         if (session.compress_meth == 0)
                         {
-                            printf("Compression %sdisabled%s\n", COL_GREEN, RESET);
+                            printf("Compression %sdisabled%s\n\n", COL_GREEN, RESET);
                         }
                         else
                         {
-                            printf("Compression %senabled%s (CRIME)\n", COL_RED, RESET);
+                            printf("Compression %senabled%s (CRIME)\n\n", COL_RED, RESET);
                         }
 
                         // Disconnect SSL over socket
@@ -2470,13 +2469,13 @@ int testHost(struct sslCheckOptions *options)
 
     if (status == true && options->compression )
     {
-        printf("\n  %sTLS Compression:%s\n", COL_BLUE, RESET);
+        printf("  %sTLS Compression:%s\n", COL_BLUE, RESET);
         testCompression(options, TLSv1_client_method());
     }
 
     if (status == true && options->heartbleed )
     {
-        printf("\n  %sHeartbleed:%s\n", COL_BLUE, RESET);
+        printf("  %sHeartbleed:%s\n", COL_BLUE, RESET);
         if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10)
         {
             printf("TLS 1.0 ");
