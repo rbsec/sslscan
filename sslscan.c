@@ -321,7 +321,14 @@ int tcpConnect(struct sslCheckOptions *options)
             printf("Server reported: %s\n", buffer);
 
         if (strstr(buffer, "<proceed"))
+        {
             printf_verbose("It appears that xmpp-tls is ready for TLS.\n");
+        }
+        else
+        {
+            if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+                return 0;
+        }
 
         printf_verbose("Server reported: %s\n", buffer);
 
