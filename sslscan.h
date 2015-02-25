@@ -107,6 +107,7 @@ struct sslCheckOptions
     int noFailed;
     int showCertificate;
     int checkCertificate;
+    int showTrustedCAs;
     int showClientCiphers;
     int ciphersuites;
     int reneg;
@@ -125,6 +126,7 @@ struct sslCheckOptions
     int verbose;
     int ipv4;
     int ipv6;
+    int getPreferredCiphers;
 
     // File Handles...
     FILE *xmlOutput;
