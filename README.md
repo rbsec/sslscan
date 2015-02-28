@@ -29,6 +29,15 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Determine the list of CAs acceptable for client certificates (--show-client-cas).
 * Experimental build support on OSX (credit MikeSchroll)
 * Flag some self-signed SSL certificates.
+* Experimental Windows support (credit jtesta).
+
+### Building on Windows
+Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can
+either be done natively or by cross-compiling from Linux. See INSTALL for
+instructions.
+
+Note that sslscan was originally written for Linux, and has not been extensively
+tested on Windows. As such, the Windows version should be considered experimental.
 
 ### OpenSSL issues
 
@@ -71,7 +80,7 @@ looks a bit like
 (pay attention to the `-static` suffix and the `1.1.0-dev` OpenSSL version).
 
 
-#### Building on Debian
+#### Building on Kali
 Kali now ships with a statically built version of sslscan which supports SSLv2.
 
 The package can be found in the [Kali Git Repository](http://git.kali.org/gitweb/?p=packages/sslscan.git;a=summary).
@@ -79,7 +88,6 @@ The package can be found in the [Kali Git Repository](http://git.kali.org/gitweb
 If for whatever reason you can't install this package, follow the instructions below for building on Debian.
 
 #### Building on Debian
-
 Note that many modern distros (including Debian) ship with a version of OpenSSL
 that disables support for SSLv2 ciphers. If `sslscan` is compiled on one of
 these distros, it will not be able to detect SSLv2.
@@ -96,7 +104,6 @@ If it is not possible to rebuild OpenSSL, `sslscan` will still compile
 (thanks to a patch from [digineo/sslscan](https://github.com/digineo/sslscan),
 based on the debian patch). However, a warning will be displayed in the
 output to notify the user that SSLv2 ciphers will not be detected.
-
 
 # Original (ioerror) README
 This is a fork of sslscan.c to better support STARTTLS.
