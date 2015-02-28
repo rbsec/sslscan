@@ -204,7 +204,7 @@ int readOrLogAndClose(int fd, void* buffer, size_t len, const struct sslCheckOpt
 
     n = recv(fd, buffer, len - 1, 0);
 
-    if (n < 0) {
+    if (n < 0 && errno != 11) {
         printf_error("%s    ERROR: error reading from %s:%d: %s%s\n", COL_RED, options->host, options->port, strerror(errno), RESET);
         close(fd);
         return 0;
@@ -333,10 +333,23 @@ int tcpConnect(struct sslCheckOptions *options)
            It may be useful to provide a commandline switch to provide the
            expected hostname.
         */
-        if (snprintf(xmpp_setup, sizeof(xmpp_setup), "<?xml version='1.0' ?>\r\n"
-               "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host) >= sizeof(xmpp_setup)) {
-            printf("(internal error: xmpp_setup buffer too small)\n");
-            abort();
+        // Server to server handshake
+        if (options->xmpp_server)
+        {
+            if (snprintf(xmpp_setup, sizeof(xmpp_setup), "<?xml version='1.0' ?>\r\n"
+                        "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:server' to='%s' version='1.0'>\r\n", options->host) >= sizeof(xmpp_setup)) {
+                printf("(internal error: xmpp_setup buffer too small)\n");
+                abort();
+            }
+        }
+        // Client to server handshake (default)
+        else
+        {
+            if (snprintf(xmpp_setup, sizeof(xmpp_setup), "<?xml version='1.0' ?>\r\n"
+                        "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' to='%s' version='1.0'>\r\n", options->host) >= sizeof(xmpp_setup)) {
+                printf("(internal error: xmpp_setup buffer too small)\n");
+                abort();
+            }
         }
         tlsStarted = 1;
         sendString(socketDescriptor, xmpp_setup);
@@ -362,10 +375,15 @@ int tcpConnect(struct sslCheckOptions *options)
         if (options->verbose)
             printf("Server reported: %s\n", buffer);
 
-        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
-            return 0;
         if (strstr(buffer, "<proceed"))
+        {
             printf_verbose("It appears that xmpp-tls is ready for TLS.\n");
+        }
+        else
+        {
+            if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+                return 0;
+        }
 
         printf_verbose("Server reported: %s\n", buffer);
 
@@ -606,11 +624,11 @@ int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOu
         outputData->supported, outputData->secure);
 
     if (outputData->secure)
-        printf("%sSecure%s session renegotiation supported\n", COL_GREEN, RESET);
+        printf("%sSecure%s session renegotiation supported\n\n", COL_GREEN, RESET);
     else if (outputData->supported)
-        printf("%sInsecure%s session renegotiation supported\n", COL_RED, RESET);
+        printf("%sInsecure%s session renegotiation supported\n\n", COL_RED, RESET);
     else
-       printf("Session renegotiation %snot supported%s\n", COL_GREEN, RESET);
+       printf("Session renegotiation %snot supported%s\n\n", COL_GREEN, RESET);
 
     return true;
 }
@@ -729,11 +747,11 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
 
                         if (session.compress_meth == 0)
                         {
-                            printf("Compression %sdisabled%s\n", COL_GREEN, RESET);
+                            printf("Compression %sdisabled%s\n\n", COL_GREEN, RESET);
                         }
                         else
                         {
-                            printf("Compression %senabled%s (CRIME)\n", COL_RED, RESET);
+                            printf("Compression %senabled%s (CRIME)\n\n", COL_RED, RESET);
                         }
 
                         // Disconnect SSL over socket
@@ -2525,13 +2543,13 @@ int testHost(struct sslCheckOptions *options)
 
     if (status == true && options->compression )
     {
-        printf("\n  %sTLS Compression:%s\n", COL_BLUE, RESET);
+        printf("  %sTLS Compression:%s\n", COL_BLUE, RESET);
         testCompression(options, TLSv1_client_method());
     }
 
     if (status == true && options->heartbleed )
     {
-        printf("\n  %sHeartbleed:%s\n", COL_BLUE, RESET);
+        printf("  %sHeartbleed:%s\n", COL_BLUE, RESET);
         if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10)
         {
             printf("TLS 1.0 ");
@@ -2721,6 +2739,7 @@ int main(int argc, char *argv[])
     options.starttls_pop3 = false;
     options.starttls_smtp = false;
     options.starttls_xmpp = false;
+    options.xmpp_server = false;
     options.verbose = false;
     options.ipv4 = true;
     options.ipv6 = true;
@@ -2877,6 +2896,10 @@ int main(int argc, char *argv[])
         // TLS (all versions)...
         else if (strcmp("--tlsall", argv[argLoop]) == 0)
             options.sslVersion = tls_all;
+
+        // Use a server-to-server XMPP handshake
+        else if (strcmp("--xmpp-server", argv[argLoop]) == 0)
+            options.xmpp_server = true;
 
         // SSL Bugs...
         else if (strcmp("--bugs", argv[argLoop]) == 0)
@@ -3069,6 +3092,7 @@ int main(int argc, char *argv[])
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
+            printf("  %s--xmpp-server%s        Use a server-to-server XMPP handshake.\n", COL_GREEN, RESET);
             printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
             printf("  %s--rdp%s                Send RDP preamble before starting scan.\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
