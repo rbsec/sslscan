@@ -39,6 +39,8 @@ instructions.
 Note that sslscan was originally written for Linux, and has not been extensively
 tested on Windows. As such, the Windows version should be considered experimental.
 
+Pre-build cross-compiled Windows binaries are available on the [GitHub Releases Page](https://github.com/rbsec/sslscan/releases).
+
 ### OpenSSL issues
 
 #### Statically linking a custom OpenSSL build
