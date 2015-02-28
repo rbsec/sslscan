@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version: 1.10.0
+Date   : 28/02/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Experimental build support (credit jtesta).
+         > Support XMPP server-to-server connections (--xmpp-server).
+
 Version: 1.9.11
 Date   : 03/02/2015
 Author : rbsec <robin@rbsec.net>
