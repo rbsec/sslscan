@@ -35,16 +35,61 @@
  ***************************************************************************/
 
 // Includes...
+#ifdef _WIN32
+  #define WIN32_LEAN_AND_MEAN
+  #define VC_EXTRALEAN
+  #define _WIN32_WINNT 0x0501
+  #include <windows.h>
+  #include <winsock2.h>
+  #include <ws2tcpip.h>
+  #include <stdint.h>
+  #if defined(WONKY_LINUX_MINGW) || defined(_MSC_VER)
+    // The 32-bit Linux MinGW doesn't have a definition for
+    // this timespec struct, and neither does Visual Studio.
+    // This is a workaround.
+    #include <time.h>
+    struct timespec {
+      time_t tv_sec;
+      long tv_nsec;
+    };
+  #endif
+  #ifdef _MSC_VER
+    // For access().
+    #include <io.h>
+
+    // Flag for access() call.
+    #define R_OK 4
+
+    // access() happens to be deprecated, so use the secure version instead.
+    #define access _access_s
+
+    // There is no snprintf(), but _snprintf() instead.
+    #define snprintf _snprintf
+
+    // Calling close() on a socket descriptor instead of closesocket() causes
+    // a crash!
+    #define close closesocket
+
+    // Visual Studio doesn't have ssize_t...
+    typedef int ssize_t;
+  #endif
+#else
+  #include <netdb.h>
+  #include <sys/socket.h>
+#endif
 #include <string.h>
-#include <netdb.h>
-#include <unistd.h>
 #include <sys/stat.h>
-#include <sys/socket.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/pkcs12.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+
+// If we're not compiling with Visual Studio, include unistd.h.  VS
+// doesn't have this header.
+#ifndef _MSC_VER
+  #include <unistd.h>
+#endif
 
 #ifdef __FreeBSD__
 #include <netinet/in.h>
@@ -186,7 +231,11 @@ int tcpConnect(struct sslCheckOptions *options)
     //Sleep if required
     if (options->sleep.tv_sec)
     {
+#ifdef _WIN32
+        Sleep(options->sleep.tv_sec * 1000);
+#else
         nanosleep(&options->sleep, NULL);
+#endif
     }
     
     // Variables...
@@ -196,7 +245,7 @@ int tcpConnect(struct sslCheckOptions *options)
     int status;
 
     // Create Socket
-    if (options->hostStruct->h_addrtype == AF_INET)
+    if (options->h_addrtype == AF_INET)
     {
         socketDescriptor = socket(AF_INET, SOCK_STREAM, 0);
     }
@@ -212,10 +261,16 @@ int tcpConnect(struct sslCheckOptions *options)
     }
 
     // Set socket timeout
+#ifdef _WIN32
+    // Windows isn't looking for a timeval struct like in UNIX; it wants a timeout in a DWORD represented in milliseconds...
+    DWORD timeout = (options->timeout.tv_sec * 1000) + (options->timeout.tv_usec / 1000);
+    setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+#else
     setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&options->timeout,sizeof(struct timeval));
+#endif
 
     // Connect
-    if (options->hostStruct->h_addrtype == AF_INET)
+    if (options->h_addrtype == AF_INET)
     {
         status = connect(socketDescriptor, (struct sockaddr *) &options->serverAddress, sizeof(options->serverAddress));
     }
@@ -945,11 +1000,17 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         // Credit to Jared Stafford (jspenguin@jspenguin.org)
         char hello[] = {0x16,0x03,0x02,0x00,0xdc,0x01,0x00,0x00,0xd8,0x03,0x02,0x53,0x43,0x5b,0x90,0x9d,0x9b,0x72,0x0b,0xbc,0x0c,0xbc,0x2b,0x92,0xa8,0x48,0x97,0xcf,0xbd,0x39,0x04,0xcc,0x16,0x0a,0x85,0x03,0x90,0x9f,0x77,0x04,0x33,0xd4,0xde,0x00,0x00,0x66,0xc0,0x14,0xc0,0x0a,0xc0,0x22,0xc0,0x21,0x00,0x39,0x00,0x38,0x00,0x88,0x00,0x87,0xc0,0x0f,0xc0,0x05,0x00,0x35,0x00,0x84,0xc0,0x12,0xc0,0x08,0xc0,0x1c,0xc0,0x1b,0x00,0x16,0x00,0x13,0xc0,0x0d,0xc0,0x03,0x00,0x0a,0xc0,0x13,0xc0,0x09,0xc0,0x1f,0xc0,0x1e,0x00,0x33,0x00,0x32,0x00,0x9a,0x00,0x99,0x00,0x45,0x00,0x44,0xc0,0x0e,0xc0,0x04,0x00,0x2f,0x00,0x96,0x00,0x41,0xc0,0x11,0xc0,0x07,0xc0,0x0c,0xc0,0x02,0x00,0x05,0x00,0x04,0x00,0x15,0x00,0x12,0x00,0x09,0x00,0x14,0x00,0x11,0x00,0x08,0x00,0x06,0x00,0x03,0x00,0xff,0x01,0x00,0x00,0x49,0x00,0x0b,0x00,0x04,0x03,0x00,0x01,0x02,0x00,0x0a,0x00,0x34,0x00,0x32,0x00,0x0e,0x00,0x0d,0x00,0x19,0x00,0x0b,0x00,0x0c,0x00,0x18,0x00,0x09,0x00,0x0a,0x00,0x16,0x00,0x17,0x00,0x08,0x00,0x06,0x00,0x07,0x00,0x14,0x00,0x15,0x00,0x04,0x00,0x05,0x00,0x12,0x00,0x13,0x00,0x01,0x00,0x02,0x00,0x03,0x00,0x0f,0x00,0x10,0x00,0x11,0x00,0x23,0x00,0x00,0x00,0x0f,0x00,0x01,0x01};
 
-        write(socketDescriptor, hello, sizeof(hello));
+        if (send(socketDescriptor, hello, sizeof(hello), 0) <= 0) { 
+            printf_error("send() failed: %s\n", strerror(errno));
+            exit(1);
+        }
 
         // Send the heartbeat
         char hb[8] = {0x18,0x03,0x02,0x00,0x03,0x01,0x40,0x00};
-        write(socketDescriptor, hb, sizeof(hb));
+        if (send(socketDescriptor, hb, sizeof(hb), 0) <= 0) {
+            printf_error("send() failed: %s\n", strerror(errno));
+            exit(1);
+        }
 
         char hbbuf[65536];
 
@@ -958,8 +1019,8 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
             memset(hbbuf, 0, sizeof(hbbuf));
 
             // Read 5 byte header
-            int readResult = read(socketDescriptor, hbbuf, 5 );
-            if (readResult == 0)
+            int readResult = recv(socketDescriptor, hbbuf, 5, 0);
+            if (readResult <= 0)
             {
                 break;
             }
@@ -977,8 +1038,8 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
             memset(hbbuf, 0, sizeof(hbbuf));
 
             // Read rest of record
-            readResult = read(socketDescriptor, hbbuf, ln );
-            if (readResult == 0)
+            readResult = recv(socketDescriptor, hbbuf, ln, 0);
+            if (readResult <= 0)
             {
                 break;
             }
@@ -2384,41 +2445,52 @@ int showTrustedCAs(struct sslCheckOptions *options)
 int testHost(struct sslCheckOptions *options)
 {
     // Variables...
-    struct sslCipher *sslCipherPointer;
+    struct sslCipher *sslCipherPointer = NULL;
     int status = true;
+    struct addrinfo *addrinfoResult = NULL;
+    struct addrinfo hints;
+
+    memset(&hints, 0, sizeof(struct addrinfo));
 
     // Resolve Host Name
-
-    if (options->ipv4)
+    options->h_addrtype = 0;
+    if (options->ipv4 && options->ipv6)
     {
-        options->hostStruct = gethostbyname2(options->host, AF_INET);
+       // If both IPv4 and IPv6 are enabled, we restrict nothing in the
+       // results (i.e.: we'll accept either type of address).
     }
-    if (options->hostStruct == NULL && options->ipv6)
+    else if (options->ipv4)  // Only IPv4 is acceptable...
     {
-        options->hostStruct = gethostbyname2(options->host, AF_INET6);
+        hints.ai_family = AF_INET;
+    }
+    else if (options->ipv6)  // Only IPv6 is acceptable...
+    {
+        hints.ai_family = AF_INET6;
         printf("Trying %sIPv6%s lookup\n\n", COL_GREEN, RESET);
-
     }
-    if (options->hostStruct == NULL)
+
+    // Perform the actual lookup.
+    if (getaddrinfo(options->host, NULL, &hints, &addrinfoResult) != 0)
     {
         printf("%sERROR: Could not resolve hostname %s.%s\n", COL_RED, options->host, RESET);
         return false;
     }
 
     // Configure Server Address and Port
-    if (options->hostStruct->h_addrtype == AF_INET6)
+    if (addrinfoResult->ai_family == AF_INET6)
     {
-        options->serverAddress6.sin6_family = options->hostStruct->h_addrtype;
-        memcpy((char *) &options->serverAddress6.sin6_addr, options->hostStruct->h_addr, options->hostStruct->h_length);
+        options->serverAddress6.sin6_family = addrinfoResult->ai_family;
+        memcpy((char *) &options->serverAddress6, addrinfoResult->ai_addr, addrinfoResult->ai_addrlen);
         options->serverAddress6.sin6_port = htons(options->port);
     }
     else
     {
-        options->serverAddress.sin_family = options->hostStruct->h_addrtype;
-        memcpy((char *) &options->serverAddress.sin_addr, options->hostStruct->h_addr, options->hostStruct->h_length);
+        options->serverAddress.sin_family = addrinfoResult->ai_family;
+        memcpy((char *) &options->serverAddress, addrinfoResult->ai_addr, addrinfoResult->ai_addrlen);
         options->serverAddress.sin_port = htons(options->port);
-
     }
+    options->h_addrtype = addrinfoResult->ai_family;
+    freeaddrinfo(addrinfoResult); addrinfoResult = NULL;
 
     // XML Output...
     printf_xml(" <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
@@ -2624,6 +2696,11 @@ int main(int argc, char *argv[])
     int msec;
     FILE *targetsFile;
     char line[1024];
+#ifdef _WIN32
+    WORD wVersionRequested;
+    WSADATA wsaData;
+    int err;
+#endif
 
     // Init...
     memset(&options, 0, sizeof(struct sslCheckOptions));
@@ -2654,6 +2731,16 @@ int main(int argc, char *argv[])
     options.timeout.tv_usec = 0;
 
     options.sslVersion = ssl_all;
+
+#ifdef _WIN32
+    wVersionRequested = MAKEWORD(2, 2);
+    err = WSAStartup(wVersionRequested, &wsaData);
+    if (err != 0)
+    {
+        printf_error("WSAStartup failed: %d\n", err);
+        return -1;
+    }
+#endif
     SSL_library_init();
 
 
