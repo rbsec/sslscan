@@ -161,6 +161,8 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
         sslCipherPointer->version = SSL_CIPHER_get_version(sk_SSL_CIPHER_value(cipherList, loop));
         SSL_CIPHER_description(sk_SSL_CIPHER_value(cipherList, loop), sslCipherPointer->description, sizeof(sslCipherPointer->description) - 1);
         sslCipherPointer->bits = SSL_CIPHER_get_bits(sk_SSL_CIPHER_value(cipherList, loop), &tempInt);
+    
+    
     }
 
     SSL_free(ssl);
@@ -168,7 +170,6 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
 
     return returnCode;
 }
-
 
 // File Exists
 int fileExists(char *fileName)
@@ -1095,6 +1096,39 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 }
 
 
+int ssl_print_tmp_key(SSL *s)
+{
+    EVP_PKEY *key;
+    if (!SSL_get_server_tmp_key(s, &key))
+        return 1;
+    printf("\tTemporary Key: ");
+    switch (EVP_PKEY_id(key)) {
+    case EVP_PKEY_RSA:
+        printf("RSA, %d bits\n", EVP_PKEY_bits(key));
+        break;
+
+    case EVP_PKEY_DH:
+        printf("DH, %d bits\n", EVP_PKEY_bits(key));
+        break;
+#ifndef OPENSSL_NO_EC
+    case EVP_PKEY_EC:
+        {
+            EC_KEY *ec = EVP_PKEY_get1_EC_KEY(key);
+            int nid;
+            const char *cname;
+            nid = EC_GROUP_get_curve_name(EC_KEY_get0_group(ec));
+            EC_KEY_free(ec);
+            cname = EC_curve_nid2nist(nid);
+            if (!cname)
+                cname = OBJ_nid2sn(nid);
+            printf("ECDH, %s, %d bits\n", cname, EVP_PKEY_bits(key));
+        }
+#endif
+    }
+    EVP_PKEY_free(key);
+    return 1;
+}
+
 
 // Test a cipher...
 int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPointer)
@@ -1125,6 +1159,8 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
 
             // Create SSL object...
             ssl = SSL_new(options->ctx);
+
+
             if (ssl != NULL)
             {
                 // Connect socket and BIO
@@ -1154,7 +1190,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         }
                         else
                         {
-                            printf("Accepted  ");
+                            printf("Accepted  ");    
                         }
                         if (options->http == true)
                         {
@@ -1298,6 +1334,8 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         printf("%s\n", sslCipherPointer->name);
                     }
                 }
+                
+                ssl_print_tmp_key(ssl);
 
                 // Disconnect SSL over socket
                 if (cipherStatus == 1)

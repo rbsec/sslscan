@@ -172,6 +172,7 @@ ssize_t sendString(int, const char[]);
 int readOrLogAndClose(int, void *, size_t, const struct sslCheckOptions *);
 const char *printableSslMethod(const SSL_METHOD *);
 static int password_callback(char *, int, int, void *);
+int ssl_print_tmp_key(SSL *s);
 
 int tcpConnect(struct sslCheckOptions *);
 int populateCipherList(struct sslCheckOptions *, const SSL_METHOD *);
