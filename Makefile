@@ -51,7 +51,7 @@ uninstall:
 	rm -f $(MANPATH)man1/sslscan.1
 
 openssl/Makefile:
-	[ -d openssl -a -d openssl/.git ] && true || git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_1-stable
+	[ -d openssl -a -d openssl/.git ] && true || git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_2-stable
 
 openssl/libcrypto.a: openssl/Makefile
 	cd ./openssl; ./config no-shares

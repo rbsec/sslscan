@@ -161,6 +161,8 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
         sslCipherPointer->version = SSL_CIPHER_get_version(sk_SSL_CIPHER_value(cipherList, loop));
         SSL_CIPHER_description(sk_SSL_CIPHER_value(cipherList, loop), sslCipherPointer->description, sizeof(sslCipherPointer->description) - 1);
         sslCipherPointer->bits = SSL_CIPHER_get_bits(sk_SSL_CIPHER_value(cipherList, loop), &tempInt);
+    
+    
     }
 
     SSL_free(ssl);
@@ -168,7 +170,6 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
 
     return returnCode;
 }
-
 
 // File Exists
 int fileExists(char *fileName)
@@ -1095,6 +1096,42 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 }
 
 
+int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
+{
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+    EVP_PKEY *key;
+    if (!SSL_get_server_tmp_key(s, &key))
+        return 1;
+    switch (EVP_PKEY_id(key)) {
+    case EVP_PKEY_RSA:
+        printf("RSA, %d bits", EVP_PKEY_bits(key));
+        break;
+
+    case EVP_PKEY_DH:
+        printf("DH, %d bits", EVP_PKEY_bits(key));
+        break;
+#ifndef OPENSSL_NO_EC
+    case EVP_PKEY_EC:
+        {
+            EC_KEY *ec = EVP_PKEY_get1_EC_KEY(key);
+            int nid;
+            const char *cname;
+            nid = EC_GROUP_get_curve_name(EC_KEY_get0_group(ec));
+            EC_KEY_free(ec);
+            cname = EC_curve_nid2nist(nid);
+            if (!cname)
+                cname = OBJ_nid2sn(nid);
+            printf(" Curve %s EDH %d", cname, EVP_PKEY_bits(key));
+            printf_xml(" curve=\"%s\" edhbits=\"%d\"", cname, EVP_PKEY_bits(key));
+        }
+#endif
+    }
+    EVP_PKEY_free(key);
+    return 1;
+#endif
+    return 0;
+}
+
 
 // Test a cipher...
 int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPointer)
@@ -1125,6 +1162,8 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
 
             // Create SSL object...
             ssl = SSL_new(options->ctx);
+
+
             if (ssl != NULL)
             {
                 // Connect socket and BIO
@@ -1154,7 +1193,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         }
                         else
                         {
-                            printf("Accepted  ");
+                            printf("Accepted  ");    
                         }
                         if (options->http == true)
                         {
@@ -1272,32 +1311,39 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         tempInt--;
                         printf(" ");
                     }
-                    printf_xml(" bits=\"%d\" cipher=\"%s\" />\n", sslCipherPointer->bits, sslCipherPointer->name);
+                    printf_xml(" bits=\"%d\" cipher=\"%s\"", sslCipherPointer->bits, sslCipherPointer->name);
                     if (strstr(sslCipherPointer->name, "NULL"))
                     {
-                        printf("%s%s%s\n", COL_RED_BG, sslCipherPointer->name, RESET);
+                        printf("%s%-29s%s", COL_RED_BG, sslCipherPointer->name, RESET);
                     }
                     else if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
                     {
-                        printf("%s%s%s\n", COL_PURPLE, sslCipherPointer->name, RESET);
+                        printf("%s%s-29%s", COL_PURPLE, sslCipherPointer->name, RESET);
                     }
                     else if (strstr(sslCipherPointer->name, "EXP") || (sslCipherPointer->sslMethod == SSLv3_client_method() && !strstr(sslCipherPointer->name, "RC4")))
                     {
-                        printf("%s%s%s\n", COL_RED, sslCipherPointer->name, RESET);
+                        printf("%s%-29s%s", COL_RED, sslCipherPointer->name, RESET);
                     }
                     else if (strstr(sslCipherPointer->name, "RC4"))
                     {
-                        printf("%s%s%s\n", COL_YELLOW, sslCipherPointer->name, RESET);
+                        printf("%s%-29s%s", COL_YELLOW, sslCipherPointer->name, RESET);
                     }
                     else if (strstr(sslCipherPointer->name, "GCM"))
                     {
-                        printf("%s%s%s\n", COL_GREEN, sslCipherPointer->name, RESET);
+                        printf("%s%-29s%s", COL_GREEN, sslCipherPointer->name, RESET);
                     }
                     else
                     {
-                        printf("%s\n", sslCipherPointer->name);
+                        printf("%-29s", sslCipherPointer->name);
                     }
+                    if (options->cipher_details == true)
+                    {
+                        ssl_print_tmp_key(options, ssl);
+                    }
+                    printf("\n");
+                    printf_xml(" />\n");
                 }
+                
 
                 // Disconnect SSL over socket
                 if (cipherStatus == 1)
@@ -1393,7 +1439,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             }
                             else if (sslMethod == TLSv1_client_method())
                             {
-                                printf_xml("  <defaultcipher sslversion=\"TLSv1\" bits=\"");
+                                printf_xml("  <defaultcipher sslversion=\"TLSv1.0\" bits=\"");
                                 printf("TLSv1.0  ");
                             }
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
@@ -1434,23 +1480,29 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                                 tempInt--;
                                 printf(" ");
                             }
-                            printf_xml("%d\" cipher=\"%s\" />\n", SSL_get_cipher_bits(ssl, &tempInt2), SSL_get_cipher_name(ssl));
+                            printf_xml("%d\" cipher=\"%s\"", SSL_get_cipher_bits(ssl, &tempInt2), SSL_get_cipher_name(ssl));
                             if (strstr(SSL_get_cipher_name(ssl), "EXP") || (sslMethod == SSLv3_client_method() && strstr(SSL_get_cipher_name(ssl), "CBC")))
                             {
-                                printf("%s%s%s\n", COL_RED, SSL_get_cipher_name(ssl), RESET);
+                                printf("%s%-29s%s", COL_RED, SSL_get_cipher_name(ssl), RESET);
                             }
                             else if (strstr(SSL_get_cipher_name(ssl), "RC4"))
                             {
-                                printf("%s%s%s\n", COL_YELLOW, SSL_get_cipher_name(ssl), RESET);
+                                printf("%s%-29s%s", COL_YELLOW, SSL_get_cipher_name(ssl), RESET);
                             }
                             else if (strstr(SSL_get_cipher_name(ssl), "GCM"))
                             {
-                                printf("%s%s%s\n", COL_GREEN, SSL_get_cipher_name(ssl), RESET);
+                                printf("%s%-29s%s", COL_GREEN, SSL_get_cipher_name(ssl), RESET);
                             }
                             else
                             {
-                                printf("%s\n", SSL_get_cipher_name(ssl));
+                                printf("%-29s", SSL_get_cipher_name(ssl));
                             }
+                            if (options->cipher_details == true)
+                            {
+                                ssl_print_tmp_key(options, ssl);
+                            }
+                            printf("\n");
+                            printf_xml(" />\n");
 
                             // Disconnect SSL over socket
                             SSL_shutdown(ssl);
@@ -2741,6 +2793,7 @@ int main(int argc, char *argv[])
     options.starttls_xmpp = false;
     options.xmpp_server = false;
     options.verbose = false;
+    options.cipher_details = false;
     options.ipv4 = true;
     options.ipv6 = true;
     options.getPreferredCiphers = true;
@@ -2808,6 +2861,12 @@ int main(int argc, char *argv[])
         // Verbose
         else if (strcmp("--verbose", argv[argLoop]) == 0)
             options.verbose = true;
+
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+        // Cipher details (curve names and EDH key lengths)
+        else if (strcmp("--cipher-details", argv[argLoop]) == 0)
+            options.cipher_details = true;
+#endif
 
         // Disable coloured output
         else if ((strcmp("--no-colour", argv[argLoop]) == 0) || (strcmp("--no-color", argv[argLoop]) == 0))
@@ -3101,6 +3160,9 @@ int main(int argc, char *argv[])
             printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+            printf("  %s--cipher-details%s     Display EC curve names and EDH key lengths.\n", COL_GREEN, RESET);
+#endif
             printf("  %s--no-colour%s          Disable coloured output.\n", COL_GREEN, RESET);
             printf("  %s--help%s               Display the  help text  you are  now reading\n\n", COL_GREEN, RESET);
             printf("%sExample:%s\n", COL_BLUE, RESET);

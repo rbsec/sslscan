@@ -117,7 +117,6 @@ Do not check for OpenSSL Heartbleed (CVE-2014-0160)
 Do not check for preferred ciphersuites
 .TP
 .B \-\-starttls\-ftp
-.B \-\-starttls\-ftp
 STARTTLS setup for FTP
 .TP
 .B \-\-starttls\-imap
@@ -141,10 +140,14 @@ Perform a server-to-server XMPP connection. Try this if --starttls-xmpp is faili
 .br
 Send RDP preamble before starting scan.
 .TP
-.B \-\-html
+.B \-\-http
 .br
-Makes a HTML request after a successful connection and returns
+Makes a HTTP request after a successful connection and returns
 the server response code
+.TP
+.B \-\-cipher\-details
+.br
+Display NIST EC curve name and EDH key length. Requires OpenSSL >= 1.0.2 (so if you distro doesn't ship this, you'll need to statically build sslscan).
 .TP
 .B \-\-bugs
 .br
