@@ -1129,11 +1129,22 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
         return 1;
     switch (EVP_PKEY_id(key)) {
     case EVP_PKEY_RSA:
-        printf("RSA, %d bits", EVP_PKEY_bits(key));
+        printf(" RSA %d bits", EVP_PKEY_bits(key));
         break;
 
     case EVP_PKEY_DH:
-        printf("DH, %d bits", EVP_PKEY_bits(key));
+        if (EVP_PKEY_bits(key) <= 768)
+        {
+            printf(" DHE %s%d%s bits", COL_RED, EVP_PKEY_bits(key), RESET);
+        }
+        else if (EVP_PKEY_bits(key) <= 1024)
+        {
+            printf(" DHE %s%d%s bits", COL_YELLOW, EVP_PKEY_bits(key), RESET);
+        }
+        else
+        {
+            printf(" DHE %d bits", EVP_PKEY_bits(key));
+        }
         break;
 #ifndef OPENSSL_NO_EC
     case EVP_PKEY_EC:
@@ -1146,8 +1157,8 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
             cname = EC_curve_nid2nist(nid);
             if (!cname)
                 cname = OBJ_nid2sn(nid);
-            printf(" Curve %s EDH %d", cname, EVP_PKEY_bits(key));
-            printf_xml(" curve=\"%s\" edhbits=\"%d\"", cname, EVP_PKEY_bits(key));
+            printf(" Curve %s DHE %d", cname, EVP_PKEY_bits(key));
+            printf_xml(" curve=\"%s\" dhebits=\"%d\"", cname, EVP_PKEY_bits(key));
         }
 #endif
     }

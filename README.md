@@ -30,7 +30,8 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Experimental build support on OSX (credit MikeSchroll)
 * Flag some self-signed SSL certificates.
 * Experimental Windows support (credit jtesta).
-* Display EC curve names and EDH key lengths with OpenSSL >= 1.0.2 (--cipher-details)
+* Display EC curve names and DHE key lengths with OpenSSL >= 1.0.2 (--cipher-details)
+* Flag weak DHE keys with OpenSSL >= 1.0.2 (--cipher-details)
 
 ### Building on Windows
 Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can
