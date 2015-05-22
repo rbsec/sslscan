@@ -1145,6 +1145,7 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
         {
             printf(" DHE %d bits", EVP_PKEY_bits(key));
         }
+        printf_xml(" dhebits=\"%d\"", EVP_PKEY_bits(key));
         break;
 #ifndef OPENSSL_NO_EC
     case EVP_PKEY_EC:
@@ -1158,7 +1159,7 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
             if (!cname)
                 cname = OBJ_nid2sn(nid);
             printf(" Curve %s DHE %d", cname, EVP_PKEY_bits(key));
-            printf_xml(" curve=\"%s\" dhebits=\"%d\"", cname, EVP_PKEY_bits(key));
+            printf_xml(" curve=\"%s\" ecdhebits=\"%d\"", cname, EVP_PKEY_bits(key));
         }
 #endif
     }

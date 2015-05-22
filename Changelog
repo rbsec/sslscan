@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version: 1.10.3
+Date   : 22/05/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Flag weak DHE keys in --cipher-details
+         > Report DHE key bits in XML
+         > Change ECDHE key bits to "ecdhebits" rather than "dhebits" in XML
+
 Version: 1.10.2
 Date   : 12/05/2015
 Author : rbsec <robin@rbsec.net>
