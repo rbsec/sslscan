@@ -1355,7 +1355,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     }
                     else if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
                     {
-                        printf("%s%s-29%s", COL_PURPLE, sslCipherPointer->name, RESET);
+                        printf("%s%-29s%s", COL_PURPLE, sslCipherPointer->name, RESET);
                     }
                     else if (strstr(sslCipherPointer->name, "EXP") || (sslCipherPointer->sslMethod == SSLv3_client_method() && !strstr(sslCipherPointer->name, "RC4")))
                     {
