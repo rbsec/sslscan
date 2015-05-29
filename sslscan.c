@@ -3315,6 +3315,7 @@ int main(int argc, char *argv[])
 
                                 // Test the host...
                                 testHost(&options);
+                                printf("\n\n");
                             }
                             readLine(targetsFile, line, sizeof(line));
                         }
