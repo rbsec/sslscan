@@ -1,6 +1,6 @@
 # set gcc as default if CC is not set
 ifndef CC
-  CC=gcc
+  CC=gcc -m64
 endif
 
 GIT_VERSION = $(shell git describe --tags --always --dirty=-wip)
@@ -24,7 +24,7 @@ LIBS      = -lssl -lcrypto
 ifeq ($(STATIC_BUILD), TRUE)
 PWD          = $(shell pwd)/openssl
 LDFLAGS      += -L${PWD}/
-CFLAGS       += -I${PWD}/include/ -I${PWD}/
+CFLAGS       += -I${PWD}/include/ -I${PWD}/ -m64
 LIBS         = -lssl -lcrypto -ldl
 GIT_VERSION  := $(GIT_VERSION)-static
 else
@@ -54,7 +54,7 @@ openssl/Makefile:
 	[ -d openssl -a -d openssl/.git ] && true || git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_2-stable
 
 openssl/libcrypto.a: openssl/Makefile
-	cd ./openssl; ./config no-shares
+	cd ./openssl; ./Configure darwin64-x86_64-cc
 	$(MAKE) -C openssl depend
 	$(MAKE) -C openssl all
 	$(MAKE) -C openssl test
