@@ -1813,7 +1813,7 @@ int checkCertificate(struct sslCheckOptions *options)
                                     {
                                         char *subject = X509_NAME_oneline(X509_get_subject_name(x509Cert), NULL, 0);
                                         printf("Subject:  %s\n", subject);
-                                        printf_xml("   <subject>%s</subject>\n", subject);
+                                        printf_xml("   <subject><![CDATA[%s]]></subject>\n", subject);
 
                                     }
                                     else
@@ -1822,7 +1822,7 @@ int checkCertificate(struct sslCheckOptions *options)
                                         d = X509_NAME_ENTRY_get_data(e);
                                         subject = (char *) ASN1_STRING_data(d);
                                         printf("Subject:  %s\n", subject);
-                                        printf_xml("   <subject>%s</subject>\n", subject);
+                                        printf_xml("   <subject><![CDATA[%s]]></subject>\n", subject);
                                     }
 
                                     // Get certificate altnames if supported
@@ -1842,11 +1842,11 @@ int checkCertificate(struct sslCheckOptions *options)
                                                 }
                                                 if (options->xmlOutput)
                                                 {
-                                                    printf_xml("   <altnames>");
+                                                    printf_xml("   <altnames><![CDATA[");
                                                     if (!X509V3_EXT_print(fileBIO, extension, X509_FLAG_COMPAT, 0))
                                                         M_ASN1_OCTET_STRING_print(fileBIO, extension->value);
                                                 }
-                                                printf_xml("</altnames>\n");
+                                                printf_xml("]]></altnames>\n");
                                                 printf("\n");
                                             }
                                         }
@@ -1862,7 +1862,7 @@ int checkCertificate(struct sslCheckOptions *options)
                                     {
                                         char *issuer = X509_NAME_oneline(X509_get_issuer_name(x509Cert), NULL, 0);
                                         printf("Issuer:   %s", issuer);
-                                        printf_xml("   <issuer>%s</issuer>\n", issuer);
+                                    printf_xml("   <issuer><![CDATA[%s]]></issuer>\n", issuer);
 
                                     }
                                     else
@@ -1879,14 +1879,14 @@ int checkCertificate(struct sslCheckOptions *options)
                                            )
                                         {
                                             printf("Issuer:   %s%s%s\n", COL_RED, issuer, RESET);
-                                            printf_xml("   <issuer>%s</issuer>\n", issuer);
+                                            printf_xml("   <issuer><![CDATA[%s]]></issuer>\n", issuer);
                                             printf_xml("   <self-signed>true</self-signed>\n");
 
                                         }
                                         else
                                         {
                                             printf("Issuer:   %s\n", issuer);
-                                            printf_xml("   <issuer>%s</issuer>\n", issuer);
+                                            printf_xml("   <issuer><![CDATA[%s]]></issuer>\n", issuer);
                                             printf_xml("   <self-signed>false</self-signed>\n");
                                         }
                                     }
@@ -2163,7 +2163,7 @@ int showCertificate(struct sslCheckOptions *options)
                                 {
                                     X509_NAME_oneline(X509_get_issuer_name(x509Cert), buffer, sizeof(buffer) - 1);
                                     printf("    Issuer: %s\n", buffer);
-                                    printf_xml("   <issuer>%s</issuer>\n", buffer);
+                                    printf_xml("   <issuer><![CDATA[%s]]></issuer>\n", buffer);
                                 }
 
                                 // Validity...
@@ -2193,7 +2193,7 @@ int showCertificate(struct sslCheckOptions *options)
                                 {
                                     X509_NAME_oneline(X509_get_subject_name(x509Cert), buffer, sizeof(buffer) - 1);
                                     printf("    Subject: %s\n", buffer);
-                                    printf_xml("   <subject>%s</subject>\n", buffer);
+                                    printf_xml("   <subject><![CDATA[%s]]></subject>\n", buffer);
                                 }
 
                                 // Public Key Algo...
@@ -2914,7 +2914,7 @@ int main(int argc, char *argv[])
             COL_BLUE = "";
             COL_GREEN = "";
             COL_PURPLE = "";
-            COL_RED_BG = "";
+	    COL_RED_BG = "";
         }
 
         // Client Certificates
