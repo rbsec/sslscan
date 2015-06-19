@@ -2930,6 +2930,7 @@ int main(int argc, char *argv[])
             COL_BLUE = "";
             COL_GREEN = "";
             COL_PURPLE = "";
+	    COL_RED_BG = "";
         }
 
         // Client Certificates
