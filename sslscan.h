@@ -188,6 +188,7 @@ int testCompression(struct sslCheckOptions *, const SSL_METHOD *);
 int testRenegotiation(struct sslCheckOptions *, const SSL_METHOD *);
 int testHeartbleed(struct sslCheckOptions *, const SSL_METHOD *);
 int testCipher(struct sslCheckOptions *, struct sslCipher *);
+int testConnection(struct sslCheckOptions *);
 int testHost(struct sslCheckOptions *);
 
 int loadCerts(struct sslCheckOptions *);

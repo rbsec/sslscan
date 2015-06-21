@@ -282,7 +282,7 @@ int tcpConnect(struct sslCheckOptions *options)
 
     if(status < 0)
     {
-        printf_error("%s    ERROR: Could not open a connection to host %s on port %d.%s\n", COL_RED, options->host, options->port, RESET);
+        printf_error("%sERROR: Could not open a connection to host %s on port %d.%s\n", COL_RED, options->host, options->port, RESET);
         close(socketDescriptor);
         return 0;
     }
@@ -2547,13 +2547,10 @@ int showTrustedCAs(struct sslCheckOptions *options)
     return status;
 }
 
-
-// Test a single host and port for ciphers...
-int testHost(struct sslCheckOptions *options)
+int testConnection(struct sslCheckOptions *options)
 {
     // Variables...
-    struct sslCipher *sslCipherPointer = NULL;
-    int status = true;
+    int socketDescriptor = 0;
     struct addrinfo *addrinfoResult = NULL;
     struct addrinfo hints;
 
@@ -2598,7 +2595,26 @@ int testHost(struct sslCheckOptions *options)
     }
     options->h_addrtype = addrinfoResult->ai_family;
     freeaddrinfo(addrinfoResult); addrinfoResult = NULL;
+    
+    socketDescriptor = tcpConnect(options);
+    if (socketDescriptor != 0)
+    {
+        close(socketDescriptor);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
 
+// Test a single host and port for ciphers...
+int testHost(struct sslCheckOptions *options)
+{
+    // Variables...
+    struct sslCipher *sslCipherPointer = NULL;
+    int status = true;
+    
     // XML Output...
     printf_xml(" <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
 
@@ -3279,7 +3295,12 @@ int main(int argc, char *argv[])
 
             // Do the testing...
             if (mode == mode_single)
-                testHost(&options);
+            {
+                if (testConnection(&options))
+                {
+                    testHost(&options);
+                }   
+            }
             else
             {
                 if (fileExists(argv[options.targets] + 10) == true)
@@ -3315,7 +3336,10 @@ int main(int argc, char *argv[])
                                 }
 
                                 // Test the host...
-                                testHost(&options);
+                                if (testConnection(&options))
+                                {
+                                    testHost(&options);
+                                }
                                 printf("\n\n");
                             }
                             readLine(targetsFile, line, sizeof(line));
