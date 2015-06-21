@@ -2846,7 +2846,7 @@ int main(int argc, char *argv[])
     options.starttls_xmpp = false;
     options.xmpp_server = false;
     options.verbose = false;
-    options.cipher_details = false;
+    options.cipher_details = true;
     options.ipv4 = true;
     options.ipv6 = true;
     options.getPreferredCiphers = true;
@@ -2917,8 +2917,8 @@ int main(int argc, char *argv[])
 
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
         // Cipher details (curve names and EDH key lengths)
-        else if (strcmp("--cipher-details", argv[argLoop]) == 0)
-            options.cipher_details = true;
+        else if (strcmp("--no-cipher-details", argv[argLoop]) == 0)
+            options.cipher_details = false;
 #endif
 
         // Disable coloured output
@@ -3215,7 +3215,7 @@ int main(int argc, char *argv[])
             printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
-            printf("  %s--cipher-details%s     Display EC curve names and EDH key lengths.\n", COL_GREEN, RESET);
+            printf("  %s--no-cipher-details%s  Display EC curve names and EDH key lengths.\n", COL_GREEN, RESET);
 #endif
             printf("  %s--no-colour%s          Disable coloured output.\n", COL_GREEN, RESET);
             printf("  %s--help%s               Display the  help text  you are  now reading\n\n", COL_GREEN, RESET);
