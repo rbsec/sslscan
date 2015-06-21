@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version: 1.10.4
+Date   : 21/06/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Display cipher details by default (hide with --no-cipher-details)
+         > Fix scanning multiple targets if one fails (credit shellster)
+         > Fix bug with --no-color and --failed (credit yasulib)
+         > Minor bugfixes to output
+
 Version: 1.10.3
 Date   : 22/05/2015
 Author : rbsec <robin@rbsec.net>
