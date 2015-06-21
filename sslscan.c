@@ -1230,7 +1230,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         }
                         else
                         {
-                            printf("Accepted  ");    
+                            printf("Accepted  ");
                         }
                         if (options->http == true)
                         {
@@ -3299,7 +3299,7 @@ int main(int argc, char *argv[])
                 if (testConnection(&options))
                 {
                     testHost(&options);
-                }   
+                }
             }
             else
             {
