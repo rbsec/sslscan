@@ -1129,7 +1129,18 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
         return 1;
     switch (EVP_PKEY_id(key)) {
     case EVP_PKEY_RSA:
-        printf(" RSA %d bits", EVP_PKEY_bits(key));
+        if (EVP_PKEY_bits(key) <= 768)
+        {
+            printf(" RSA %s%d%s bits", COL_RED, EVP_PKEY_bits(key), RESET);
+        }
+        else if (EVP_PKEY_bits(key) <= 1024)
+        {
+            printf(" RSA %s%d%s bits", COL_YELLOW, EVP_PKEY_bits(key), RESET);
+        }
+        else
+        {
+            printf(" RSA %d bits", EVP_PKEY_bits(key));
+        }
         break;
 
     case EVP_PKEY_DH:
