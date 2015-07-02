@@ -1822,7 +1822,7 @@ int checkCertificate(struct sslCheckOptions *options)
                                     // SSL cert doesn't have a CN, so just print whole thing
                                     if (cnindex == -1)
                                     {
-                                        char *subject = X509_NAME_oneline(X509_get_subject_name(x509Cert), NULL, 0);
+                                        subject = (char *) X509_NAME_oneline(X509_get_subject_name(x509Cert), NULL, 0);
                                         printf("Subject:  %s\n", subject);
                                         printf_xml("   <subject><![CDATA[%s]]></subject>\n", subject);
 
