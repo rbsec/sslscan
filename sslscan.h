@@ -129,6 +129,7 @@ struct sslCheckOptions
     int ipv4;
     int ipv6;
     int getPreferredCiphers;
+    int ocspStatus;
 
     // File Handles...
     FILE *xmlOutput;
@@ -174,6 +175,8 @@ int readOrLogAndClose(int, void *, size_t, const struct sslCheckOptions *);
 const char *printableSslMethod(const SSL_METHOD *);
 static int password_callback(char *, int, int, void *);
 int ssl_print_tmp_key(struct sslCheckOptions *, SSL *s);
+static int ocsp_resp_cb(SSL *s, void *arg);
+int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent);
 
 int tcpConnect(struct sslCheckOptions *);
 int populateCipherList(struct sslCheckOptions *, const SSL_METHOD *);
