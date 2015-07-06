@@ -2098,6 +2098,127 @@ int ocspRequest(struct sslCheckOptions *options)
     return status;
 }
 
+static int ocsp_resp_cb(SSL *s, void *arg)
+{
+	const unsigned char *p;
+	int len;
+	OCSP_RESPONSE *rsp;
+	len = SSL_get_tlsext_status_ocsp_resp(s, &p);
+	if (!p) {
+		printf("No OCSP response sent\n\n");
+		return 1;
+	}
+	rsp = d2i_OCSP_RESPONSE(NULL, &p, len);
+	if (!rsp){
+		printf("OCSP response parse error\n");
+		return 0;
+	}
+
+	BIO *bio_out;
+	bio_out = BIO_new_fp(stdout, BIO_NOCLOSE);
+	
+    int i = 0;
+    long l;
+    OCSP_CERTID *cid = NULL;
+    OCSP_BASICRESP *br = NULL;
+    OCSP_RESPID *rid = NULL;
+    OCSP_RESPDATA *rd = NULL;
+    OCSP_CERTSTATUS *cst = NULL;
+    OCSP_REVOKEDINFO *rev = NULL;
+    OCSP_SINGLERESP *single = NULL;
+    OCSP_RESPBYTES *rb = rsp->responseBytes;
+
+	//Pretty print response status
+	l = ASN1_ENUMERATED_get(rsp->responseStatus);
+	if (BIO_printf(bio_out, "OCSP Response Status: %s (0x%lx)\n",
+				   OCSP_response_status_str(l), l) <= 0)
+		goto err;
+
+	//Check for null response bytes
+	if (rb == NULL)
+		return 1;
+	i = ASN1_STRING_length(rb->response);
+	if ((br = OCSP_response_get1_basic(rsp)) == NULL)
+		goto err;
+	rd = br->tbsResponseData;
+	l = ASN1_INTEGER_get(rd->version);
+
+	//Pretty print responder id
+	if(BIO_puts(bio_out, "Responder Id: ") <= 0)
+		goto err;
+	rid = rd->responderId;
+	switch (rid->type){
+	case V_OCSP_RESPID_NAME:
+		X509_NAME_print_ex(bio_out, rid->value.byName, 0, XN_FLAG_ONELINE);
+		break;
+	case V_OCSP_RESPID_KEY:
+		i2a_ASN1_STRING(bio_out, rid->value.byKey, V_ASN1_OCTET_STRING);
+		break;
+	}
+
+	if(BIO_printf(bio_out, "\nProduced At: ") <= 0)
+		goto err;
+	if (!ASN1_GENERALIZEDTIME_print(bio_out, rd->producedAt))
+		goto err;
+	if (BIO_printf(bio_out, "\nResponses:\n") <= 0)
+		goto err;
+	for (i = 0; i < sk_OCSP_SINGLERESP_num(rd->responses); i++)
+	{
+       if (!sk_OCSP_SINGLERESP_value(rd->responses, i))
+            continue;
+        single = sk_OCSP_SINGLERESP_value(rd->responses, i);
+        cid = single->certId;
+        if (ocsp_certid_print(bio_out, cid, 4) <= 0)
+            goto err;
+        cst = single->certStatus;
+        if (cst->type == V_OCSP_CERTSTATUS_GOOD)
+        {
+            if (BIO_printf(bio_out, "Cert Status: %s%s%s\n\n",
+                           COL_GREEN, OCSP_cert_status_str(cst->type), RESET) <= 0);
+                goto err;
+        }
+        else if (cst->type == V_OCSP_CERTSTATUS_UNKNOWN)
+        {
+            if (BIO_printf(bio_out, "Cert Status: %s%s%s\n\n",
+                           COL_YELLOW, OCSP_cert_status_str(cst->type), RESET) <= 0)
+                goto err;
+        }
+        else
+        {
+            rev = cst->value.revoked;
+            if (BIO_printf(bio_out, "\nRevocation Time: \n\n") <= 0)
+                goto err;
+            if (!ASN1_GENERALIZEDTIME_print(bio_out, rev->revocationTime))
+                goto err;
+            if (rev->revocationReason) {
+                l = ASN1_ENUMERATED_get(rev->revocationReason);
+                if (BIO_printf(bio_out,
+                               "\nRevocation Reason: %s (0x%lx)\n\n",
+                               OCSP_crl_reason_str(l), l) <= 0)
+                    goto err;
+            }
+        }
+	}
+	err:
+		OCSP_RESPONSE_free(rsp);
+    return 1;
+	
+}
+
+int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent)
+{
+    BIO_printf(bp, "%*sHash Algorithm: ", indent, "");
+    i2a_ASN1_OBJECT(bp, a->hashAlgorithm->algorithm);
+    BIO_printf(bp, "\n%*sIssuer Name Hash: ", indent, "");
+    i2a_ASN1_STRING(bp, a->issuerNameHash, V_ASN1_OCTET_STRING);
+    BIO_printf(bp, "\n%*sIssuer Key Hash: ", indent, "");
+    i2a_ASN1_STRING(bp, a->issuerKeyHash, V_ASN1_OCTET_STRING);
+    BIO_printf(bp, "\n%*sSerial Number: ", indent, "");
+    i2a_ASN1_INTEGER(bp, a->serialNumber);
+    BIO_printf(bp, "\n");
+    return 1;
+}
+
 // Print out the full certificate
 int showCertificate(struct sslCheckOptions *options)
 {
@@ -3531,119 +3652,6 @@ int main(int argc, char *argv[])
     }
 
     return 0;
-}
-
-static int ocsp_resp_cb(SSL *s, void *arg)
-{
-	const unsigned char *p;
-	int len;
-	OCSP_RESPONSE *rsp;
-	len = SSL_get_tlsext_status_ocsp_resp(s, &p);
-	if (!p) {
-		printf("No OCSP response sent\n\n");
-		return 1;
-	}
-	rsp = d2i_OCSP_RESPONSE(NULL, &p, len);
-	if (!rsp){
-		printf("OCSP response parse error\n");
-		return 0;
-	}
-
-	BIO *bio_out;
-	bio_out = BIO_new_fp(stdout, BIO_NOCLOSE);
-	
-    int i = 0;
-    long l;
-    OCSP_CERTID *cid = NULL;
-    OCSP_BASICRESP *br = NULL;
-    OCSP_RESPID *rid = NULL;
-    OCSP_RESPDATA *rd = NULL;
-    OCSP_CERTSTATUS *cst = NULL;
-    OCSP_REVOKEDINFO *rev = NULL;
-    OCSP_SINGLERESP *single = NULL;
-    OCSP_RESPBYTES *rb = rsp->responseBytes;
-
-	//Pretty print response status
-	l = ASN1_ENUMERATED_get(rsp->responseStatus);
-	if (BIO_printf(bio_out, "OCSP Response Status: %s (0x%lx)\n", 
-				   OCSP_response_status_str(l), l) <= 0)
-		goto err;
-
-	//Check for null response bytes
-	if (rb == NULL)
-		return 1;	
-	i = ASN1_STRING_length(rb->response);
-	if ((br = OCSP_response_get1_basic(rsp)) == NULL)
-		goto err;
-	rd = br->tbsResponseData;
-	l = ASN1_INTEGER_get(rd->version);
-
-	//Pretty print responder id
-	if(BIO_puts(bio_out, "Responder Id: ") <= 0)
-		goto err;
-	rid = rd->responderId;
-	switch (rid->type){
-	case V_OCSP_RESPID_NAME:
-		X509_NAME_print_ex(bio_out, rid->value.byName, 0, XN_FLAG_ONELINE);
-		break;
-	case V_OCSP_RESPID_KEY:
-		i2a_ASN1_STRING(bio_out, rid->value.byKey, V_ASN1_OCTET_STRING);
-		break;
-	}
-
-	if(BIO_printf(bio_out, "\nProduced At: ") <= 0)
-		goto err;
-	if (!ASN1_GENERALIZEDTIME_print(bio_out, rd->producedAt))
-		goto err;
-	if (BIO_printf(bio_out, "\nResponses:\n") <= 0)
-		goto err;
-	for (i = 0; i < sk_OCSP_SINGLERESP_num(rd->responses); i++)
-	{
-       if (!sk_OCSP_SINGLERESP_value(rd->responses, i))
-            continue;
-        single = sk_OCSP_SINGLERESP_value(rd->responses, i);
-        cid = single->certId;
-        if (ocsp_certid_print(bio_out, cid, 4) <= 0)
-            goto err;
-        cst = single->certStatus;
-        if (BIO_printf(bio_out, "Cert Status: %s\n\n",
-                       OCSP_cert_status_str(cst->type)) <= 0)
-            goto err;
-        if (cst->type == V_OCSP_CERTSTATUS_REVOKED) {
-            rev = cst->value.revoked;
-            if (BIO_printf(bio_out, "\nRevocation Time: \n\n") <= 0)
-                goto err;
-            if (!ASN1_GENERALIZEDTIME_print(bio_out, rev->revocationTime))
-                goto err;
-            if (rev->revocationReason) {
-                l = ASN1_ENUMERATED_get(rev->revocationReason);
-                if (BIO_printf(bio_out,
-                               "\nRevocation Reason: %s (0x%lx)\n\n",
-                               OCSP_crl_reason_str(l), l) <= 0)
-                    goto err;
-            }
-        }
-	}
-	err:
-		OCSP_RESPONSE_free(rsp);
-    return 1;	
-	
-}
-
-int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent)
-{
-    BIO_printf(bp, "%*sCertificate ID:\n", indent, "");
-    indent += 2;
-    BIO_printf(bp, "%*sHash Algorithm: ", indent, "");
-    i2a_ASN1_OBJECT(bp, a->hashAlgorithm->algorithm);
-    BIO_printf(bp, "\n%*sIssuer Name Hash: ", indent, "");
-    i2a_ASN1_STRING(bp, a->issuerNameHash, V_ASN1_OCTET_STRING);
-    BIO_printf(bp, "\n%*sIssuer Key Hash: ", indent, "");
-    i2a_ASN1_STRING(bp, a->issuerKeyHash, V_ASN1_OCTET_STRING);
-    BIO_printf(bp, "\n%*sSerial Number: ", indent, "");
-    i2a_ASN1_INTEGER(bp, a->serialNumber);
-    BIO_printf(bp, "\n");
-    return 1;
 }
 
 /* vim :set ts=4 sw=4 sts=4 et : */
