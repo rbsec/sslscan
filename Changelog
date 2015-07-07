@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version: 1.10.5
+Date   : 07/07/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Added IRC STARTTLS support (--starttls-irc, credit jkent)
+         > Highlight weak RSA keys in output
+         > Added option to show OCSP status (--ocsp, credit kelbyludwig)
+         > Fix a segfault with certificate parsing
+
 Version: 1.10.4
 Date   : 21/06/2015
 Author : rbsec <robin@rbsec.net>
