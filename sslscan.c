@@ -435,6 +435,25 @@ int tcpConnect(struct sslCheckOptions *options)
         }
     }
 
+    if (options->starttls_irc == true && tlsStarted == false)
+    {
+        tlsStarted = 1;
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
+        printf_verbose("Server reported: %s\n", buffer);
+
+        // Attempt to STARTTLS
+        sendString(socketDescriptor, "STARTTLS\r\n");
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
+
+        if (strstr(buffer, " 670 ") || strstr(buffer, ":STARTTLS successful")) {
+            printf_verbose("STARTLS IRC sertup complete.\nServer reported %s\n", buffer);
+        } else {
+            printf_verbose("STARTLS IRC setup not complete.\nServer reported %s\n", buffer);
+        }
+    }
+
     // Setup a FTP STARTTLS socket
     if (options->starttls_ftp == true && tlsStarted == false)
     {
@@ -3120,6 +3139,7 @@ int main(int argc, char *argv[])
     options.heartbleed = true;
     options.starttls_ftp = false;
     options.starttls_imap = false;
+    options.starttls_irc = false;
     options.starttls_pop3 = false;
     options.starttls_smtp = false;
     options.starttls_xmpp = false;
@@ -3253,6 +3273,9 @@ int main(int argc, char *argv[])
         else if (strcmp("--starttls-imap", argv[argLoop]) == 0)
             options.starttls_imap = true;
 
+        else if (strcmp("--starttls-irc", argv[argLoop]) == 0)
+            options.starttls_irc = true;
+
         // StartTLS... POP3
         else if (strcmp("--starttls-pop3", argv[argLoop]) == 0)
             options.starttls_pop3 = true;
@@ -3384,6 +3407,8 @@ int main(int argc, char *argv[])
                     options.port = 21;
                 if (options.starttls_imap)
                     options.port = 143;
+                if (options.starttls_irc)
+                    options.port = 6667;
                 if (options.starttls_pop3)
                     options.port = 110;
                 if (options.starttls_smtp)
@@ -3486,6 +3511,7 @@ int main(int argc, char *argv[])
             printf("  %s--no-preferred%s       Do not determine preferred ciphers\n", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
+            printf("  %s--starttls-irc%s       STARTTLS setup for IRC\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
