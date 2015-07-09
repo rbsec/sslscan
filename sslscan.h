@@ -81,6 +81,14 @@ const char *COL_PURPLE = "";
 const char *COL_RED_BG = "";
 #endif
 
+#ifdef _WIN32
+    #define SLEEPMS(ms) Sleep(ms);
+#else
+    #define SLEEPMS(ms) do {                    \
+        struct timeval wait = { 0, ms*1000 };   \
+        select(0, NULL, NULL, NULL, &wait);     \
+    } while(0)
+#endif
 
 const char *program_banner = "                   _\n"
                              "           ___ ___| |___  ___ __ _ _ __\n"
@@ -140,7 +148,7 @@ struct sslCheckOptions
     struct sockaddr_in serverAddress;
     struct sockaddr_in6 serverAddress6;
     struct timeval timeout;
-    struct timespec sleep;
+    unsigned int sleep;
 
     // SSL Variables...
     SSL_CTX *ctx;
