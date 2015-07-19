@@ -43,16 +43,6 @@
   #include <winsock2.h>
   #include <ws2tcpip.h>
   #include <stdint.h>
-  #if defined(WONKY_LINUX_MINGW) || defined(_MSC_VER)
-    // The 32-bit Linux MinGW doesn't have a definition for
-    // this timespec struct, and neither does Visual Studio.
-    // This is a workaround.
-    #include <time.h>
-    struct timespec {
-      time_t tv_sec;
-      long tv_nsec;
-    };
-  #endif
   #ifdef _MSC_VER
     // For access().
     #include <io.h>
@@ -76,6 +66,7 @@
 #else
   #include <netdb.h>
   #include <sys/socket.h>
+  #include <sys/select.h>
 #endif
 #include <string.h>
 #include <sys/stat.h>
@@ -231,13 +222,9 @@ ssize_t sendString(int sockfd, const char str[])
 int tcpConnect(struct sslCheckOptions *options)
 {
     //Sleep if required
-    if (options->sleep.tv_sec)
+    if (options->sleep > 0)
     {
-#ifdef _WIN32
-        Sleep(options->sleep.tv_sec * 1000);
-#else
-        nanosleep(&options->sleep, NULL);
-#endif
+        SLEEPMS(options->sleep);
     }
     
     // Variables...
@@ -3154,6 +3141,7 @@ int main(int argc, char *argv[])
     // Default socket timeout 3s
     options.timeout.tv_sec = 3;
     options.timeout.tv_usec = 0;
+    options.sleep = 0;
 
     options.sslVersion = ssl_all;
 
@@ -3329,8 +3317,9 @@ int main(int argc, char *argv[])
         else if (strncmp("--sleep=", argv[argLoop], 8) == 0)
         {
             msec = atoi(argv[argLoop] + 8);
-            options.sleep.tv_sec = msec / 1000;
-            options.sleep.tv_nsec = (msec - (options.sleep.tv_sec * 1000)) * 1000000;
+            if (msec >= 0) {
+                options.sleep = msec;
+            }
         }
 
         // SSL HTTP Get...
