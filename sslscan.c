@@ -2180,7 +2180,7 @@ static int ocsp_resp_cb(SSL *s, void *arg)
         if (cst->type == V_OCSP_CERTSTATUS_GOOD)
         {
             if (BIO_printf(bio_out, "Cert Status: %s%s%s\n\n",
-                           COL_GREEN, OCSP_cert_status_str(cst->type), RESET) <= 0);
+                           COL_GREEN, OCSP_cert_status_str(cst->type), RESET) <= 0)
                 goto err;
         }
         else if (cst->type == V_OCSP_CERTSTATUS_UNKNOWN)
