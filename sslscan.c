@@ -1031,6 +1031,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         {
             hello[2] = 0x01;
         }
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if (sslMethod == TLSv1_1_client_method())
         {
             hello[2] = 0x02;
@@ -1039,6 +1040,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         {
             hello[2] = 0x03;
         }
+#endif
         if (send(socketDescriptor, hello, sizeof(hello), 0) <= 0) {
             printf_error("send() failed: %s\n", strerror(errno));
             exit(1);
@@ -1050,6 +1052,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         {
             hb[2] = 0x01;
         }
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if (sslMethod == TLSv1_1_client_method())
         {
             hb[2] = 0x02;
@@ -1058,6 +1061,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         {
             hb[2] = 0x03;
         }
+#endif
         if (send(socketDescriptor, hb, sizeof(hb), 0) <= 0) {
             printf_error("send() failed: %s\n", strerror(errno));
             exit(1);
@@ -1626,6 +1630,7 @@ int checkCertificate(struct sslCheckOptions *options)
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
         }
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if( options->sslVersion == tls_v11) {
             printf_verbose("sslMethod = TLSv1_1_method()");
             sslMethod = TLSv1_1_method();
@@ -1634,6 +1639,7 @@ int checkCertificate(struct sslCheckOptions *options)
             printf_verbose("sslMethod = TLSv1_2_method()");
             sslMethod = TLSv1_2_method();
         }
+#endif
         else {
             printf_verbose("sslMethod = TLSv1_method()\n");
             printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
@@ -1989,6 +1995,7 @@ int ocspRequest(struct sslCheckOptions *options)
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
         }
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if( options->sslVersion == tls_v11) {
             printf_verbose("sslMethod = TLSv1_1_method()");
             sslMethod = TLSv1_1_method();
@@ -1997,6 +2004,7 @@ int ocspRequest(struct sslCheckOptions *options)
             printf_verbose("sslMethod = TLSv1_2_method()");
             sslMethod = TLSv1_2_method();
         }
+#endif
         else {
             printf_verbose("sslMethod = TLSv1_method()\n");
             printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
@@ -2257,6 +2265,7 @@ int showCertificate(struct sslCheckOptions *options)
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
         }
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if( options->sslVersion == tls_v11) {
             printf_verbose("sslMethod = TLSv1_1_method()");
             sslMethod = TLSv1_1_method();
@@ -2265,6 +2274,7 @@ int showCertificate(struct sslCheckOptions *options)
             printf_verbose("sslMethod = TLSv1_2_method()");
             sslMethod = TLSv1_2_method();
         }
+#endif
         else {
             printf_verbose("sslMethod = TLSv1_method()\n");
             printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
@@ -2692,6 +2702,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
         }
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if( options->sslVersion == tls_v11) {
             printf_verbose("sslMethod = TLSv1_1_method()");
             sslMethod = TLSv1_1_method();
@@ -2700,6 +2711,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
             printf_verbose("sslMethod = TLSv1_2_method()");
             sslMethod = TLSv1_2_method();
         }
+#endif
         else {
             printf_verbose("sslMethod = TLSv1_method()\n");
             printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
