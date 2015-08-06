@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version: 1.10.6
+Date   : 06/08/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Fix --sleep only working for whole seconds (credit dmke)
+         > Fix compiling against OpenSSL 0.9.8 (credit aclemons)
+         > Flag expired certificates (credit jacktrice)
+
 Version: 1.10.5
 Date   : 07/07/2015
 Author : rbsec <robin@rbsec.net>

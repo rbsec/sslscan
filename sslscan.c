@@ -1914,6 +1914,60 @@ int checkCertificate(struct sslCheckOptions *options)
                                         }
                                     }
                                 }
+
+                                // Check for certificate expiration
+                                time_t *ptime;
+                                int timediff;
+                                ptime = NULL;
+
+                                printf("\nNot valid before: ");
+                                timediff = X509_cmp_time(X509_get_notBefore(x509Cert), ptime);
+                                // Certificate isn't valid yet
+                                if (timediff > 0)
+                                {
+                                    printf("%s", COL_RED);
+                                }
+                                else
+                                {
+                                    printf("%s", COL_GREEN);
+                                }
+                                ASN1_TIME_print(stdoutBIO, X509_get_notBefore(x509Cert));
+                                printf("%s", RESET);
+
+                                if (options->xmlOutput) {
+                                    printf_xml("   <not-valid-before>");
+                                    ASN1_TIME_print(fileBIO, X509_get_notBefore(x509Cert));
+                                    printf_xml("</not-valid-before>\n");
+                                }
+
+                                printf("\nNot valid after:  ");
+                                timediff = X509_cmp_time(X509_get_notAfter(x509Cert), ptime);
+                                // Certificate has expired
+                                if (timediff < 0)
+                                {
+                                    printf("%s", COL_RED);
+                                }
+                                else
+                                {
+                                    printf("%s", COL_GREEN);
+                                }
+                                ASN1_TIME_print(stdoutBIO, X509_get_notAfter(x509Cert));
+                                printf("%s", RESET);
+                                if (options->xmlOutput) {
+                                    printf_xml("   <not-valid-after>");
+                                    ASN1_TIME_print(fileBIO, X509_get_notAfter(x509Cert));
+                                    printf_xml("</not-valid-after>\n");
+                                    if (timediff < 0)
+                                    {
+                                        printf_xml("   <expired>true</expired>\n");
+                                    }
+                                    else
+                                    {
+                                        printf_xml("   <expired>false</expired>\n");
+                                    }
+                                }
+                                printf("\n");
+
                                 // Free X509 Certificate...
                                 X509_free(x509Cert);
                             }
