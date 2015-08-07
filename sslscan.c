@@ -1331,7 +1331,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
 #endif
                     if (sslCipherPointer->sslMethod == TLSv1_client_method())
                     {
-                        printf("TLSv1.0  ");
+                        printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
                     }
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
                     else if (sslCipherPointer->sslMethod == TLSv1_1_client_method())
@@ -1498,7 +1498,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             else if (sslMethod == TLSv1_client_method())
                             {
                                 printf_xml("  <defaultcipher sslversion=\"TLSv1.0\" bits=\"");
-                                printf("TLSv1.0  ");
+                                printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
                             }
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
                             else if (sslMethod == TLSv1_1_client_method())

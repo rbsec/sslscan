@@ -33,6 +33,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Display EC curve names and DHE key lengths with OpenSSL >= 1.0.2 (--no-cipher-details)
 * Flag weak DHE keys with OpenSSL >= 1.0.2 (--cipher-details)
 * Flag expired certificates
+* Flag TLSv1.0 ciphers in output as weak.
 
 ### Building on Windows
 Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can
