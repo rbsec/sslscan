@@ -1353,11 +1353,11 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     {
                         printf("%s%d%s bits  ", COL_RED_BG, sslCipherPointer->bits, RESET);
                     }
-                    else if (sslCipherPointer->bits > 56)
+                    else if (sslCipherPointer->bits >= 112)
                     {
                         printf("%s%d%s bits  ", COL_GREEN, sslCipherPointer->bits, RESET);
                     }
-                    else if (sslCipherPointer->bits > 40)
+                    else if (sslCipherPointer->bits > 56)
                     {
                         printf("%s%d%s bits  ", COL_YELLOW, sslCipherPointer->bits, RESET);
                     }
@@ -1520,11 +1520,15 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                                 tempInt = 0;
                                 //Bit ugly
                             int tempbits = SSL_get_cipher_bits(ssl, &tempInt2);
-                            if (tempbits > 56)
+                            if (tempbits == 0)
+                            {
+                                printf("%s%d%s bits  ", COL_RED_BG, tempbits, RESET);
+                            }
+                            if (tempbits >= 112)
                             {
                                 printf("%s%d%s bits  ", COL_GREEN, tempbits, RESET);
                             }
-                            else if (tempbits > 40)
+                            else if (tempbits > 56)
                             {
                                 printf("%s%d%s bits  ", COL_YELLOW, tempbits, RESET);
                             }
