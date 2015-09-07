@@ -1349,20 +1349,26 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         tempInt = 1;
                     else
                         tempInt = 0;
+
+                    printf_xml(" status=\"");
                     if (sslCipherPointer->bits == 0)
                     {
+                        printf_xml("red");
                         printf("%s%d%s bits  ", COL_RED_BG, sslCipherPointer->bits, RESET);
                     }
                     else if (sslCipherPointer->bits >= 112)
                     {
+                        printf_xml("green");
                         printf("%s%d%s bits  ", COL_GREEN, sslCipherPointer->bits, RESET);
                     }
                     else if (sslCipherPointer->bits > 56)
                     {
+                        printf_xml("yellow");
                         printf("%s%d%s bits  ", COL_YELLOW, sslCipherPointer->bits, RESET);
                     }
                     else
                     {
+                        printf_xml("red");
                         printf("%s%d%s bits  ", COL_RED, sslCipherPointer->bits, RESET);
                     }
                     while (tempInt != 0)
@@ -1370,6 +1376,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                         tempInt--;
                         printf(" ");
                     }
+                    printf_xml("\"");
                     printf_xml(" bits=\"%d\" cipher=\"%s\"", sslCipherPointer->bits, sslCipherPointer->name);
                     if (strstr(sslCipherPointer->name, "NULL"))
                     {
