@@ -750,6 +750,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
 
                         session = *SSL_get_session(ssl);
 
+#ifndef OPENSSL_NO_COMP
                         printf_xml("  <compression supported=\"%d\" />\n",
                             session.compress_meth);
 
@@ -761,6 +762,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         {
                             printf("Compression %senabled%s (CRIME)\n\n", COL_RED, RESET);
                         }
+#endif
 
                         // Disconnect SSL over socket
                         SSL_shutdown(ssl);
@@ -1379,7 +1381,11 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                     {
                         printf("%s%-29s%s", COL_PURPLE, sslCipherPointer->name, RESET);
                     }
-                    else if (strstr(sslCipherPointer->name, "EXP") || (sslCipherPointer->sslMethod == SSLv3_client_method() && !strstr(sslCipherPointer->name, "RC4")))
+                    else if (strstr(sslCipherPointer->name, "EXP")
+#ifndef OPENSSL_NO_SSL3
+				    || (sslCipherPointer->sslMethod == SSLv3_client_method() && !strstr(sslCipherPointer->name, "RC4"))
+#endif
+                    )
                     {
                         printf("%s%-29s%s", COL_RED, sslCipherPointer->name, RESET);
                     }
@@ -1490,12 +1496,15 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             }
                             else
 #endif
+#ifndef OPENSSL_NO_SSL3
                             if (sslMethod == SSLv3_client_method())
                             {
                                 printf_xml("  <defaultcipher sslversion=\"SSLv3\" bits=\"");
                                 printf("%sSSLv3%s    ", COL_RED, RESET);
                             }
-                            else if (sslMethod == TLSv1_client_method())
+			    else
+#endif
+                            if (sslMethod == TLSv1_client_method())
                             {
                                 printf_xml("  <defaultcipher sslversion=\"TLSv1.0\" bits=\"");
                                 printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
@@ -1543,8 +1552,12 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                                 printf(" ");
                             }
                             printf_xml("%d\" cipher=\"%s\"", SSL_get_cipher_bits(ssl, &tempInt2), SSL_get_cipher_name(ssl));
-                            if (strstr(SSL_get_cipher_name(ssl), "EXP") || (sslMethod == SSLv3_client_method() && strstr(SSL_get_cipher_name(ssl), "CBC")))
-                            {
+                            if (strstr(SSL_get_cipher_name(ssl), "EXP")
+#ifndef OPENSSL_NO_SSL3
+                                            || (sslMethod == SSLv3_client_method() && strstr(SSL_get_cipher_name(ssl), "CBC"))
+#endif
+			    )
+			    {
                                 printf("%s%-29s%s", COL_RED, SSL_get_cipher_name(ssl), RESET);
                             }
                             else if (strstr(SSL_get_cipher_name(ssl), "RC4"))
