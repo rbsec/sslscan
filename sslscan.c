@@ -1134,7 +1134,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 
 int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
 {
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(LIBRESSL_VERSION_NUMBER)
     EVP_PKEY *key;
     if (!SSL_get_server_tmp_key(s, &key))
         return 1;
