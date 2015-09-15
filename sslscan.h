@@ -189,7 +189,6 @@ static int ocsp_resp_cb(SSL *s, void *arg);
 int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent);
 
 int tcpConnect(struct sslCheckOptions *);
-int populateCipherList(struct sslCheckOptions *, const SSL_METHOD *);
 
 // Tests
 void tls_reneg_init(struct sslCheckOptions *);

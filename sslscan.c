@@ -99,70 +99,6 @@ static int use_unsafe_renegotiation_op = 0;
  * SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION? */
 static int use_unsafe_renegotiation_flag = 0;
 
-// Adds Ciphers to the Cipher List structure
-int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
-{
-    int returnCode = true;
-    struct sslCipher *sslCipherPointer;
-    int tempInt;
-    int loop;
-    // STACK_OF is a sign that you should be using C++ :)
-    STACK_OF(SSL_CIPHER) *cipherList;
-    SSL *ssl = NULL;
-
-    options->ctx = SSL_CTX_new(sslMethod);
-    if (options->ctx == NULL) {
-        printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
-        return false;
-    }
-
-    SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL");
-
-    ssl = SSL_new(options->ctx);
-    if (ssl == NULL) {
-        printf_error("%sERROR: Could not create SSL object.%s\n", COL_RED, RESET);
-        SSL_CTX_free(options->ctx);
-        return false;
-    }
-
-    cipherList = SSL_get_ciphers(ssl);
-
-    // Create Cipher Struct Entries...
-    for (loop = 0; loop < sk_SSL_CIPHER_num(cipherList); loop++)
-    {
-        if (options->ciphers == 0)
-        {
-            options->ciphers = malloc(sizeof(struct sslCipher));
-            sslCipherPointer = options->ciphers;
-        }
-        else
-        {
-            sslCipherPointer = options->ciphers;
-            while (sslCipherPointer->next != 0)
-                sslCipherPointer = sslCipherPointer->next;
-            sslCipherPointer->next = malloc(sizeof(struct sslCipher));
-            sslCipherPointer = sslCipherPointer->next;
-        }
-
-        // Init
-        memset(sslCipherPointer, 0, sizeof(struct sslCipher));
-
-        // Add cipher information...
-        sslCipherPointer->sslMethod = sslMethod;
-        sslCipherPointer->name = SSL_CIPHER_get_name(sk_SSL_CIPHER_value(cipherList, loop));
-        sslCipherPointer->version = SSL_CIPHER_get_version(sk_SSL_CIPHER_value(cipherList, loop));
-        SSL_CIPHER_description(sk_SSL_CIPHER_value(cipherList, loop), sslCipherPointer->description, sizeof(sslCipherPointer->description) - 1);
-        sslCipherPointer->bits = SSL_CIPHER_get_bits(sk_SSL_CIPHER_value(cipherList, loop), &tempInt);
-    
-    
-    }
-
-    SSL_free(ssl);
-    SSL_CTX_free(options->ctx);
-
-    return returnCode;
-}
-
 // File Exists
 int fileExists(char *fileName)
 {
@@ -3674,52 +3610,6 @@ int main(int argc, char *argv[])
 
             SSLeay_add_all_algorithms();
             ERR_load_crypto_strings();
-
-            // Build a list of ciphers...
-            switch (options.sslVersion)
-            {
-                case ssl_all:
-#ifndef OPENSSL_NO_SSL2
-                    populateCipherList(&options, SSLv2_client_method());
-#endif
-#ifndef OPENSSL_NO_SSL3
-                    populateCipherList(&options, SSLv3_client_method());
-#endif
-                    populateCipherList(&options, TLSv1_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                    populateCipherList(&options, TLSv1_1_client_method());
-                    populateCipherList(&options, TLSv1_2_client_method());
-#endif
-                    break;
-#ifndef OPENSSL_NO_SSL2
-                case ssl_v2:
-                    populateCipherList(&options, SSLv2_client_method());
-                    break;
-#endif
-#ifndef OPENSSL_NO_SSL3
-                case ssl_v3:
-                    populateCipherList(&options, SSLv3_client_method());
-                    break;
-#endif
-                case tls_all:
-                    populateCipherList(&options, TLSv1_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                    populateCipherList(&options, TLSv1_1_client_method());
-                    populateCipherList(&options, TLSv1_2_client_method());
-#endif
-                    break;
-                case tls_v10:
-                    populateCipherList(&options, TLSv1_client_method());
-                    break;
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                case tls_v11:
-                    populateCipherList(&options, TLSv1_1_client_method());
-                    break;
-                case tls_v12:
-                    populateCipherList(&options, TLSv1_2_client_method());
-                    break;
-#endif
-             }
 
             // Do the testing...
             if (mode == mode_single)
