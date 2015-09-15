@@ -139,6 +139,7 @@ struct sslCheckOptions
     int ipv6;
     int getPreferredCiphers;
     int ocspStatus;
+    char cipherstring[65536];
 
     // File Handles...
     FILE *xmlOutput;
@@ -199,7 +200,8 @@ int freeRenegotiationOutput(struct renegotiationOutput *);
 int testCompression(struct sslCheckOptions *, const SSL_METHOD *);
 int testRenegotiation(struct sslCheckOptions *, const SSL_METHOD *);
 int testHeartbleed(struct sslCheckOptions *, const SSL_METHOD *);
-int testCipher(struct sslCheckOptions *, struct sslCipher *);
+int testCipher(struct sslCheckOptions *, const SSL_METHOD *);
+int testProtocolCiphers(struct sslCheckOptions *, const SSL_METHOD *);
 int testConnection(struct sslCheckOptions *);
 int testHost(struct sslCheckOptions *);
 
