@@ -1533,7 +1533,7 @@ int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             {
                                 printf("%s%d%s bits  ", COL_RED_BG, tempbits, RESET);
                             }
-                            if (tempbits >= 112)
+                            else if (tempbits >= 112)
                             {
                                 printf("%s%d%s bits  ", COL_GREEN, tempbits, RESET);
                             }
