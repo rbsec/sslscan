@@ -136,7 +136,6 @@ struct sslCheckOptions
     int cipher_details;
     int ipv4;
     int ipv6;
-    int getPreferredCiphers;
     int ocspStatus;
     char cipherstring[65536];
 
@@ -204,7 +203,6 @@ int testConnection(struct sslCheckOptions *);
 int testHost(struct sslCheckOptions *);
 
 int loadCerts(struct sslCheckOptions *);
-int defaultCipher(struct sslCheckOptions *, const SSL_METHOD *);
 int checkCertificate(struct sslCheckOptions *);
 int showCertificate(struct sslCheckOptions *);
 
