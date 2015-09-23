@@ -693,14 +693,13 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     BIO *cipherConnectionBio;
     SSL_SESSION session;
 
-    tls_reneg_init(options);
-
     // Connect to host
     socketDescriptor = tcpConnect(options);
     if (socketDescriptor != 0)
     {
         // Setup Context Object...
         options->ctx = SSL_CTX_new(sslMethod);
+        tls_reneg_init(options);
         if (options->ctx != NULL)
         {
             if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
@@ -808,8 +807,6 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
     BIO *cipherConnectionBio;
     struct renegotiationOutput *renOut = newRenegotiationOutput();
 
-    tls_reneg_init(options);
-
     // Connect to host
     socketDescriptor = tcpConnect(options);
     if (socketDescriptor != 0)
@@ -817,6 +814,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
         // Setup Context Object...
         options->ctx = SSL_CTX_new(sslMethod);
+        tls_reneg_init(options);
         if (options->ctx != NULL)
         {
             if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
