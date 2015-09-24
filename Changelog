@@ -1,6 +1,20 @@
 Changelog
 =========
 
+Version: 1.11.0
+Date   : 24/09/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Rewrote ciphersuite scanning engine to be much faster
+         > Ciphers are now output in order of server preference
+         > Most secure protocols are scanned first (TLSv1.2 -> SSLv2)
+         > All protocols are tried when trying to obtain the certificate
+         > Obselete --failed and --no-preferred-ciphers options removed
+         > Flag TLSv1.0 ciphers in output
+         > Flag 56 bit ciphers as red, not yellow
+         > Fix building on OpenBSD (credit Stuart Henderson)
+         > Fix incorrect output when server prefers NULL ciphers
+
 Version: 1.10.6
 Date   : 06/08/2015
 Author : rbsec <robin@rbsec.net>

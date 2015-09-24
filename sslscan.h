@@ -112,7 +112,6 @@ struct sslCheckOptions
     // Program Options...
     char host[512];
     int port;
-    int noFailed;
     int showCertificate;
     int checkCertificate;
     int showTrustedCAs;
@@ -137,8 +136,8 @@ struct sslCheckOptions
     int cipher_details;
     int ipv4;
     int ipv6;
-    int getPreferredCiphers;
     int ocspStatus;
+    char cipherstring[65536];
 
     // File Handles...
     FILE *xmlOutput;
@@ -188,7 +187,6 @@ static int ocsp_resp_cb(SSL *s, void *arg);
 int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent);
 
 int tcpConnect(struct sslCheckOptions *);
-int populateCipherList(struct sslCheckOptions *, const SSL_METHOD *);
 
 // Tests
 void tls_reneg_init(struct sslCheckOptions *);
@@ -199,13 +197,14 @@ int freeRenegotiationOutput(struct renegotiationOutput *);
 int testCompression(struct sslCheckOptions *, const SSL_METHOD *);
 int testRenegotiation(struct sslCheckOptions *, const SSL_METHOD *);
 int testHeartbleed(struct sslCheckOptions *, const SSL_METHOD *);
-int testCipher(struct sslCheckOptions *, struct sslCipher *);
+int testCipher(struct sslCheckOptions *, const SSL_METHOD *);
+int testProtocolCiphers(struct sslCheckOptions *, const SSL_METHOD *);
 int testConnection(struct sslCheckOptions *);
 int testHost(struct sslCheckOptions *);
 
 int loadCerts(struct sslCheckOptions *);
-int defaultCipher(struct sslCheckOptions *, const SSL_METHOD *);
-int checkCertificate(struct sslCheckOptions *);
+int checkCertificateProtocols(struct sslCheckOptions *, const SSL_METHOD *);
+int checkCertificate(struct sslCheckOptions *, const SSL_METHOD *);
 int showCertificate(struct sslCheckOptions *);
 
 #endif

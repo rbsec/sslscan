@@ -109,24 +109,19 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
     // STACK_OF is a sign that you should be using C++ :)
     STACK_OF(SSL_CIPHER) *cipherList;
     SSL *ssl = NULL;
-
     options->ctx = SSL_CTX_new(sslMethod);
     if (options->ctx == NULL) {
         printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
         return false;
     }
-
     SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL");
-
     ssl = SSL_new(options->ctx);
     if (ssl == NULL) {
         printf_error("%sERROR: Could not create SSL object.%s\n", COL_RED, RESET);
         SSL_CTX_free(options->ctx);
         return false;
     }
-
     cipherList = SSL_get_ciphers(ssl);
-
     // Create Cipher Struct Entries...
     for (loop = 0; loop < sk_SSL_CIPHER_num(cipherList); loop++)
     {
@@ -143,23 +138,17 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
             sslCipherPointer->next = malloc(sizeof(struct sslCipher));
             sslCipherPointer = sslCipherPointer->next;
         }
-
         // Init
         memset(sslCipherPointer, 0, sizeof(struct sslCipher));
-
         // Add cipher information...
         sslCipherPointer->sslMethod = sslMethod;
         sslCipherPointer->name = SSL_CIPHER_get_name(sk_SSL_CIPHER_value(cipherList, loop));
         sslCipherPointer->version = SSL_CIPHER_get_version(sk_SSL_CIPHER_value(cipherList, loop));
         SSL_CIPHER_description(sk_SSL_CIPHER_value(cipherList, loop), sslCipherPointer->description, sizeof(sslCipherPointer->description) - 1);
         sslCipherPointer->bits = SSL_CIPHER_get_bits(sk_SSL_CIPHER_value(cipherList, loop), &tempInt);
-    
-    
     }
-
     SSL_free(ssl);
     SSL_CTX_free(options->ctx);
-
     return returnCode;
 }
 
@@ -704,14 +693,13 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     BIO *cipherConnectionBio;
     SSL_SESSION session;
 
-    tls_reneg_init(options);
-
     // Connect to host
     socketDescriptor = tcpConnect(options);
     if (socketDescriptor != 0)
     {
         // Setup Context Object...
         options->ctx = SSL_CTX_new(sslMethod);
+        tls_reneg_init(options);
         if (options->ctx != NULL)
         {
             if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
@@ -819,8 +807,6 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
     BIO *cipherConnectionBio;
     struct renegotiationOutput *renOut = newRenegotiationOutput();
 
-    tls_reneg_init(options);
-
     // Connect to host
     socketDescriptor = tcpConnect(options);
     if (socketDescriptor != 0)
@@ -828,6 +814,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
         // Setup Context Object...
         options->ctx = SSL_CTX_new(sslMethod);
+        tls_reneg_init(options);
         if (options->ctx != NULL)
         {
             if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
@@ -1195,7 +1182,7 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
 
 
 // Test a cipher...
-int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPointer)
+int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
     // Variables...
     int cipherStatus;
@@ -1208,7 +1195,10 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
     char requestBuffer[200];
     char buffer[50];
     int resultSize = 0;
-    const char *sslMethod = printableSslMethod(sslCipherPointer->sslMethod);
+    int cipherbits;
+    const SSL_CIPHER *sslCipherPointer;
+    const char *cleanSslMethod = printableSslMethod(sslMethod);
+
 
     // Create request buffer...
     memset(requestBuffer, 0, 200);
@@ -1218,7 +1208,7 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
     socketDescriptor = tcpConnect(options);
     if (socketDescriptor != 0)
     {
-        if (SSL_CTX_set_cipher_list(options->ctx, sslCipherPointer->name) != 0)
+        if (SSL_CTX_set_cipher_list(options->ctx, options->cipherstring) != 0)
         {
 
             // Create SSL object...
@@ -1241,177 +1231,162 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
                 // Connect SSL over socket
                 cipherStatus = SSL_connect(ssl);
 
-                // Show Cipher Status
-                if (!((options->noFailed == true) && (cipherStatus != 1)))
+                sslCipherPointer = SSL_get_current_cipher(ssl);
+                cipherbits = SSL_CIPHER_get_bits(sslCipherPointer, NULL);
+
+                if (cipherStatus == 0)
                 {
-                    printf_xml("  <cipher status=\"");
-                    if (cipherStatus == 1)
+                    return false;
+                }
+                else if (cipherStatus != 1)
+                {
+                    printf_verbose("SSL_get_error(ssl, cipherStatus) said: %d\n", SSL_get_error(ssl, cipherStatus));
+                    return false;
+                }
+                // Show Cipher Status
+                printf_xml("  <cipher status=\"");
+                if (cipherStatus == 1)
+                {
+                    if (strcmp(options->cipherstring, "ALL:eNULL"))
                     {
                         printf_xml("accepted\"");
-                        if (options->noFailed == false)
-                        {
-                            printf("%sAccepted%s  ", COL_GREEN, RESET);
-                        }
-                        else
-                        {
-                            printf("Accepted  ");
-                        }
-                        if (options->http == true)
-                        {
-
-                            // Stdout BIO...
-                            stdoutBIO = BIO_new(BIO_s_file());
-                            BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
-
-                            // HTTP Get...
-                            SSL_write(ssl, requestBuffer, sizeof(requestBuffer));
-                            memset(buffer ,0 , 50);
-                            resultSize = SSL_read(ssl, buffer, 49);
-                            if (resultSize > 9)
-                            {
-                                int loop = 0;
-                                for (loop = 9; (loop < 49) && (buffer[loop] != 0) && (buffer[loop] != '\r') && (buffer[loop] != '\n'); loop++)
-                                { }
-                                buffer[loop] = 0;
-
-                                // Output HTTP code...
-                                printf("%s", buffer + 9);
-                                loop = strlen(buffer + 9);
-                                while (loop < 17)
-                                {
-                                    loop++;
-                                    printf(" ");
-                                }
-                                printf_xml(" http=\"%s\"", buffer + 9);
-                            }
-                            else
-                            {
-                                // Output HTTP code...
-                                printf("                 ");
-                            }
-                        }
-                    }
-                    else if (cipherStatus == 0)
-                    {
-                        printf_xml("rejected\"");
-                        if (options->http == true)
-                        {
-                            printf("Rejected  N/A              ");
-                        }
-                        else
-                        {
-                            printf("Rejected  ");
-                        }
+                        printf("Accepted  ");
                     }
                     else
                     {
-                        printf_verbose("SSL_get_error(ssl, cipherStatus) said: %d\n", SSL_get_error(ssl, cipherStatus));
-                        printf_xml("failed\"");
-                        if (options->http == true)
+                        printf_xml("preferred\"");
+                        printf("%sPreferred%s ", COL_GREEN, RESET);
+                    }
+                    if (options->http == true)
+                    {
+
+                        // Stdout BIO...
+                        stdoutBIO = BIO_new(BIO_s_file());
+                        BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+
+                        // HTTP Get...
+                        SSL_write(ssl, requestBuffer, sizeof(requestBuffer));
+                        memset(buffer ,0 , 50);
+                        resultSize = SSL_read(ssl, buffer, 49);
+                        if (resultSize > 9)
                         {
-                            printf("Failed    N/A              ");
+                            int loop = 0;
+                            for (loop = 9; (loop < 49) && (buffer[loop] != 0) && (buffer[loop] != '\r') && (buffer[loop] != '\n'); loop++)
+                            { }
+                            buffer[loop] = 0;
+
+                            // Output HTTP code...
+                            printf("%s", buffer + 9);
+                            loop = strlen(buffer + 9);
+                            while (loop < 17)
+                            {
+                                loop++;
+                                printf(" ");
+                            }
+                            printf_xml(" http=\"%s\"", buffer + 9);
                         }
                         else
                         {
-                            printf("Failed    ");
+                            // Output HTTP code...
+                            printf("                 ");
                         }
                     }
-                    printf_xml(" sslversion=\"%s\"", sslMethod);
+                }
+                printf_xml(" sslversion=\"%s\"", cleanSslMethod);
 #ifndef OPENSSL_NO_SSL2
-                    if (sslCipherPointer->sslMethod == SSLv2_client_method())
-                    {
-                        printf("%sSSLv2%s    ", COL_RED, RESET);
-                    }
-                    else
+                if (strcmp(cleanSslMethod, "SSLv2") == 0)
+                {
+                    printf("%sSSLv2%s    ", COL_RED, RESET);
+                }
+                else
 #endif
 #ifndef OPENSSL_NO_SSL3
-                    if (sslCipherPointer->sslMethod == SSLv3_client_method())
+                    if (strcmp(cleanSslMethod, "SSLv3") == 0)
                     {
                         printf("%sSSLv3%s    ", COL_RED, RESET);
                     }
                     else
 #endif
-                    if (sslCipherPointer->sslMethod == TLSv1_client_method())
-                    {
-                        printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
-                    }
+                        if (strcmp(cleanSslMethod, "TLSv1.0") == 0)
+                        {
+                            printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
+                        }
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                    else if (sslCipherPointer->sslMethod == TLSv1_1_client_method())
-                    {
-                        printf("TLSv1.1  ");
-                    }
-                    else if (sslCipherPointer->sslMethod == TLSv1_2_client_method())
-                    {
-                        printf("TLSv1.2  ");
-                    }
+                        else 
+                        {
+                            printf("%s  ", cleanSslMethod);
+                        }
 #endif
-                    if (sslCipherPointer->bits < 10)
-                        tempInt = 2;
-                    else if (sslCipherPointer->bits < 100)
-                        tempInt = 1;
-                    else
-                        tempInt = 0;
-                    if (sslCipherPointer->bits == 0)
-                    {
-                        printf("%s%d%s bits  ", COL_RED_BG, sslCipherPointer->bits, RESET);
-                    }
-                    else if (sslCipherPointer->bits >= 112)
-                    {
-                        printf("%s%d%s bits  ", COL_GREEN, sslCipherPointer->bits, RESET);
-                    }
-                    else if (sslCipherPointer->bits > 56)
-                    {
-                        printf("%s%d%s bits  ", COL_YELLOW, sslCipherPointer->bits, RESET);
-                    }
-                    else
-                    {
-                        printf("%s%d%s bits  ", COL_RED, sslCipherPointer->bits, RESET);
-                    }
-                    while (tempInt != 0)
-                    {
-                        tempInt--;
-                        printf(" ");
-                    }
-                    printf_xml(" bits=\"%d\" cipher=\"%s\"", sslCipherPointer->bits, sslCipherPointer->name);
-                    if (strstr(sslCipherPointer->name, "NULL"))
-                    {
-                        printf("%s%-29s%s", COL_RED_BG, sslCipherPointer->name, RESET);
-                    }
-                    else if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
-                    {
-                        printf("%s%-29s%s", COL_PURPLE, sslCipherPointer->name, RESET);
-                    }
-                    else if (strstr(sslCipherPointer->name, "EXP")
-#ifndef OPENSSL_NO_SSL3
-				    || (sslCipherPointer->sslMethod == SSLv3_client_method() && !strstr(sslCipherPointer->name, "RC4"))
-#endif
-                    )
-                    {
-                        printf("%s%-29s%s", COL_RED, sslCipherPointer->name, RESET);
-                    }
-                    else if (strstr(sslCipherPointer->name, "RC4"))
-                    {
-                        printf("%s%-29s%s", COL_YELLOW, sslCipherPointer->name, RESET);
-                    }
-                    else if (strstr(sslCipherPointer->name, "GCM"))
-                    {
-                        printf("%s%-29s%s", COL_GREEN, sslCipherPointer->name, RESET);
-                    }
-                    else
-                    {
-                        printf("%-29s", sslCipherPointer->name);
-                    }
-                    if (options->cipher_details == true)
-                    {
-                        ssl_print_tmp_key(options, ssl);
-                    }
-                    printf("\n");
-                    printf_xml(" />\n");
+                if (cipherbits < 10)
+                    tempInt = 2;
+                else if (cipherbits < 100)
+                    tempInt = 1;
+                else
+                    tempInt = 0;
+                if (cipherbits == 0)
+                {
+                    printf("%s%d%s bits  ", COL_RED_BG, cipherbits, RESET);
                 }
- 	
+                else if (cipherbits >= 112)
+                {
+                    printf("%s%d%s bits  ", COL_GREEN, cipherbits, RESET);
+                }
+                else if (cipherbits > 56)
+                {
+                    printf("%s%d%s bits  ", COL_YELLOW, cipherbits, RESET);
+                }
+                else
+                {
+                    printf("%s%d%s bits  ", COL_RED, cipherbits, RESET);
+                }
+                while (tempInt != 0)
+                {
+                    tempInt--;
+                    printf(" ");
+                }
+                printf_xml(" bits=\"%d\" cipher=\"%s\"", cipherbits, sslCipherPointer->name);
+                if (strstr(sslCipherPointer->name, "NULL"))
+                {
+                    printf("%s%-29s%s", COL_RED_BG, sslCipherPointer->name, RESET);
+                }
+                else if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
+                {
+                    printf("%s%-29s%s", COL_PURPLE, sslCipherPointer->name, RESET);
+                }
+                else if (strstr(sslCipherPointer->name, "EXP")
+#ifndef OPENSSL_NO_SSL3
+                        || (strcmp(cleanSslMethod, "SSLv3") == 0 && !strstr(sslCipherPointer->name, "RC4"))
+#endif
+                        )
+                {
+                    printf("%s%-29s%s", COL_RED, sslCipherPointer->name, RESET);
+                }
+                else if (strstr(sslCipherPointer->name, "RC4"))
+                {
+                    printf("%s%-29s%s", COL_YELLOW, sslCipherPointer->name, RESET);
+                }
+                else if (strstr(sslCipherPointer->name, "GCM"))
+                {
+                    printf("%s%-29s%s", COL_GREEN, sslCipherPointer->name, RESET);
+                }
+                else
+                {
+                    printf("%-29s", sslCipherPointer->name);
+                }
+                if (options->cipher_details == true)
+                {
+                    ssl_print_tmp_key(options, ssl);
+                }
+                printf("\n");
+                printf_xml(" />\n");
+
                 // Disconnect SSL over socket
                 if (cipherStatus == 1)
+                {
+                    strncat(options->cipherstring, ":!", 2);
+                    strncat(options->cipherstring, SSL_get_cipher_name(ssl), strlen(SSL_get_cipher_name(ssl)));
                     SSL_shutdown(ssl);
+                }
 
                 // Free SSL object
                 SSL_free(ssl);
@@ -1425,7 +1400,6 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
         else
         {
             status = false;
-            printf("%s    ERROR: Could set cipher %s.%s\n", COL_RED, sslCipherPointer->name, RESET);
         }
 
         // Disconnect from host
@@ -1439,190 +1413,38 @@ int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPoint
     return status;
 }
 
-
-// Test for preferred ciphers
-int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
+int checkCertificateProtocol(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
-    // Variables...
-    int cipherStatus;
     int status = true;
-    int socketDescriptor = 0;
-    SSL *ssl = NULL;
-    BIO *cipherConnectionBio;
-    int tempInt;
-    int tempInt2;
-
-    // Connect to host
-    socketDescriptor = tcpConnect(options);
-    if (socketDescriptor != 0)
+    // Setup Context Object...
+    options->ctx = SSL_CTX_new(sslMethod);
+    if (options->ctx != NULL)
     {
-        // Setup Context Object...
-        options->ctx = SSL_CTX_new(sslMethod);
-        if (options->ctx != NULL)
-        {
-            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
-            {
-
-                // Load Certs if required...
-                if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
-                    status = loadCerts(options);
-
-                if (status == true)
-                {
-                    // Create SSL object...
-                    ssl = SSL_new(options->ctx);
-                    if (ssl != NULL)
-                    {
-                        // Connect socket and BIO
-                        cipherConnectionBio = BIO_new_socket(socketDescriptor, BIO_NOCLOSE);
-
-                        // Connect SSL and BIO
-                        SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
-
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
-                        // TLS SNI
-                        SSL_set_tlsext_host_name (ssl, options->host);
-#endif
-
-                        // Connect SSL over socket
-                        cipherStatus = SSL_connect(ssl);
-                        if (cipherStatus == 1)
-                        {
-#ifndef OPENSSL_NO_SSL2
-                            if (sslMethod == SSLv2_client_method())
-                            {
-                                printf_xml("  <defaultcipher sslversion=\"SSLv2\" bits=\"");
-                                printf("%sSSLv2%s    ", COL_RED, RESET);
-                            }
-                            else
-#endif
-#ifndef OPENSSL_NO_SSL3
-                            if (sslMethod == SSLv3_client_method())
-                            {
-                                printf_xml("  <defaultcipher sslversion=\"SSLv3\" bits=\"");
-                                printf("%sSSLv3%s    ", COL_RED, RESET);
-                            }
-			    else
-#endif
-                            if (sslMethod == TLSv1_client_method())
-                            {
-                                printf_xml("  <defaultcipher sslversion=\"TLSv1.0\" bits=\"");
-                                printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
-                            }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                            else if (sslMethod == TLSv1_1_client_method())
-                            {
-                                printf_xml("  <defaultcipher sslversion=\"TLSv1.1\" bits=\"");
-                                printf("TLSv1.1  ");
-                            }
-                            else if (sslMethod == TLSv1_2_client_method())
-                            {
-                                printf_xml("  <defaultcipher sslversion=\"TLSv1.2\" bits=\"");
-                                printf("TLSv1.2  ");
-                            }
-#endif
-                            if (SSL_get_cipher_bits(ssl, &tempInt2) < 10)
-                                tempInt = 2;
-                            else if (SSL_get_cipher_bits(ssl, &tempInt2) < 100)
-                                tempInt = 1;
-                            else
-                                tempInt = 0;
-                                //Bit ugly
-                            int tempbits = SSL_get_cipher_bits(ssl, &tempInt2);
-                            if (tempbits == 0)
-                            {
-                                printf("%s%d%s bits  ", COL_RED_BG, tempbits, RESET);
-                            }
-                            else if (tempbits >= 112)
-                            {
-                                printf("%s%d%s bits  ", COL_GREEN, tempbits, RESET);
-                            }
-                            else if (tempbits > 56)
-                            {
-                                printf("%s%d%s bits  ", COL_YELLOW, tempbits, RESET);
-                            }
-                            else
-                            {
-                                printf("%s%d%s bits  ", COL_RED, tempbits, RESET);
-                            }
-
-                            while (tempInt != 0)
-                            {
-                                tempInt--;
-                                printf(" ");
-                            }
-                            printf_xml("%d\" cipher=\"%s\"", SSL_get_cipher_bits(ssl, &tempInt2), SSL_get_cipher_name(ssl));
-                            if (strstr(SSL_get_cipher_name(ssl), "EXP")
-#ifndef OPENSSL_NO_SSL3
-                                            || (sslMethod == SSLv3_client_method() && strstr(SSL_get_cipher_name(ssl), "CBC"))
-#endif
-			    )
-			    {
-                                printf("%s%-29s%s", COL_RED, SSL_get_cipher_name(ssl), RESET);
-                            }
-                            else if (strstr(SSL_get_cipher_name(ssl), "RC4"))
-                            {
-                                printf("%s%-29s%s", COL_YELLOW, SSL_get_cipher_name(ssl), RESET);
-                            }
-                            else if (strstr(SSL_get_cipher_name(ssl), "GCM"))
-                            {
-                                printf("%s%-29s%s", COL_GREEN, SSL_get_cipher_name(ssl), RESET);
-                            }
-                            else
-                            {
-                                printf("%-29s", SSL_get_cipher_name(ssl));
-                            }
-                            if (options->cipher_details == true)
-                            {
-                                ssl_print_tmp_key(options, ssl);
-                            }
-                            printf("\n");
-                            printf_xml(" />\n");
-
-                            // Disconnect SSL over socket
-                            SSL_shutdown(ssl);
-                        }
-
-                        // Free SSL object
-                        SSL_free(ssl);
-                    }
-                    else
-                    {
-                        status = false;
-                        printf("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
-                    }
-                }
-            }
-            else
-            {
-                status = false;
-                printf("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
-            }
-
-            // Free CTX Object
-            SSL_CTX_free(options->ctx);
-        }
-
-        // Error Creating Context Object
+        // SSL implementation bugs/workaround
+        if (options->sslbugs)
+            SSL_CTX_set_options(options->ctx, SSL_OP_ALL | 0);
         else
-        {
-            status = false;
-            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
-        }
+            SSL_CTX_set_options(options->ctx, 0);
 
-        // Disconnect from host
-        close(socketDescriptor);
+        // Load Certs if required...
+        if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
+            status = loadCerts(options);
+
+        // Check the certificate
+        status = checkCertificate(options, sslMethod);
     }
 
-    // Could not connect
+    // Error Creating Context Object
     else
+    {
+        printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
         status = false;
-
+    }
     return status;
 }
 
 // Report certificate weaknesses (key length and signing algorithm)
-int checkCertificate(struct sslCheckOptions *options)
+int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
     int cipherStatus = 0;
     int status = true;
@@ -1634,7 +1456,6 @@ int checkCertificate(struct sslCheckOptions *options)
     BIO *fileBIO = NULL;
     X509 *x509Cert = NULL;
     EVP_PKEY *publicKey = NULL;
-    const SSL_METHOD *sslMethod = NULL;
     char certAlgorithm[80];
     X509_EXTENSION *extension = NULL;
 
@@ -1643,25 +1464,6 @@ int checkCertificate(struct sslCheckOptions *options)
     if (socketDescriptor != 0)
     {
         // Setup Context Object...
-        if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3) {
-            printf_verbose("sslMethod = SSLv23_method()");
-            sslMethod = SSLv23_method();
-        }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-        else if( options->sslVersion == tls_v11) {
-            printf_verbose("sslMethod = TLSv1_1_method()");
-            sslMethod = TLSv1_1_method();
-        }
-        else if( options->sslVersion == tls_v12) {
-            printf_verbose("sslMethod = TLSv1_2_method()");
-            sslMethod = TLSv1_2_method();
-        }
-#endif
-        else {
-            printf_verbose("sslMethod = TLSv1_method()\n");
-            printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
-            sslMethod = TLSv1_method();
-        }
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
         {
@@ -1987,6 +1789,8 @@ int checkCertificate(struct sslCheckOptions *options)
 
                                 // Free X509 Certificate...
                                 X509_free(x509Cert);
+                                // This is abusing status a bit, but means that we'll only get the cert once
+                                status = false;
                             }
 
                             else {
@@ -2002,11 +1806,6 @@ int checkCertificate(struct sslCheckOptions *options)
 
                             // Disconnect SSL over socket
                             SSL_shutdown(ssl);
-                        }
-                        else
-                        {
-                            printf("\n%sFailed to connect to get certificate.%s\n", COL_RED, RESET);
-                            printf("Most likley cause is server not supporting %s, try manually specifying version\n", printableSslMethod(sslMethod));
                         }
                         // Free SSL object
                         SSL_free(ssl);
@@ -2965,6 +2764,48 @@ int testConnection(struct sslCheckOptions *options)
     }
 }
 
+int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
+{
+    int status;
+    status = true;
+    strncpy(options->cipherstring, "ALL:eNULL", 10);
+
+    // Loop until the server won't accept any more ciphers
+    while (status == true)
+    {
+        // Setup Context Object...
+        options->ctx = SSL_CTX_new(sslMethod);
+        if (options->ctx != NULL)
+        {
+
+            // SSL implementation bugs/workaround
+            if (options->sslbugs)
+                SSL_CTX_set_options(options->ctx, SSL_OP_ALL | 0);
+            else
+                SSL_CTX_set_options(options->ctx, 0);
+
+            // Load Certs if required...
+            if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
+                status = loadCerts(options);
+
+            // Test the cipher
+            if (status == true)
+                status = testCipher(options, sslMethod);
+
+            // Free CTX Object
+            SSL_CTX_free(options->ctx);
+        }
+
+        // Error Creating Context Object
+        else
+        {
+            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            return false;
+        }
+    }
+    return true;
+}
+
 // Test a single host and port for ciphers...
 int testHost(struct sslCheckOptions *options)
 {
@@ -2984,18 +2825,63 @@ int testHost(struct sslCheckOptions *options)
     // Test renegotiation
     printf("Testing SSL server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
 
-    sslCipherPointer = options->ciphers;
-
     if (options->showClientCiphers == true)
     {
+        // Build a list of ciphers...
+        switch (options->sslVersion)
+        {
+            case ssl_all:
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+                populateCipherList(options, TLSv1_2_client_method());
+                populateCipherList(options, TLSv1_1_client_method());
+#endif
+                populateCipherList(options, TLSv1_client_method());
+#ifndef OPENSSL_NO_SSL3
+                populateCipherList(options, SSLv3_client_method());
+#endif
+#ifndef OPENSSL_NO_SSL2
+                populateCipherList(options, SSLv2_client_method());
+#endif
+                break;
+            case tls_all:
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+                populateCipherList(options, TLSv1_2_client_method());
+                populateCipherList(options, TLSv1_1_client_method());
+#endif
+                populateCipherList(options, TLSv1_client_method());
+                break;
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+            case tls_v12:
+                populateCipherList(options, TLSv1_2_client_method());
+                break;
+            case tls_v11:
+                populateCipherList(options, TLSv1_1_client_method());
+                break;
+#endif
+            case tls_v10:
+                populateCipherList(options, TLSv1_client_method());
+                break;
+#ifndef OPENSSL_NO_SSL3
+            case ssl_v3:
+                populateCipherList(options, SSLv3_client_method());
+                break;
+#endif
+#ifndef OPENSSL_NO_SSL2
+            case ssl_v2:
+                populateCipherList(options, SSLv2_client_method());
+                break;
+#endif
+        }
         printf("\n  %sSupported Client Cipher(s):%s\n", COL_BLUE, RESET);
+        sslCipherPointer = options->ciphers;
         while ((sslCipherPointer != 0) && (status == true))
         {
             printf("    %s\n",sslCipherPointer->name);
-            printf_xml(" <client-cipher cipher=\"%s\">\n", sslCipherPointer->name);
+            printf_xml("  <client-cipher cipher=\"%s\" />\n", sslCipherPointer->name);
 
             sslCipherPointer = sslCipherPointer->next;
         }
+        printf("\n");
     }
     
     if (status == true && options->reneg )
@@ -3013,23 +2899,23 @@ int testHost(struct sslCheckOptions *options)
     if (status == true && options->heartbleed )
     {
         printf("  %sHeartbleed:%s\n", COL_BLUE, RESET);
-        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10)
-        {
-            printf("TLS 1.0 ");
-            status = testHeartbleed(options, TLSv1_client_method());
-        }
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
-        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v11)
-        {
-            printf("TLS 1.1 ");
-            status = testHeartbleed(options, TLSv1_1_client_method());
-        }
         if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v12)
         {
             printf("TLS 1.2 ");
             status = testHeartbleed(options, TLSv1_2_client_method());
         }
+        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v11)
+        {
+            printf("TLS 1.1 ");
+            status = testHeartbleed(options, TLSv1_1_client_method());
+        }
 #endif
+        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10)
+        {
+            printf("TLS 1.0 ");
+            status = testHeartbleed(options, TLSv1_client_method());
+        }
         if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3)
         {
             printf("%sAll TLS protocols disabled, cannot check for heartbleed.\n%s", COL_RED, RESET);
@@ -3051,98 +2937,55 @@ int testHost(struct sslCheckOptions *options)
     {
         // Test supported ciphers...
         printf("  %sSupported Server Cipher(s):%s\n", COL_BLUE, RESET);
-        sslCipherPointer = options->ciphers;
-        while ((sslCipherPointer != 0) && (status == true))
-        {
-
-            // Setup Context Object...
-            options->ctx = SSL_CTX_new(sslCipherPointer->sslMethod);
-            if (options->ctx != NULL)
-            {
-
-                // SSL implementation bugs/workaround
-                if (options->sslbugs)
-                    SSL_CTX_set_options(options->ctx, SSL_OP_ALL | 0);
-                else
-                    SSL_CTX_set_options(options->ctx, 0);
-
-                // Load Certs if required...
-                if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
-                    status = loadCerts(options);
-
-
-                // Test
-                if (status == true)
-                    status = testCipher(options, sslCipherPointer);
-
-                // Free CTX Object
-                SSL_CTX_free(options->ctx);
-            }
-
-            // Error Creating Context Object
-            else
-            {
-                status = false;
-                printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
-            }
-
-            sslCipherPointer = sslCipherPointer->next;
-
-        }
-        printf("\n");
-    }
-    if (status == true && options->getPreferredCiphers == true)
-    {
-        // Test preferred ciphers...
-        printf("  %sPreferred Server Cipher(s):%s\n", COL_BLUE, RESET);
         switch (options->sslVersion)
         {
             case ssl_all:
-#ifndef OPENSSL_NO_SSL2
-                status = defaultCipher(options, SSLv2_client_method());
-#endif
-#ifndef OPENSSL_NO_SSL3
-                if (status != false)
-                    status = defaultCipher(options, SSLv3_client_method());
-#endif
-                if (status != false)
-                    status = defaultCipher(options, TLSv1_client_method());
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
                 if (status != false)
-                    status = defaultCipher(options, TLSv1_1_client_method());
+                    status = testProtocolCiphers(options, TLSv1_2_client_method());
                 if (status != false)
-                    status = defaultCipher(options, TLSv1_2_client_method());
+                    status = testProtocolCiphers(options, TLSv1_1_client_method());
+#endif
+                if (status != false)
+                    status = testProtocolCiphers(options, TLSv1_client_method());
+#ifndef OPENSSL_NO_SSL3
+                if (status != false)
+                    status = testProtocolCiphers(options, SSLv3_client_method());
+#endif
+#ifndef OPENSSL_NO_SSL2
+                if (status != false)
+                    status = testProtocolCiphers(options, SSLv2_client_method());
 #endif
                 break;
 #ifndef OPENSSL_NO_SSL2
             case ssl_v2:
-                status = defaultCipher(options, SSLv2_client_method());
+                status = testProtocolCiphers(options, SSLv2_client_method());
                 break;
 #endif
 #ifndef OPENSSL_NO_SSL3
             case ssl_v3:
-                status = defaultCipher(options, SSLv3_client_method());
+                status = testProtocolCiphers(options, SSLv3_client_method());
                 break;
 #endif
             case tls_all:
-                if (status != false)
-                    status = defaultCipher(options, TLSv1_client_method());
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
                 if (status != false)
-                    status = defaultCipher(options, TLSv1_1_client_method());
+                    status = testProtocolCiphers(options, TLSv1_2_client_method());
                 if (status != false)
-                    status = defaultCipher(options, TLSv1_2_client_method());
+                    status = testProtocolCiphers(options, TLSv1_1_client_method());
 #endif
+                if (status != false)
+                    status = testProtocolCiphers(options, TLSv1_client_method());
                 break;
             case tls_v10:
-                status = defaultCipher(options, TLSv1_client_method());
+                status = testProtocolCiphers(options, TLSv1_client_method());
                 break;
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
             case tls_v11:
-                status = defaultCipher(options, TLSv1_1_client_method());
+                status = testProtocolCiphers(options, TLSv1_1_client_method());
                 break;
             case tls_v12:
-                status = defaultCipher(options, TLSv1_2_client_method());
+                status = testProtocolCiphers(options, TLSv1_2_client_method());
                 break;
 #endif
         }
@@ -3157,7 +3000,24 @@ int testHost(struct sslCheckOptions *options)
     // Show weak certificate signing algorithm or key strength
     if (status == true && options->checkCertificate == true)
     {
-        status = checkCertificate(options);
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+        if (status != false)
+            {
+            status = checkCertificateProtocol(options, TLSv1_2_client_method());
+            }
+        if (status != false)
+            status = checkCertificateProtocol(options, TLSv1_1_client_method());
+#endif
+        if (status != false)
+            status = checkCertificateProtocol(options, TLSv1_client_method());
+#ifndef OPENSSL_NO_SSL3
+        if (status != false)
+            status = checkCertificateProtocol(options, SSLv3_client_method());
+#endif
+#ifndef OPENSSL_NO_SSL2
+        if (status != false)
+            status = checkCertificateProtocol(options, SSLv2_client_method());
+#endif
     }
 
     // Print client auth trusted CAs
@@ -3197,8 +3057,7 @@ int main(int argc, char *argv[])
     memset(&options, 0, sizeof(struct sslCheckOptions));
     options.port = 0;
     xmlArg = 0;
-    strcpy(options.host, "127.0.0.1");
-    options.noFailed = true;
+    strncpy(options.host, "127.0.0.1", 10);
     options.showCertificate = false;
     options.showTrustedCAs = false;
     options.checkCertificate = true;
@@ -3218,7 +3077,6 @@ int main(int argc, char *argv[])
     options.cipher_details = true;
     options.ipv4 = true;
     options.ipv6 = true;
-    options.getPreferredCiphers = true;
     options.ocspStatus = false;
 
     // Default socket timeout 3s
@@ -3253,10 +3111,6 @@ int main(int argc, char *argv[])
             mode = mode_multiple;
             options.targets = argLoop;
         }
-
-        // Show unsupported ciphers
-        else if (strcmp("--failed", argv[argLoop]) == 0)
-            options.noFailed = false;
 
         // Show certificate
         else if (strcmp("--show-certificate", argv[argLoop]) == 0)
@@ -3301,7 +3155,7 @@ int main(int argc, char *argv[])
             COL_BLUE = "";
             COL_GREEN = "";
             COL_PURPLE = "";
-	    COL_RED_BG = "";
+            COL_RED_BG = "";
         }
 
         // Client Certificates
@@ -3331,10 +3185,6 @@ int main(int argc, char *argv[])
         // Should we check for Heartbleed (CVE-2014-0160)
         else if (strcmp("--no-heartbleed", argv[argLoop]) == 0)
             options.heartbleed = false;
-
-        // Don't determine preferred ciphers
-        else if (strcmp("--no-preferred", argv[argLoop]) == 0)
-            options.getPreferredCiphers = false;
 
         // StartTLS... FTP
         else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
@@ -3554,52 +3404,50 @@ int main(int argc, char *argv[])
             printf("                       Hosts can  be supplied  with ports (host:port)\n");
             printf("  %s--ipv4%s               Only use IPv4\n", COL_GREEN, RESET);
             printf("  %s--ipv6%s               Only use IPv6\n", COL_GREEN, RESET);
-            printf("  %s--failed%s             Show unsupported ciphers.\n", COL_GREEN, RESET);
-            printf("  %s--show-certificate%s   Show full certificate information.\n", COL_GREEN, RESET);
-            printf("  %s--no-check-certificate%s  Don't warn about weak certificate algorithm or keys.\n", COL_GREEN, RESET);
-            printf("  %s--show-client-cas%s    Show trusted CAs for TLS client auth.\n", COL_GREEN, RESET);
-            printf("  %s--show-ciphers%s       Show supported client ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--show-certificate%s   Show full certificate information\n", COL_GREEN, RESET);
+            printf("  %s--no-check-certificate%s  Don't warn about weak certificate algorithm or keys\n", COL_GREEN, RESET);
+            printf("  %s--show-client-cas%s    Show trusted CAs for TLS client auth\n", COL_GREEN, RESET);
+            printf("  %s--show-ciphers%s       Show supported client ciphers\n", COL_GREEN, RESET);
 #ifndef OPENSSL_NO_SSL2
-            printf("  %s--ssl2%s               Only check SSLv2 ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--ssl2%s               Only check SSLv2 ciphers\n", COL_GREEN, RESET);
 #endif
 #ifndef OPENSSL_NO_SSL3
-            printf("  %s--ssl3%s               Only check SSLv3 ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--ssl3%s               Only check SSLv3 ciphers\n", COL_GREEN, RESET);
 #endif
-            printf("  %s--tls10%s              Only check TLSv1.0 ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--tls10%s              Only check TLSv1.0 ciphers\n", COL_GREEN, RESET);
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
-            printf("  %s--tls11%s              Only check TLSv1.1 ciphers.\n", COL_GREEN, RESET);
-            printf("  %s--tls12%s              Only check TLSv1.2 ciphers.\n", COL_GREEN, RESET);
+            printf("  %s--tls11%s              Only check TLSv1.1 ciphers\n", COL_GREEN, RESET);
+            printf("  %s--tls12%s              Only check TLSv1.2 ciphers\n", COL_GREEN, RESET);
 #endif
-            printf("  %s--tlsall%s             Only check TLS ciphers (all versions).\n", COL_GREEN, RESET);
-            printf("  %s--ocsp%s               Request OCSP response from server.\n", COL_GREEN, RESET);
+            printf("  %s--tlsall%s             Only check TLS ciphers (all versions)\n", COL_GREEN, RESET);
+            printf("  %s--ocsp%s               Request OCSP response from server\n", COL_GREEN, RESET);
             printf("  %s--pk=<file>%s          A file containing the private key or a PKCS#12 file\n", COL_GREEN, RESET);
             printf("                       containing a private key/certificate pair\n");
             printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted client certificates\n", COL_GREEN, RESET);
-            printf("  %s--no-ciphersuites%s    Only check for supported SSL/TLS versions, not ciphers\n", COL_GREEN, RESET);
+            printf("  %s--no-ciphersuites%s    Do not check for supported ciphersuites\n", COL_GREEN, RESET);
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
             printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
-            printf("  %s--no-preferred%s       Do not determine preferred ciphers\n", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-irc%s       STARTTLS setup for IRC\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
-            printf("  %s--xmpp-server%s        Use a server-to-server XMPP handshake.\n", COL_GREEN, RESET);
-            printf("  %s--http%s               Test a HTTP connection.\n", COL_GREEN, RESET);
-            printf("  %s--rdp%s                Send RDP preamble before starting scan.\n", COL_GREEN, RESET);
+            printf("  %s--xmpp-server%s        Use a server-to-server XMPP handshake\n", COL_GREEN, RESET);
+            printf("  %s--http%s               Test a HTTP connection\n", COL_GREEN, RESET);
+            printf("  %s--rdp%s                Send RDP preamble before starting scan\n", COL_GREEN, RESET);
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
-            printf("  %s--timeout=<sec>%s      Set socket timeout. Default is 3s.\n", COL_GREEN, RESET);
-            printf("  %s--sleep=<msec>%s       Pause between connection request. Default is disabled.\n", COL_GREEN, RESET);
-            printf("  %s--xml=<file>%s         Output results to an XML file.\n", COL_GREEN, RESET);
-            printf("  %s--version%s            Display the program version.\n", COL_GREEN, RESET);
-            printf("  %s--verbose%s            Display verbose output.\n", COL_GREEN, RESET);
+            printf("  %s--timeout=<sec>%s      Set socket timeout. Default is 3s\n", COL_GREEN, RESET);
+            printf("  %s--sleep=<msec>%s       Pause between connection request. Default is disabled\n", COL_GREEN, RESET);
+            printf("  %s--xml=<file>%s         Output results to an XML file\n", COL_GREEN, RESET);
+            printf("  %s--version%s            Display the program version\n", COL_GREEN, RESET);
+            printf("  %s--verbose%s            Display verbose output\n", COL_GREEN, RESET);
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
-            printf("  %s--no-cipher-details%s  Disable EC curve names and EDH/RSA key lengths output.\n", COL_GREEN, RESET);
+            printf("  %s--no-cipher-details%s  Disable EC curve names and EDH/RSA key lengths output\n", COL_GREEN, RESET);
 #endif
-            printf("  %s--no-colour%s          Disable coloured output.\n", COL_GREEN, RESET);
+            printf("  %s--no-colour%s          Disable coloured output\n", COL_GREEN, RESET);
             printf("  %s--help%s               Display the  help text  you are  now reading\n\n", COL_GREEN, RESET);
             printf("%sExample:%s\n", COL_BLUE, RESET);
             printf("  %s%s 127.0.0.1%s\n", COL_GREEN, argv[0], RESET);
@@ -3628,52 +3476,6 @@ int main(int argc, char *argv[])
 
             SSLeay_add_all_algorithms();
             ERR_load_crypto_strings();
-
-            // Build a list of ciphers...
-            switch (options.sslVersion)
-            {
-                case ssl_all:
-#ifndef OPENSSL_NO_SSL2
-                    populateCipherList(&options, SSLv2_client_method());
-#endif
-#ifndef OPENSSL_NO_SSL3
-                    populateCipherList(&options, SSLv3_client_method());
-#endif
-                    populateCipherList(&options, TLSv1_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                    populateCipherList(&options, TLSv1_1_client_method());
-                    populateCipherList(&options, TLSv1_2_client_method());
-#endif
-                    break;
-#ifndef OPENSSL_NO_SSL2
-                case ssl_v2:
-                    populateCipherList(&options, SSLv2_client_method());
-                    break;
-#endif
-#ifndef OPENSSL_NO_SSL3
-                case ssl_v3:
-                    populateCipherList(&options, SSLv3_client_method());
-                    break;
-#endif
-                case tls_all:
-                    populateCipherList(&options, TLSv1_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                    populateCipherList(&options, TLSv1_1_client_method());
-                    populateCipherList(&options, TLSv1_2_client_method());
-#endif
-                    break;
-                case tls_v10:
-                    populateCipherList(&options, TLSv1_client_method());
-                    break;
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                case tls_v11:
-                    populateCipherList(&options, TLSv1_1_client_method());
-                    break;
-                case tls_v12:
-                    populateCipherList(&options, TLSv1_2_client_method());
-                    break;
-#endif
-             }
 
             // Do the testing...
             if (mode == mode_single)
