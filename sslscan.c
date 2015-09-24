@@ -1413,9 +1413,39 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     return status;
 }
 
+int checkCertificateProtocol(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
+{
+    int status = true;
+    // Setup Context Object...
+    options->ctx = SSL_CTX_new(sslMethod);
+    if (options->ctx != NULL)
+    {
+
+        // SSL implementation bugs/workaround
+        if (options->sslbugs)
+            SSL_CTX_set_options(options->ctx, SSL_OP_ALL | 0);
+        else
+            SSL_CTX_set_options(options->ctx, 0);
+
+        // Load Certs if required...
+        if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
+            status = loadCerts(options);
+
+        // Check the certificate
+        status = checkCertificate(options, sslMethod);
+    }
+
+    // Error Creating Context Object
+    else
+    {
+        printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+        status = false;
+    }
+    return status;
+}
 
 // Report certificate weaknesses (key length and signing algorithm)
-int checkCertificate(struct sslCheckOptions *options)
+int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
     int cipherStatus = 0;
     int status = true;
@@ -1427,7 +1457,6 @@ int checkCertificate(struct sslCheckOptions *options)
     BIO *fileBIO = NULL;
     X509 *x509Cert = NULL;
     EVP_PKEY *publicKey = NULL;
-    const SSL_METHOD *sslMethod = NULL;
     char certAlgorithm[80];
     X509_EXTENSION *extension = NULL;
 
@@ -1436,25 +1465,6 @@ int checkCertificate(struct sslCheckOptions *options)
     if (socketDescriptor != 0)
     {
         // Setup Context Object...
-        if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3) {
-            printf_verbose("sslMethod = SSLv23_method()");
-            sslMethod = SSLv23_method();
-        }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-        else if( options->sslVersion == tls_v11) {
-            printf_verbose("sslMethod = TLSv1_1_method()");
-            sslMethod = TLSv1_1_method();
-        }
-        else if( options->sslVersion == tls_v12) {
-            printf_verbose("sslMethod = TLSv1_2_method()");
-            sslMethod = TLSv1_2_method();
-        }
-#endif
-        else {
-            printf_verbose("sslMethod = TLSv1_method()\n");
-            printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
-            sslMethod = TLSv1_method();
-        }
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
         {
@@ -1780,6 +1790,8 @@ int checkCertificate(struct sslCheckOptions *options)
 
                                 // Free X509 Certificate...
                                 X509_free(x509Cert);
+                                // This is abusing status a bit, but means that we'll only get the cert once
+                                status = false;
                             }
 
                             else {
@@ -1795,11 +1807,6 @@ int checkCertificate(struct sslCheckOptions *options)
 
                             // Disconnect SSL over socket
                             SSL_shutdown(ssl);
-                        }
-                        else
-                        {
-                            printf("\n%sFailed to connect to get certificate.%s\n", COL_RED, RESET);
-                            printf("Most likley cause is server not supporting %s, try manually specifying version\n", printableSslMethod(sslMethod));
                         }
                         // Free SSL object
                         SSL_free(ssl);
@@ -2942,13 +2949,13 @@ int testHost(struct sslCheckOptions *options)
 #endif
                 if (status != false)
                     status = testProtocolCiphers(options, TLSv1_client_method());
-#ifndef OPENSSL_NO_SSL2
-                if (status != false)
-                    status = testProtocolCiphers(options, SSLv2_client_method());
-#endif
 #ifndef OPENSSL_NO_SSL3
                 if (status != false)
                     status = testProtocolCiphers(options, SSLv3_client_method());
+#endif
+#ifndef OPENSSL_NO_SSL2
+                if (status != false)
+                    status = testProtocolCiphers(options, SSLv2_client_method());
 #endif
                 break;
 #ifndef OPENSSL_NO_SSL2
@@ -2994,7 +3001,24 @@ int testHost(struct sslCheckOptions *options)
     // Show weak certificate signing algorithm or key strength
     if (status == true && options->checkCertificate == true)
     {
-        status = checkCertificate(options);
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+        if (status != false)
+            {
+            status = checkCertificateProtocol(options, TLSv1_2_client_method());
+            }
+        if (status != false)
+            status = checkCertificateProtocol(options, TLSv1_1_client_method());
+#endif
+        if (status != false)
+            status = checkCertificateProtocol(options, TLSv1_client_method());
+#ifndef OPENSSL_NO_SSL3
+        if (status != false)
+            status = checkCertificateProtocol(options, SSLv3_client_method());
+#endif
+#ifndef OPENSSL_NO_SSL2
+        if (status != false)
+            status = checkCertificateProtocol(options, SSLv2_client_method());
+#endif
     }
 
     // Print client auth trusted CAs
