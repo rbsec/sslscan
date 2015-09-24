@@ -57,10 +57,6 @@ Don't flag certificates signed with weak algorithms (MD5 and SHA-1) or short (<2
 .B \-\-show\-client\-cas
 Show a list of CAs that the server allows for client authentication. Will be blank for IIS/Schannel servers.
 .TP
-.B \-\-failed
-Show rejected ciphers
-(default is to listing only accepted ciphers)
-.TP
 .B \-\-ssl2
 .br
 Only check SSLv2 ciphers
@@ -106,7 +102,7 @@ The password for the private key or PKCS#12 file
 A file containing PEM/ASN1 formatted client certificates
 .TP
 .B \-\-no\-ciphersuites
-Only check for supported SSL/TLS versions, not ciphersuites
+Do not scan for supported ciphersuites.
 .TP
 .B \-\-no\-renegotiation
 Do not check for secure TLS renegotiation
@@ -116,9 +112,6 @@ Do not check for TLS compression (CRIME)
 .TP
 .B \-\-no\-heartbleed
 Do not check for OpenSSL Heartbleed (CVE-2014-0160)
-.TP
-.B \-\-no\-preferred
-Do not check for preferred ciphersuites
 .TP
 .B \-\-starttls\-ftp
 STARTTLS setup for FTP
