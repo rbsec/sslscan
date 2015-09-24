@@ -2825,44 +2825,44 @@ int testHost(struct sslCheckOptions *options)
         switch (options->sslVersion)
         {
             case ssl_all:
-#ifndef OPENSSL_NO_SSL2
-                populateCipherList(options, SSLv2_client_method());
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+                populateCipherList(options, TLSv1_2_client_method());
+                populateCipherList(options, TLSv1_1_client_method());
 #endif
+                populateCipherList(options, TLSv1_client_method());
 #ifndef OPENSSL_NO_SSL3
                 populateCipherList(options, SSLv3_client_method());
 #endif
-                populateCipherList(options, TLSv1_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                populateCipherList(options, TLSv1_1_client_method());
-                populateCipherList(options, TLSv1_2_client_method());
-#endif
-                break;
 #ifndef OPENSSL_NO_SSL2
-            case ssl_v2:
                 populateCipherList(options, SSLv2_client_method());
+#endif
+                break;
+            case tls_all:
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+                populateCipherList(options, TLSv1_2_client_method());
+                populateCipherList(options, TLSv1_1_client_method());
+#endif
+                populateCipherList(options, TLSv1_client_method());
+                break;
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+            case tls_v12:
+                populateCipherList(options, TLSv1_2_client_method());
+                break;
+            case tls_v11:
+                populateCipherList(options, TLSv1_1_client_method());
                 break;
 #endif
+            case tls_v10:
+                populateCipherList(options, TLSv1_client_method());
+                break;
 #ifndef OPENSSL_NO_SSL3
             case ssl_v3:
                 populateCipherList(options, SSLv3_client_method());
                 break;
 #endif
-            case tls_all:
-                populateCipherList(options, TLSv1_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                populateCipherList(options, TLSv1_1_client_method());
-                populateCipherList(options, TLSv1_2_client_method());
-#endif
-                break;
-            case tls_v10:
-                populateCipherList(options, TLSv1_client_method());
-                break;
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-            case tls_v11:
-                populateCipherList(options, TLSv1_1_client_method());
-                break;
-            case tls_v12:
-                populateCipherList(options, TLSv1_2_client_method());
+#ifndef OPENSSL_NO_SSL2
+            case ssl_v2:
+                populateCipherList(options, SSLv2_client_method());
                 break;
 #endif
         }
@@ -2893,23 +2893,23 @@ int testHost(struct sslCheckOptions *options)
     if (status == true && options->heartbleed )
     {
         printf("  %sHeartbleed:%s\n", COL_BLUE, RESET);
-        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10)
-        {
-            printf("TLS 1.0 ");
-            status = testHeartbleed(options, TLSv1_client_method());
-        }
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
-        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v11)
-        {
-            printf("TLS 1.1 ");
-            status = testHeartbleed(options, TLSv1_1_client_method());
-        }
         if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v12)
         {
             printf("TLS 1.2 ");
             status = testHeartbleed(options, TLSv1_2_client_method());
         }
+        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v11)
+        {
+            printf("TLS 1.1 ");
+            status = testHeartbleed(options, TLSv1_1_client_method());
+        }
 #endif
+        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10)
+        {
+            printf("TLS 1.0 ");
+            status = testHeartbleed(options, TLSv1_client_method());
+        }
         if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3)
         {
             printf("%sAll TLS protocols disabled, cannot check for heartbleed.\n%s", COL_RED, RESET);
@@ -2934,22 +2934,21 @@ int testHost(struct sslCheckOptions *options)
         switch (options->sslVersion)
         {
             case ssl_all:
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+                if (status != false)
+                    status = testProtocolCiphers(options, TLSv1_2_client_method());
+                if (status != false)
+                    status = testProtocolCiphers(options, TLSv1_1_client_method());
+#endif
+                if (status != false)
+                    status = testProtocolCiphers(options, TLSv1_client_method());
 #ifndef OPENSSL_NO_SSL2
-                status = testProtocolCiphers(options, SSLv2_client_method());
+                if (status != false)
+                    status = testProtocolCiphers(options, SSLv2_client_method());
 #endif
 #ifndef OPENSSL_NO_SSL3
                 if (status != false)
                     status = testProtocolCiphers(options, SSLv3_client_method());
-#endif
-                if (status != false)
-                    status = testProtocolCiphers(options, TLSv1_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                if (status != false)
-                {
-                    status = testProtocolCiphers(options, TLSv1_1_client_method());
-                }
-                if (status != false)
-                    status = testProtocolCiphers(options, TLSv1_2_client_method());
 #endif
                 break;
 #ifndef OPENSSL_NO_SSL2
@@ -2963,14 +2962,14 @@ int testHost(struct sslCheckOptions *options)
                 break;
 #endif
             case tls_all:
-                if (status != false)
-                    status = testProtocolCiphers(options, TLSv1_client_method());
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
                 if (status != false)
-                    status = testProtocolCiphers(options, TLSv1_1_client_method());
-                if (status != false)
                     status = testProtocolCiphers(options, TLSv1_2_client_method());
+                if (status != false)
+                    status = testProtocolCiphers(options, TLSv1_1_client_method());
 #endif
+                if (status != false)
+                    status = testProtocolCiphers(options, TLSv1_client_method());
                 break;
             case tls_v10:
                 status = testProtocolCiphers(options, TLSv1_client_method());
