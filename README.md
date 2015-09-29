@@ -34,6 +34,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Flag weak DHE keys with OpenSSL >= 1.0.2 (--cipher-details)
 * Flag expired certificates
 * Flag TLSv1.0 ciphers in output as weak.
+* Experimental OSX support (static building only)
 
 ### Building on Windows
 Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can
@@ -44,6 +45,14 @@ Note that sslscan was originally written for Linux, and has not been extensively
 tested on Windows. As such, the Windows version should be considered experimental.
 
 Pre-build cross-compiled Windows binaries are available on the [GitHub Releases Page](https://github.com/rbsec/sslscan/releases).
+
+
+### Building on OS X
+There is experimental support for statically building on OS X, however this
+should be considered unsupported. You may need to install any dependencies
+required to compile OpenSSL from source on OS X. Once you have, just run:
+
+    make static
 
 ### OpenSSL issues
 
@@ -91,9 +100,15 @@ Kali now ships with a statically built version of sslscan which supports SSLv2.
 
 The package can be found in the [Kali Git Repository](http://git.kali.org/gitweb/?p=packages/sslscan.git;a=summary).
 
-If for whatever reason you can't install this package, follow the instructions below for building on Debian.
+If for whatever reason you can't install this package, follow the instructions
+above for statically building against OpenSSL.
 
 #### Building on Debian
+It is recommended that you statically build sslscan using the instructions listed
+above. If this is not an option and you want to compile your system OpenSSL
+with support for legacy protocols such as SSLv2 and SSLv3 then follow the
+instuctions below.
+
 Note that many modern distros (including Debian) ship with a version of OpenSSL
 that disables support for SSLv2 ciphers. If `sslscan` is compiled on one of
 these distros, it will not be able to detect SSLv2.
