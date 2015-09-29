@@ -10,6 +10,9 @@ ifeq ($(GIT_VERSION),)
   GIT_VERSION = $(shell grep -E -o -m 1 "[0-9]+\.[0-9]+\.[0-9]+" Changelog)
 endif
 
+# Detect OS
+OS := $(shell uname)
+
 SRCS      = sslscan.c
 BINPATH   = $(DESTDIR)/usr/bin/
 MANPATH   = $(DESTDIR)/usr/share/man/
@@ -53,11 +56,22 @@ uninstall:
 openssl/Makefile:
 	[ -d openssl -a -d openssl/.git ] && true || git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_2-stable
 
+# Need to build OpenSSL differently on OSX
+ifeq ($(OS), Darwin)
+openssl/libcrypto.a: openssl/Makefile
+	cd ./openssl; ./Configure darwin64-x86_64-cc
+	$(MAKE) -C openssl depend
+	$(MAKE) -C openssl all
+	$(MAKE) -C openssl test
+
+# Any other *NIX platform
+else
 openssl/libcrypto.a: openssl/Makefile
 	cd ./openssl; ./config no-shares
 	$(MAKE) -C openssl depend
 	$(MAKE) -C openssl all
 	$(MAKE) -C openssl test
+endif
 
 static: openssl/libcrypto.a
 	$(MAKE) sslscan STATIC_BUILD=TRUE
