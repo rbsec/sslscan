@@ -39,6 +39,14 @@ endif
 .PHONY: sslscan clean
 
 all: sslscan
+	@echo
+	@echo "==========="
+	@echo "| WARNING |"
+	@echo "==========="
+	@echo
+	@echo "Building against system OpenSSL. Legacy protocol checks may not be possible."
+	@echo "It is recommended that you statically build sslscan with  \`make static\`."
+	@echo
 
 sslscan: $(SRCS)
 	$(CC) -o $@ ${WARNINGS} ${LDFLAGS} ${CFLAGS} ${CPPFLAGS} ${DEFINES} ${SRCS} ${LIBS}
