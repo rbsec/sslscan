@@ -12,7 +12,7 @@ Fix XMPP scans that do not support StartTLS:
 Add HTML report generation
 Add diff between reported and actually supported ciphers
 Make a Debian package
-We should explictly check for things that may be NULL; the original author was not very careful.
+We should explicitly check for things that may be NULL; the original author was not very careful.
 Perhaps write a GUI for people who are console adverse?
 Compare with http://www.thesprawl.org/memdump/?entry=7
 Finally, we should send a diff from 1.8.2 to the upstream developer

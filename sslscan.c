@@ -424,7 +424,7 @@ int tcpConnect(struct sslCheckOptions *options)
             return 0;
 
         if (strstr(buffer, " 670 ") || strstr(buffer, ":STARTTLS successful")) {
-            printf_verbose("STARTLS IRC sertup complete.\nServer reported %s\n", buffer);
+            printf_verbose("STARTLS IRC setup complete.\nServer reported %s\n", buffer);
         } else {
             printf_verbose("STARTLS IRC setup not complete.\nServer reported %s\n", buffer);
         }
@@ -516,7 +516,7 @@ int loadCerts(struct sslCheckOptions *options)
         SSL_CTX_set_default_passwd_cb(options->ctx, password_callback);
     }
 
-    // Seperate Certs and PKey Files...
+    // Separate Certs and PKey Files...
     if ((options->clientCertsFile != 0) && (options->privateKeyFile != 0))
     {
         // Load Cert...
@@ -602,7 +602,7 @@ int loadCerts(struct sslCheckOptions *options)
     {
         if (!SSL_CTX_check_private_key(options->ctx))
         {
-            printf("%s    Prvate key does not match certificate.%s\n", COL_RED, RESET);
+            printf("%s    Private key does not match certificate.%s\n", COL_RED, RESET);
             return false;
         }
         else
@@ -654,7 +654,7 @@ void tls_reneg_init(struct sslCheckOptions *options)
 
     long version = SSLeay();
     if (version >= 0x009080c0L && version < 0x009080d0L) {
-        printf_verbose("OpenSSL %s looks like version 0.9.8l; I will try SSL3_FLAGS to enable renegotation.\n",
+        printf_verbose("OpenSSL %s looks like version 0.9.8l; I will try SSL3_FLAGS to enable renegotiation.\n",
             SSLeay_version(SSLEAY_VERSION));
         use_unsafe_renegotiation_flag = 1;
         use_unsafe_renegotiation_op = 1;
@@ -885,7 +885,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                             if( renOut->secure )
                             {
                                 // If it supports secure renegotiations,
-                                // it should have renegotioation support in general
+                                // it should have renegotiation support in general
                                 renOut->supported = true;
                                 status = true;
                             }
@@ -893,10 +893,10 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                             {
 #endif
                                 // We can't assume that just because the secure renegotiation
-                                // support failed the server doesn't support insecure renegotiationsÂ·
+                                // support failed the server doesn't support insecure renegotiations·
 
                                 // assume ssl is connected and error free up to here
-                                //setBlocking(ssl); // this is unnecessary if it is already blockingÂ·
+                                //setBlocking(ssl); // this is unnecessary if it is already blocking·
                                 printf_verbose("Attempting SSL_renegotiate(ssl)\n");
                                 SSL_renegotiate(ssl); // Ask to renegotiate the connection
                                 // This hangs when an 'encrypted alert' is sent by the server
@@ -1093,7 +1093,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
             {
                 break;
             }
-            // Sucessful response
+            // Successful response
             else if (typ == 24 && ln > 3)
             {
                 printf("%svulnerable%s to heartbleed\n", COL_RED, RESET);
@@ -1877,7 +1877,7 @@ int ocspRequest(struct sslCheckOptions *options)
 #endif
         else {
             printf_verbose("sslMethod = TLSv1_method()\n");
-            printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
+            printf_verbose("If server doesn't support TLSv1.0, manually specify TLS version\n");
             sslMethod = TLSv1_method();
         }
         options->ctx = SSL_CTX_new(sslMethod);
@@ -1943,7 +1943,7 @@ int ocspRequest(struct sslCheckOptions *options)
                         else
                         {
                             printf("\n%sFailed to connect to get OCSP status.%s\n", COL_RED, RESET);
-                            printf("Most likley cause is server not supporting %s, try manually specifying version\n", printableSslMethod(sslMethod));
+                            printf("Most likely cause is server not supporting %s, try manually specifying version\n", printableSslMethod(sslMethod));
                         }
                         // Free SSL object
                         SSL_free(ssl);
