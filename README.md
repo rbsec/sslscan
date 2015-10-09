@@ -107,7 +107,7 @@ above for statically building against OpenSSL.
 It is recommended that you statically build sslscan using the instructions listed
 above. If this is not an option and you want to compile your system OpenSSL
 with support for legacy protocols such as SSLv2 and SSLv3 then follow the
-instuctions below.
+instructions below.
 
 Note that many modern distros (including Debian) ship with a version of OpenSSL
 that disables support for SSLv2 ciphers. If `sslscan` is compiled on one of
