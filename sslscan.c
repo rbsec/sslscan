@@ -1196,6 +1196,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     char buffer[50];
     int resultSize = 0;
     int cipherbits;
+    uint32_t cipherid;
     const SSL_CIPHER *sslCipherPointer;
     const char *cleanSslMethod = printableSslMethod(sslMethod);
 
@@ -1243,6 +1244,10 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     printf_verbose("SSL_get_error(ssl, cipherStatus) said: %d\n", SSL_get_error(ssl, cipherStatus));
                     return false;
                 }
+
+		cipherid = SSL_CIPHER_get_id(sslCipherPointer);
+		cipherid = cipherid & 0x00ffffff;  // remove first byte which is the version (0x03 for TLSv1/SSLv3)
+
                 // Show Cipher Status
                 printf_xml("  <cipher status=\"");
                 if (cipherStatus == 1)
@@ -1344,7 +1349,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     tempInt--;
                     printf(" ");
                 }
-                printf_xml(" bits=\"%d\" cipher=\"%s\"", cipherbits, sslCipherPointer->name);
+                printf_xml(" bits=\"%d\" cipher=\"%s\" id=\"0x%x\"", cipherbits, sslCipherPointer->name, cipherid);
                 if (strstr(sslCipherPointer->name, "NULL"))
                 {
                     printf("%s%-29s%s", COL_RED_BG, sslCipherPointer->name, RESET);
@@ -1373,6 +1378,9 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 {
                     printf("%-29s", sslCipherPointer->name);
                 }
+
+		printf("%s (0x%06x)%s", COL_DARK_GRAY, cipherid, RESET);
+
                 if (options->cipher_details == true)
                 {
                     ssl_print_tmp_key(options, ssl);
