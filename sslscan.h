@@ -70,7 +70,6 @@ const char *COL_YELLOW = "[33m";
 const char *COL_BLUE = "[1;34m";
 const char *COL_GREEN = "[32m";
 const char *COL_PURPLE = "[35m";
-const char *COL_DARK_GRAY = "[90m";
 const char *COL_RED_BG = "[41m";
 #else
 const char *RESET = "";
@@ -79,7 +78,6 @@ const char *COL_YELLOW = "";
 const char *COL_BLUE = "";
 const char *COL_GREEN = "";
 const char *COL_PURPLE = "";
-const char *COL_DARK_GRAY = "";
 const char *COL_RED_BG = "";
 #endif
 
@@ -118,6 +116,7 @@ struct sslCheckOptions
     int checkCertificate;
     int showTrustedCAs;
     int showClientCiphers;
+    int showCipherIds;
     int ciphersuites;
     int reneg;
     int compression;
