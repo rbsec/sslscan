@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version: 1.11.1
+Date   : 11/12/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Show cipher IDs with --show-cipher-ids (credit maurice2k)
+         > Warn when building agsinst system OpenSSL rather than statically
+         > Allow building statically on OSX (experimental)
+
 Version: 1.11.0
 Date   : 24/09/2015
 Author : rbsec <robin@rbsec.net>
