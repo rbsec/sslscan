@@ -1194,8 +1194,10 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     int tempInt;
     char requestBuffer[200];
     char buffer[50];
+    char hexCipherId[10];
     int resultSize = 0;
     int cipherbits;
+    uint32_t cipherid;
     const SSL_CIPHER *sslCipherPointer;
     const char *cleanSslMethod = printableSslMethod(sslMethod);
 
@@ -1243,6 +1245,10 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     printf_verbose("SSL_get_error(ssl, cipherStatus) said: %d\n", SSL_get_error(ssl, cipherStatus));
                     return false;
                 }
+
+		cipherid = SSL_CIPHER_get_id(sslCipherPointer);
+		cipherid = cipherid & 0x00ffffff;  // remove first byte which is the version (0x03 for TLSv1/SSLv3)
+
                 // Show Cipher Status
                 printf_xml("  <cipher status=\"");
                 if (cipherStatus == 1)
@@ -1344,7 +1350,15 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     tempInt--;
                     printf(" ");
                 }
-                printf_xml(" bits=\"%d\" cipher=\"%s\"", cipherbits, sslCipherPointer->name);
+
+                sprintf(hexCipherId, "0x%X", cipherid);
+
+                if (options->showCipherIds == true)
+                {
+                    printf("%8s ", hexCipherId);
+                }
+
+                printf_xml(" bits=\"%d\" cipher=\"%s\" id=\"%s\"", cipherbits, sslCipherPointer->name, hexCipherId);
                 if (strstr(sslCipherPointer->name, "NULL"))
                 {
                     printf("%s%-29s%s", COL_RED_BG, sslCipherPointer->name, RESET);
@@ -1373,6 +1387,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 {
                     printf("%-29s", sslCipherPointer->name);
                 }
+
                 if (options->cipher_details == true)
                 {
                     ssl_print_tmp_key(options, ssl);
@@ -3062,6 +3077,7 @@ int main(int argc, char *argv[])
     options.showTrustedCAs = false;
     options.checkCertificate = true;
     options.showClientCiphers = false;
+    options.showCipherIds = false;
     options.ciphersuites = true;
     options.reneg = true;
     options.compression = true;
@@ -3123,6 +3139,12 @@ int main(int argc, char *argv[])
         // Show supported client ciphers
         else if (strcmp("--show-ciphers", argv[argLoop]) == 0)
             options.showClientCiphers = true;
+
+        // Show ciphers ids
+        else if (strcmp("--show-cipher-ids", argv[argLoop]) == 0)
+        {
+            options.showCipherIds = true;
+        }
 
         // Show client auth trusted CAs
         else if (strcmp("--show-client-cas", argv[argLoop]) == 0)
@@ -3408,6 +3430,7 @@ int main(int argc, char *argv[])
             printf("  %s--no-check-certificate%s  Don't warn about weak certificate algorithm or keys\n", COL_GREEN, RESET);
             printf("  %s--show-client-cas%s    Show trusted CAs for TLS client auth\n", COL_GREEN, RESET);
             printf("  %s--show-ciphers%s       Show supported client ciphers\n", COL_GREEN, RESET);
+            printf("  %s--show-cipher-ids%s    Show cipher ids\n", COL_GREEN, RESET);
 #ifndef OPENSSL_NO_SSL2
             printf("  %s--ssl2%s               Only check SSLv2 ciphers\n", COL_GREEN, RESET);
 #endif

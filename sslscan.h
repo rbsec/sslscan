@@ -116,6 +116,7 @@ struct sslCheckOptions
     int checkCertificate;
     int showTrustedCAs;
     int showClientCiphers;
+    int showCipherIds;
     int ciphersuites;
     int reneg;
     int compression;
