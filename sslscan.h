@@ -62,7 +62,7 @@
 #define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
 
 // Colour Console Output...
-#if !defined(__WIN32__)
+#if !defined(_WIN32)
 // Always better to do "const char RESET[] = " because it saves relocation records.
 const char *RESET = "[0m";            // DEFAULT
 const char *COL_RED = "[31m";
@@ -81,6 +81,14 @@ const char *COL_PURPLE = "";
 const char *COL_RED_BG = "";
 #endif
 
+#ifdef _WIN32
+    #define SLEEPMS(ms) Sleep(ms);
+#else
+    #define SLEEPMS(ms) do {                    \
+        struct timeval wait = { 0, ms*1000 };   \
+        select(0, NULL, NULL, NULL, &wait);     \
+    } while(0)
+#endif
 
 const char *program_banner = "                   _\n"
                              "           ___ ___| |___  ___ __ _ _ __\n"
@@ -104,37 +112,43 @@ struct sslCheckOptions
     // Program Options...
     char host[512];
     int port;
-    int noFailed;
     int showCertificate;
     int checkCertificate;
+    int showTrustedCAs;
     int showClientCiphers;
+    int showCipherIds;
     int ciphersuites;
     int reneg;
     int compression;
     int heartbleed;
     int starttls_ftp;
     int starttls_imap;
+    int starttls_irc;
     int starttls_pop3;
     int starttls_smtp;
     int starttls_xmpp;
+    int xmpp_server;
     int sslVersion;
     int targets;
     int sslbugs;
     int http;
     int rdp;
     int verbose;
+    int cipher_details;
     int ipv4;
     int ipv6;
+    int ocspStatus;
+    char cipherstring[65536];
 
     // File Handles...
     FILE *xmlOutput;
 
     // TCP Connection Variables...
-    struct hostent *hostStruct;
+    short h_addrtype;
     struct sockaddr_in serverAddress;
     struct sockaddr_in6 serverAddress6;
     struct timeval timeout;
-    struct timespec sleep;
+    unsigned int sleep;
 
     // SSL Variables...
     SSL_CTX *ctx;
@@ -169,9 +183,11 @@ ssize_t sendString(int, const char[]);
 int readOrLogAndClose(int, void *, size_t, const struct sslCheckOptions *);
 const char *printableSslMethod(const SSL_METHOD *);
 static int password_callback(char *, int, int, void *);
+int ssl_print_tmp_key(struct sslCheckOptions *, SSL *s);
+static int ocsp_resp_cb(SSL *s, void *arg);
+int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent);
 
 int tcpConnect(struct sslCheckOptions *);
-int populateCipherList(struct sslCheckOptions *, const SSL_METHOD *);
 
 // Tests
 void tls_reneg_init(struct sslCheckOptions *);
@@ -182,12 +198,14 @@ int freeRenegotiationOutput(struct renegotiationOutput *);
 int testCompression(struct sslCheckOptions *, const SSL_METHOD *);
 int testRenegotiation(struct sslCheckOptions *, const SSL_METHOD *);
 int testHeartbleed(struct sslCheckOptions *, const SSL_METHOD *);
-int testCipher(struct sslCheckOptions *, struct sslCipher *);
+int testCipher(struct sslCheckOptions *, const SSL_METHOD *);
+int testProtocolCiphers(struct sslCheckOptions *, const SSL_METHOD *);
+int testConnection(struct sslCheckOptions *);
 int testHost(struct sslCheckOptions *);
 
 int loadCerts(struct sslCheckOptions *);
-int defaultCipher(struct sslCheckOptions *, const SSL_METHOD *);
-int checkCertificate(struct sslCheckOptions *);
+int checkCertificateProtocols(struct sslCheckOptions *, const SSL_METHOD *);
+int checkCertificate(struct sslCheckOptions *, const SSL_METHOD *);
 int showCertificate(struct sslCheckOptions *);
 
 #endif

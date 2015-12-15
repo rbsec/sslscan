@@ -1,6 +1,119 @@
 Changelog
 =========
 
+Version: 1.11.1
+Date   : 11/12/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Show cipher IDs with --show-cipher-ids (credit maurice2k)
+         > Warn when building agsinst system OpenSSL rather than statically
+         > Allow building statically on OSX (experimental)
+
+Version: 1.11.0
+Date   : 24/09/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Rewrote ciphersuite scanning engine to be much faster
+         > Ciphers are now output in order of server preference
+         > Most secure protocols are scanned first (TLSv1.2 -> SSLv2)
+         > All protocols are tried when trying to obtain the certificate
+         > Obselete --failed and --no-preferred-ciphers options removed
+         > Flag TLSv1.0 ciphers in output
+         > Flag 56 bit ciphers as red, not yellow
+         > Fix building on OpenBSD (credit Stuart Henderson)
+         > Fix incorrect output when server prefers NULL ciphers
+
+Version: 1.10.6
+Date   : 06/08/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Fix --sleep only working for whole seconds (credit dmke)
+         > Fix compiling against OpenSSL 0.9.8 (credit aclemons)
+         > Flag expired certificates (credit jacktrice)
+
+Version: 1.10.5
+Date   : 07/07/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Added IRC STARTTLS support (--starttls-irc, credit jkent)
+         > Highlight weak RSA keys in output
+         > Added option to show OCSP status (--ocsp, credit kelbyludwig)
+         > Fix a segfault with certificate parsing
+
+Version: 1.10.4
+Date   : 21/06/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Display cipher details by default (hide with --no-cipher-details)
+         > Fix scanning multiple targets if one fails (credit shellster)
+         > Fix bug with --no-color and --failed (credit yasulib)
+         > Minor bugfixes to output
+
+Version: 1.10.3
+Date   : 22/05/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Flag weak DHE keys in --cipher-details
+         > Report DHE key bits in XML
+         > Change ECDHE key bits to "ecdhebits" rather than "dhebits" in XML
+
+Version: 1.10.2
+Date   : 12/05/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Wrap TLS extensions in CDATA blocks in XML output.
+         > Fix incorrect TLS versions in heartbleed checks
+
+Version: 1.10.1
+Date   : 06/04/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Fix XML output to use "TLSv1.0" in preferred ciphers, not "TLSv1"
+         > Added --cipher-details option to display EC curves and EDH keys
+         Note that this feature requires OpenSSL >= 1.0.2
+         > Update static build options to compile against OpenSSL 1.0.2
+
+Version: 1.10.0
+Date   : 28/02/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Experimental build support (credit jtesta).
+         > Support XMPP server-to-server connections (--xmpp-server).
+
+Version: 1.9.11
+Date   : 03/02/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Makefile updates to assist packaging in Kali.
+         > Fix missing static build number when compiling from tarball.
+
+Version: 1.9.10
+Date   : 24/01/2015
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Display certificate CN, Altnames and Issuer in default output.
+         > Flag certificates where CN == issuer, or CN = *
+         > Highlight GCM ciphersuites as good
+
+Version: 1.9.9
+Date   : 22/01/2015
+Author : kyprizel <eldar@kyprizel.net>
+Changes: The following are a list of changes
+         > Added --show-client-cas option to determine trusted CAs
+         for client authentication
+         > Added --no-preferred option to disable any output except specified
+
+Version: 1.9.8
+Date   : 08/12/2014
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Added --sleep option to pause between request
+         > Only check for heartbleed against specified TLS version
+         > Added --sleep option to pause between request
+         > Fix issues compiling against OpenSSL 0.9.8
+         > Highlight CBC ciphersuites on SSLv3 (POODLE)
+         > Experimental build support on OSX (credit MikeSchroll)
+
 Version: 1.9.7
 Date   : 26/10/2014
 Author : rbsec <robin@rbsec.net>

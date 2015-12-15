@@ -54,21 +54,26 @@ Display certificate information.
 .B \-\-no\-check\-certificate
 Don't flag certificates signed with weak algorithms (MD5 and SHA-1) or short (<2048 bit) RSA keys
 .TP
-.B \-\-failed
-Show rejected ciphers
-(default is to listing only accepted ciphers)
+.B \-\-show\-client\-cas
+Show a list of CAs that the server allows for client authentication. Will be blank for IIS/Schannel servers.
+.TP
+.B \-\-show\-ciphers
+Show a complete list of ciphers supported by sslscan
+.TP
+.B \-\-show\-cipher-ids
+Print the hexadecimal cipher IDs
 .TP
 .B \-\-ssl2
 .br
 Only check SSLv2 ciphers
 .br
-Note that this option may not be availalbe if system OpenSSL does not support SSLv2. Either build OpenSSL statically or rebuild your system OpenSSL with SSLv2 support. See the readme for further details.
+Note that this option may not be available if system OpenSSL does not support SSLv2. Either build OpenSSL statically or rebuild your system OpenSSL with SSLv2 support. See the readme for further details.
 .TP
 .B \-\-ssl3
 .br
 Only check SSLv3 ciphers
 .br
-Note that this option may not be availalbe if system OpenSSL does not support SSLv3. Either build OpenSSL statically or rebuild your system OpenSSL with SSLv3 support. See the readme for further details.
+Note that this option may not be available if system OpenSSL does not support SSLv3. Either build OpenSSL statically or rebuild your system OpenSSL with SSLv3 support. See the readme for further details.
 .TP
 .B \-\-tls10
 .br
@@ -86,6 +91,10 @@ Only check TLS 1.2 ciphers
 .br
 Only check TLS ciphers (versions 1.0, 1.1 and 1.2)
 .TP
+.B \-\-ocsp
+.br
+Display OCSP status
+.TP
 .B \-\-pk=<file>
 A file containing the private key or
 a PKCS#12 file containing a private
@@ -99,7 +108,7 @@ The password for the private key or PKCS#12 file
 A file containing PEM/ASN1 formatted client certificates
 .TP
 .B \-\-no\-ciphersuites
-Only check for supported SSL/TLS versions, not ciphersuites
+Do not scan for supported ciphersuites.
 .TP
 .B \-\-no\-renegotiation
 Do not check for secure TLS renegotiation
@@ -112,6 +121,9 @@ Do not check for OpenSSL Heartbleed (CVE-2014-0160)
 .TP
 .B \-\-starttls\-ftp
 STARTTLS setup for FTP
+.TP
+.B \-\-starttls\-irc
+STARTTLS setup for IRC
 .TP
 .B \-\-starttls\-imap
 STARTTLS setup for IMAP
@@ -127,14 +139,21 @@ Note that some servers hang when we try to use SSLv3 ciphers over STARTTLS. If y
 .B \-\-starttls\-xmpp
 STARTTLS setup for XMPP
 .TP
+.B \-\-xmpp-server
+Perform a server-to-server XMPP connection. Try this if --starttls-xmpp is failing.
+.TP
 .B \-\-rdp
 .br
 Send RDP preamble before starting scan.
 .TP
-.B \-\-html
+.B \-\-http
 .br
-Makes a HTML request after a successful connection and returns
+Makes a HTTP request after a successful connection and returns
 the server response code
+.TP
+.B \-\-no\-cipher\-details
+.br
+Hide NIST EC curve name and EDH/RSA key length. Requires OpenSSL >= 1.0.2 (so if you distro doesn't ship this, you'll need to statically build sslscan).
 .TP
 .B \-\-bugs
 .br
@@ -146,7 +165,7 @@ Set socket timeout. Useful for hosts that fail to respond to ciphers they don't 
 .TP
 .B \-\-sleep=<msec>
 .br
-Pause between connections. Useful on STARTTLS SMTP services, or anything else that's performing rate limiting. Defaultis disalbed.
+Pause between connections. Useful on STARTTLS SMTP services, or anything else that's performing rate limiting. Default is disabled.
 .TP
 .B \-\-xml=<file>
 .br

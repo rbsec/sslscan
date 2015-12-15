@@ -1,0 +1,43 @@
+# If we're in Linux, lets see if we can find the path to Mingw automatically...
+ifeq ($(shell uname), Linux)
+  MINGW32=$(shell which i586-mingw32msvc-gcc)
+  ifneq ($(MINGW32),)
+    CC=$(MINGW32)
+  endif
+
+  MINGW64=$(shell which x86_64-w64-mingw32-gcc)
+  ifneq ($(MINGW64),)
+    CC=$(MINGW64)
+  endif
+endif
+
+ifndef CC
+  CC=gcc
+endif
+
+.PHONY: clean
+
+# Enable security options like stack protectors and variable formatting checks.
+SECURITY_OPTIONS=-fstack-protector-all -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security
+
+# Turn on linker optimizations, and DEP support (--nxcompat)
+LINK_OPTIONS=-Wl,-O1 -Wl,--discard-all -Wl,--no-undefined -Wl,--dynamicbase -Wl,--nxcompat -static
+
+# Set ARCHITECTURE to either x86 or x86_64...
+ARCHITECTURE=32-bit
+ifeq ($(shell $(CC) -dumpmachine), x86_64-w64-mingw32)
+  ARCHITECTURE=64-bit
+endif
+
+# Set the version string for the program.
+VERSION = "$(shell grep -E -o -m 1 "[0-9]+\.[0-9]+\.[0-9]+" Changelog) Windows $(ARCHITECTURE) (Mingw)"
+
+
+all: sslscan
+
+sslscan: sslscan.c
+	$(CC) -I$(OPENSSL_PATH)/include -DVERSION=\"$(VERSION)\" $(DEFINES) $(SECURITY_OPTIONS) $(LINK_OPTIONS) -o sslscan.exe sslscan.c $(OPENSSL_PATH)/libssl.a $(OPENSSL_PATH)/libcrypto.a -lws2_32 -lgdi32
+	strip sslscan.exe
+
+clean:
+	rm -f *.o sslscan.exe
