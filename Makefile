@@ -36,7 +36,7 @@ LDFLAGS   += -L/usr/local/ssl/lib/ -L/usr/local/opt/openssl/lib
 CFLAGS    += -I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/ -I/usr/local/opt/openssl/include
 endif
 
-.PHONY: sslscan clean
+.PHONY: all sslscan clean install uninstall static
 
 all: sslscan
 	@echo
@@ -51,7 +51,7 @@ all: sslscan
 sslscan: $(SRCS)
 	$(CC) -o $@ ${WARNINGS} ${LDFLAGS} ${CFLAGS} ${CPPFLAGS} ${DEFINES} ${SRCS} ${LIBS}
 
-install:
+install: sslscan
 	mkdir -p $(BINPATH)
 	mkdir -p $(MANPATH)man1/
 	cp sslscan $(BINPATH)
