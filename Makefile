@@ -14,8 +14,10 @@ endif
 OS := $(shell uname)
 
 SRCS      = sslscan.c
-BINPATH   = $(DESTDIR)/usr/bin/
-MANPATH   = $(DESTDIR)/usr/share/man/
+PREFIX    = /usr
+BINDIR    = $(PREFIX)/bin
+MANDIR    = $(PREFIX)/share/man
+MAN1DIR   = $(MANDIR)/man1
 
 WARNINGS  = -Wall -Wformat=2
 DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
@@ -52,14 +54,14 @@ sslscan: $(SRCS)
 	$(CC) -o $@ ${WARNINGS} ${LDFLAGS} ${CFLAGS} ${CPPFLAGS} ${DEFINES} ${SRCS} ${LIBS}
 
 install:
-	mkdir -p $(BINPATH)
-	mkdir -p $(MANPATH)man1/
-	cp sslscan $(BINPATH)
-	cp sslscan.1 $(MANPATH)man1/
+	mkdir -p $(DESTDIR)$(BINDIR)
+	mkdir -p $(DESTDIR)$(MAN1DIR)
+	cp sslscan $(DESTDIR)$(BINDIR)
+	cp sslscan.1 $(DESTDIR)$(MAN1DIR)
 
 uninstall:
-	rm -f $(BINPATH)sslscan
-	rm -f $(MANPATH)man1/sslscan.1
+	rm -f $(DESTDIR)$(BINDIR)/sslscan
+	rm -f $(DESTDIR)$(MAN1DIR)/sslscan.1
 
 openssl/Makefile:
 	[ -d openssl -a -d openssl/.git ] && true || git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_2-stable
