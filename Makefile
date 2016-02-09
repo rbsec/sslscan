@@ -38,7 +38,7 @@ LDFLAGS   += -L/usr/local/ssl/lib/ -L/usr/local/opt/openssl/lib
 CFLAGS    += -I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/ -I/usr/local/opt/openssl/include
 endif
 
-.PHONY: all sslscan clean install uninstall static 
+.PHONY: all sslscan clean install uninstall static opensslpull
 
 all: sslscan
 	@echo
@@ -63,25 +63,29 @@ uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/sslscan
 	rm -f $(DESTDIR)$(MAN1DIR)/sslscan.1
 
-openssl/Makefile:
-	[ -d openssl -a -d openssl/.git ] && true || git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_2-stable
+.openssl.is.fresh: opensslpull
+	true
+opensslpull:
+	if [ -d openssl -a -d openssl/.git ]; then \
+		cd ./openssl && git checkout OpenSSL_1_0_2-stable && git pull | grep -q "Already up-to-date." && [ -e ../.openssl.is.fresh ] || touch ../.openssl.is.fresh ; \
+	else \
+		git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_2-stable && touch ../.openssl.is.fresh ; \
+	fi
 
 # Need to build OpenSSL differently on OSX
 ifeq ($(OS), Darwin)
-openssl/libcrypto.a: openssl/Makefile
+openssl/Makefile: .openssl.is.fresh
 	cd ./openssl; ./Configure darwin64-x86_64-cc
-	$(MAKE) -C openssl depend
-	$(MAKE) -C openssl all
-	$(MAKE) -C openssl test
-
 # Any other *NIX platform
 else
-openssl/libcrypto.a: openssl/Makefile
+openssl/Makefile: .openssl.is.fresh
 	cd ./openssl; ./config no-shares
+endif
+
+openssl/libcrypto.a: openssl/Makefile
 	$(MAKE) -C openssl depend
 	$(MAKE) -C openssl all
 	$(MAKE) -C openssl test
-endif
 
 static: openssl/libcrypto.a
 	$(MAKE) sslscan STATIC_BUILD=TRUE
@@ -89,3 +93,4 @@ static: openssl/libcrypto.a
 clean:
 	if [ -d openssl -a -d openssl/.git ]; then ( cd ./openssl; git clean -fx ); fi;
 	rm -f sslscan
+	rm -f .openssl.is.fresh
