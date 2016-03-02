@@ -79,7 +79,7 @@ openssl/Makefile: .openssl.is.fresh
 # Any other *NIX platform
 else
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./config no-shares
+	cd ./openssl; ./config no-shares enable-ssl2
 endif
 
 openssl/libcrypto.a: openssl/Makefile
