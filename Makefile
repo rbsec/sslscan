@@ -67,9 +67,9 @@ uninstall:
 	true
 opensslpull:
 	if [ -d openssl -a -d openssl/.git ]; then \
-		cd ./openssl && git checkout tags/OpenSSL_1_0_2f && git pull | grep -q "Already up-to-date." && [ -e ../.openssl.is.fresh ] || touch ../.openssl.is.fresh ; \
+		cd ./openssl && git checkout OpenSSL_1_0_2-stable && git pull | grep -q "Already up-to-date." && [ -e ../.openssl.is.fresh ] || touch ../.openssl.is.fresh ; \
 	else \
-		git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout tags/OpenSSL_1_0_2f && touch ../.openssl.is.fresh ; \
+		git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_2-stable && touch ../.openssl.is.fresh ; \
 	fi
 
 # Need to build OpenSSL differently on OSX
@@ -79,7 +79,7 @@ openssl/Makefile: .openssl.is.fresh
 # Any other *NIX platform
 else
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./config no-shares
+	cd ./openssl; ./config no-shares enable-weak-ssl-ciphers enable-ssl2
 endif
 
 openssl/libcrypto.a: openssl/Makefile
