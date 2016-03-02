@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version: 1.11.2
+Date   : 02/03/2016
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Makefile improvements
+         > Update OpenSSL from Git when statically building
+         > Build against OpenSSL 1.0.2f to keep EXPORT ciphers support
+
 Version: 1.11.1
 Date   : 11/12/2015
 Author : rbsec <robin@rbsec.net>
