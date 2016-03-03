@@ -645,6 +645,68 @@ int freeRenegotiationOutput( struct renegotiationOutput *myRenOut )
     return true;
 }
 
+void parseTarget(char *hostString, struct sslCheckOptions *options) {
+    int tempInt = 0;
+    size_t maxSize = strlen(hostString);
+    options->port = 0;
+
+    if (strncmp(hostString, "https://", 8) == 0)
+    {
+        // Strip https:// from the start of the hostname
+        memmove(hostString, hostString + 8, (maxSize - 8));
+        memset(hostString + (maxSize - 8), 0, 8);
+        maxSize = strlen(hostString);
+    }
+
+    int squareBrackets = false;
+    if (hostString[0] == '[')
+    {
+        squareBrackets = true;
+        // skip the square bracket
+        hostString++;
+    }
+
+    while ((hostString[tempInt] != 0) && ((squareBrackets == true && hostString[tempInt] != ']') || (squareBrackets == false && hostString[tempInt] != ':')))
+        tempInt++;
+
+    if (squareBrackets == true && hostString[tempInt] == ']')
+    {
+        hostString[tempInt] = 0;
+        if (tempInt < maxSize && hostString[tempInt + 1] == ':')
+        {
+            tempInt++;
+            hostString[tempInt] = 0;
+        }
+    }
+    else
+        hostString[tempInt] = 0;
+
+    strncpy(options->host, hostString, sizeof(options->host) - 1);
+
+    // Get port (if it exists)...
+    tempInt++;
+    if (tempInt < maxSize - 1)
+        (*options).port = atoi(hostString + tempInt);
+    else if (options->port == 0) {
+        if (options->starttls_ftp)
+            options->port = 21;
+        if (options->starttls_imap)
+            options->port = 143;
+        if (options->starttls_irc)
+            options->port = 6667;
+        if (options->starttls_pop3)
+            options->port = 110;
+        if (options->starttls_smtp)
+            options->port = 25;
+        if (options->starttls_xmpp)
+            options->port = 5222;
+        if (options->rdp)
+            options->port = 3389;
+        if (options->port == 0)
+            options->port = 443;
+    }
+}
+
 void tls_reneg_init(struct sslCheckOptions *options)
 {
     /* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
@@ -893,10 +955,10 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                             {
 #endif
                                 // We can't assume that just because the secure renegotiation
-                                // support failed the server doesn't support insecure renegotiations·
+                                // support failed the server doesn't support insecure renegotiations
 
                                 // assume ssl is connected and error free up to here
-                                //setBlocking(ssl); // this is unnecessary if it is already blocking·
+                                //setBlocking(ssl); // this is unnecessary if it is already blocking
                                 printf_verbose("Attempting SSL_renegotiate(ssl)\n");
                                 SSL_renegotiate(ssl); // Ask to renegotiate the connection
                                 // This hangs when an 'encrypted alert' is sent by the server
@@ -3055,8 +3117,6 @@ int main(int argc, char *argv[])
     struct sslCheckOptions options;
     struct sslCipher *sslCipherPointer;
     int argLoop;
-    int tempInt;
-    int maxSize;
     int xmlArg;
     int mode = mode_help;
     int msec;
@@ -3304,66 +3364,9 @@ int main(int argc, char *argv[])
 
             // Get host...
             // IPv6 [] address parsing by DinoTools/phibos
-            tempInt = 0;
-            char *hostString = argv[argLoop];
 
-            maxSize = strlen(hostString);
+            parseTarget(argv[argLoop], &options);
 
-            if (strncmp((char*)hostString, "https://", 8) == 0)
-            {
-                // Strip https:// from the start of the hostname
-                memmove(hostString, hostString + 8, (maxSize - 8));
-                memset(hostString + (maxSize - 8), 0, 8);
-                maxSize = strlen(hostString);
-            }
-
-            int squareBrackets = false;
-            if (hostString[0] == '[')
-            {
-                squareBrackets = true;
-                // skip the square bracket
-                hostString++;
-            }
-
-            while ((hostString[tempInt] != 0) && ((squareBrackets == true && hostString[tempInt] != ']') || (squareBrackets == false && hostString[tempInt] != ':')))
-                tempInt++;
-
-                if (squareBrackets == true && hostString[tempInt] == ']')
-                {
-                    hostString[tempInt] = 0;
-                    if (tempInt < maxSize && hostString[tempInt + 1] == ':')
-                    {
-                        tempInt++;
-                        hostString[tempInt] = 0;
-                    }
-                }
-                else
-                    hostString[tempInt] = 0;
-
-            strncpy(options.host, hostString, sizeof(options.host) -1);
-
-            // Get port (if it exists)...
-            tempInt++;
-            if (tempInt < maxSize - 1)
-                options.port = atoi(hostString + tempInt);
-            else if (options.port == 0) {
-                if (options.starttls_ftp)
-                    options.port = 21;
-                if (options.starttls_imap)
-                    options.port = 143;
-                if (options.starttls_irc)
-                    options.port = 6667;
-                if (options.starttls_pop3)
-                    options.port = 110;
-                if (options.starttls_smtp)
-                    options.port = 25;
-                if (options.starttls_xmpp)
-                    options.port = 5222;
-                if (options.rdp)
-                    options.port = 3389;
-                if (options.port == 0)
-                    options.port = 443;
-            }
         }
 
         // Not too sure what the user is doing...
@@ -3524,23 +3527,7 @@ int main(int argc, char *argv[])
                             if (strlen(line) != 0)
                             {
                                 // Get host...
-                                tempInt = 0;
-                                while ((line[tempInt] != 0) && (line[tempInt] != ':'))
-                                    tempInt++;
-                                line[tempInt] = 0;
-                                strncpy(options.host, line, sizeof(options.host) -1);
-
-                                // Get port (if it exists)...
-                                tempInt++;
-                                if (strlen(line + tempInt) > 0)
-                                {
-                                    options.port = atoi(line + tempInt);
-                                }
-                                // Otherwise assume 443
-                                else
-                                {
-                                    options.port = 443;
-                                }
+                                parseTarget(line, &options);
 
                                 // Test the host...
                                 if (testConnection(&options))

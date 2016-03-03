@@ -194,6 +194,7 @@ void tls_reneg_init(struct sslCheckOptions *);
 int outputRenegotiation(struct sslCheckOptions *, struct renegotiationOutput *);
 struct renegotiationOutput *newRenegotiationOutput(void);
 int freeRenegotiationOutput(struct renegotiationOutput *);
+void parseTarget(char *, struct sslCheckOptions *);
 
 int testCompression(struct sslCheckOptions *, const SSL_METHOD *);
 int testRenegotiation(struct sslCheckOptions *, const SSL_METHOD *);
