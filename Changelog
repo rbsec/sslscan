@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version: 1.11.3
+Date   : 03/03/2016
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Properly fix missing SSLv2 EXPORT ciphers by patching OpenSSL
+
 Version: 1.11.2
 Date   : 02/03/2016
 Author : rbsec <robin@rbsec.net>

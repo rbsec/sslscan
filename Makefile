@@ -71,6 +71,7 @@ opensslpull:
 	else \
 		git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_2-stable && touch ../.openssl.is.fresh ; \
 	fi
+	sed -i 's/# if 0/# if 1/g' openssl/ssl/s2_lib.c
 
 # Need to build OpenSSL differently on OSX
 ifeq ($(OS), Darwin)
