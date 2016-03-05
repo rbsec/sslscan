@@ -76,6 +76,9 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <openssl/ocsp.h>
+#ifndef OPENSSL_NO_COMP
+  #include <openssl/comp.h>
+#endif
 
 // If we're not compiling with Visual Studio, include unistd.h.  VS
 // doesn't have this header.
@@ -484,6 +487,7 @@ int tcpConnect(struct sslCheckOptions *options)
             return 0;
         }
     }
+
     // Return
     return socketDescriptor;
 }
@@ -744,18 +748,26 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         session = *SSL_get_session(ssl);
 
 #ifndef OPENSSL_NO_COMP
-                        printf_xml("  <compression supported=\"%d\" />\n",
-                            session.compress_meth);
-
-                        if (session.compress_meth == 0)
+                        // Make sure zlib is actually present
+                        if (COMP_zlib()->type != NID_undef)
                         {
-                            printf("Compression %sdisabled%s\n\n", COL_GREEN, RESET);
+                            printf_xml("  <compression supported=\"%d\" />\n",
+                                session.compress_meth);
+
+                            if (session.compress_meth == 0)
+                            {
+                                printf("Compression %sdisabled%s\n\n", COL_GREEN, RESET);
+                            }
+                            else
+                            {
+                                printf("Compression %senabled%s (CRIME)\n\n", COL_RED, RESET);
+                            }
                         }
                         else
-                        {
-                            printf("Compression %senabled%s (CRIME)\n\n", COL_RED, RESET);
-                        }
 #endif
+                        {
+                            printf("%sOpenSSL version does not support compression%s\n\n", COL_RED, RESET);
+                        }
 
                         // Disconnect SSL over socket
                         SSL_shutdown(ssl);
