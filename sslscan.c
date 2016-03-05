@@ -720,6 +720,11 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                     SSL_set_options(ssl, SSL_OP_LEGACY_SERVER_CONNECT);
 #endif
 
+#ifdef SSL_OP_NO_COMPRESSION
+                    // Make sure to clear the no compression flag
+                    SSL_clear_options(ssl, SSL_OP_NO_COMPRESSION);
+#endif
+
                    if (ssl != NULL)
                     {
                         // Connect socket and BIO
