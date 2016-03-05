@@ -127,6 +127,7 @@ struct sslCheckOptions
     int starttls_pop3;
     int starttls_smtp;
     int starttls_xmpp;
+    int starttls_psql;
     int xmpp_server;
     int sslVersion;
     int targets;

@@ -452,6 +452,27 @@ int tcpConnect(struct sslCheckOptions *options)
         printf_verbose("Server reported: %s\n", buffer);
     }
 
+    if (options->starttls_psql == true && tlsStarted == false)
+    {
+        unsigned char buffer;
+
+        tlsStarted = 1;
+
+        // Send SSLRequest packet
+        send(socketDescriptor, "\x00\x00\x00\x08\x04\xd2\x16\x2f", 8, 0);
+
+        // Read reply byte
+        if (1 != recv(socketDescriptor, &buffer, 1, 0)) {
+            printf_error("%s    ERROR: unexpected EOF reading from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+            return 0;
+        }
+
+        if (buffer != 'S') {
+            printf_error("%s    ERROR: server at %s:%d%s rejected TLS startup\n", COL_RED, options->host, options->port, RESET);
+            return 0;
+        }
+    }
+
     // Setup an RDP socket with preamble
     // Borrowed from https://labs.portcullis.co.uk/tools/ssl-cipher-suite-enum/
     if (options->rdp == true && tlsStarted == false)
@@ -3088,6 +3109,7 @@ int main(int argc, char *argv[])
     options.starttls_pop3 = false;
     options.starttls_smtp = false;
     options.starttls_xmpp = false;
+    options.starttls_psql = false;
     options.xmpp_server = false;
     options.verbose = false;
     options.cipher_details = true;
@@ -3230,6 +3252,11 @@ int main(int argc, char *argv[])
         // StartTLS... XMPP
         else if (strcmp("--starttls-xmpp", argv[argLoop]) == 0)
             options.starttls_xmpp = true;
+
+        // StartTLS... PSQL
+        else if (strcmp("--starttls-psql", argv[argLoop]) == 0)
+            options.starttls_psql = true;
+
 #ifndef OPENSSL_NO_SSL2
         // SSL v2 only...
         else if (strcmp("--ssl2", argv[argLoop]) == 0)
@@ -3359,6 +3386,8 @@ int main(int argc, char *argv[])
                     options.port = 25;
                 if (options.starttls_xmpp)
                     options.port = 5222;
+                if (options.starttls_psql)
+                    options.port = 5432;
                 if (options.rdp)
                     options.port = 3389;
                 if (options.port == 0)
@@ -3458,6 +3487,7 @@ int main(int argc, char *argv[])
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
+            printf("  %s--starttls-psql%s      STARTTLS setup for PSQL\n", COL_GREEN, RESET);
             printf("  %s--xmpp-server%s        Use a server-to-server XMPP handshake\n", COL_GREEN, RESET);
             printf("  %s--http%s               Test a HTTP connection\n", COL_GREEN, RESET);
             printf("  %s--rdp%s                Send RDP preamble before starting scan\n", COL_GREEN, RESET);
