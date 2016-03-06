@@ -30,7 +30,7 @@ ifeq ($(STATIC_BUILD), TRUE)
 PWD          = $(shell pwd)/openssl
 LDFLAGS      += -L${PWD}/
 CFLAGS       += -I${PWD}/include/ -I${PWD}/
-LIBS         = -lssl -lcrypto -ldl
+LIBS         = -lssl -lcrypto -ldl -lz
 GIT_VERSION  := $(GIT_VERSION)-static
 else
 # for dynamic linking
@@ -80,7 +80,7 @@ openssl/Makefile: .openssl.is.fresh
 # Any other *NIX platform
 else
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./config no-shares enable-weak-ssl-ciphers enable-ssl2
+	cd ./openssl; ./config no-shares enable-weak-ssl-ciphers enable-ssl2 zlib
 endif
 
 openssl/libcrypto.a: openssl/Makefile
