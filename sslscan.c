@@ -766,7 +766,8 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         else
 #endif
                         {
-                            printf("%sOpenSSL version does not support compression%s\n\n", COL_RED, RESET);
+                            printf("%sOpenSSL version does not support compression%s\n", COL_RED, RESET);
+                            printf("%sRebuild with zlib1g-dev package for zlib support%s\n\n", COL_RED, RESET);
                         }
 
                         // Disconnect SSL over socket
