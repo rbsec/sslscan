@@ -3394,21 +3394,21 @@ int main(int argc, char *argv[])
             else if (options.port == 0) {
                 if (options.starttls_ftp)
                     options.port = 21;
-                if (options.starttls_imap)
+                else if (options.starttls_imap)
                     options.port = 143;
-                if (options.starttls_irc)
+                else if (options.starttls_irc)
                     options.port = 6667;
-                if (options.starttls_pop3)
+                else if (options.starttls_pop3)
                     options.port = 110;
-                if (options.starttls_smtp)
+                else if (options.starttls_smtp)
                     options.port = 25;
-                if (options.starttls_xmpp)
+                else if (options.starttls_xmpp)
                     options.port = 5222;
-                if (options.starttls_psql)
+                else if (options.starttls_psql)
                     options.port = 5432;
-                if (options.rdp)
+                else if (options.rdp)
                     options.port = 3389;
-                if (options.port == 0)
+                else
                     options.port = 443;
             }
         }
