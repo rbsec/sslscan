@@ -6,6 +6,7 @@ Date   : 06/03/2016
 Author : rbsec <robin@rbsec.net>
 Changes: The following are a list of changes
          > Fix compression detection (credit nuxi)
+         > Added support for PostgreSQL (credit nuxi)
 
 Version: 1.11.3
 Date   : 03/03/2016

@@ -3271,7 +3271,7 @@ int main(int argc, char *argv[])
         else if (strcmp("--starttls-xmpp", argv[argLoop]) == 0)
             options.starttls_xmpp = true;
 
-        // StartTLS... PSQL
+        // StartTLS... PostgreSQL
         else if (strcmp("--starttls-psql", argv[argLoop]) == 0)
             options.starttls_psql = true;
 
@@ -3505,7 +3505,7 @@ int main(int argc, char *argv[])
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
-            printf("  %s--starttls-psql%s      STARTTLS setup for PSQL\n", COL_GREEN, RESET);
+            printf("  %s--starttls-psql%s      STARTTLS setup for PostgreSQL\n", COL_GREEN, RESET);
             printf("  %s--xmpp-server%s        Use a server-to-server XMPP handshake\n", COL_GREEN, RESET);
             printf("  %s--http%s               Test a HTTP connection\n", COL_GREEN, RESET);
             printf("  %s--rdp%s                Send RDP preamble before starting scan\n", COL_GREEN, RESET);
