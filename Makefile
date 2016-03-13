@@ -53,11 +53,14 @@ all: sslscan
 sslscan: $(SRCS)
 	$(CC) -o $@ ${WARNINGS} ${LDFLAGS} ${CFLAGS} ${CPPFLAGS} ${DEFINES} ${SRCS} ${LIBS}
 
-install: sslscan
-	mkdir -p $(DESTDIR)$(BINDIR)
-	mkdir -p $(DESTDIR)$(MAN1DIR)
-	cp sslscan $(DESTDIR)$(BINDIR)
-	cp sslscan.1 $(DESTDIR)$(MAN1DIR)
+install:
+	@if [ ! -f sslscan ] ; then \
+		echo "\n=========\n| ERROR |\n========="; \
+		echo "Before installing you need to build sslscan with either \`make\` or \`make static\`\n"; \
+		exit 1; \
+	fi
+	install -D sslscan $(DESTDIR)$(BINDIR)/sslscan;
+	install -D sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/sslscan
