@@ -38,7 +38,7 @@ LDFLAGS   += -L/usr/local/ssl/lib/ -L/usr/local/opt/openssl/lib
 CFLAGS    += -I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/ -I/usr/local/opt/openssl/include
 endif
 
-.PHONY: all sslscan clean install uninstall static opensslpull
+.PHONY: all clean install uninstall static opensslpull
 
 all: sslscan
 	@echo
@@ -53,12 +53,7 @@ all: sslscan
 sslscan: $(SRCS)
 	$(CC) -o $@ ${WARNINGS} ${LDFLAGS} ${CFLAGS} ${CPPFLAGS} ${DEFINES} ${SRCS} ${LIBS}
 
-install:
-	@if [ ! -f sslscan ] ; then \
-		echo "\n=========\n| ERROR |\n========="; \
-		echo "Before installing you need to build sslscan with either \`make\` or \`make static\`\n"; \
-		exit 1; \
-	fi
+install: sslscan
 	install -D sslscan $(DESTDIR)$(BINDIR)/sslscan;
 	install -D sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
 
