@@ -23,7 +23,7 @@ WARNINGS  = -Wall -Wformat=2
 DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
 
 # for dynamic linking
-LIBS      = -lssl -lcrypto
+LIBS      = -lssl -lcrypto -ldl
 
 # for static linking
 ifeq ($(STATIC_BUILD), TRUE)
