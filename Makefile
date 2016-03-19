@@ -59,8 +59,13 @@ install:
 		echo "Before installing you need to build sslscan with either \`make\` or \`make static\`\n"; \
 		exit 1; \
 	fi
+ifeq ($(OS), Darwin)
+	install sslscan $(DESTDIR)$(BINDIR)/sslscan;
+	install sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
+else
 	install -D sslscan $(DESTDIR)$(BINDIR)/sslscan;
 	install -D sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
+endif
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/sslscan
@@ -80,7 +85,7 @@ opensslpull:
 # Need to build OpenSSL differently on OSX
 ifeq ($(OS), Darwin)
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./Configure darwin64-x86_64-cc
+	cd ./openssl; ./Configure enable-ssl2 enable-weak-ssl-ciphers zlib darwin64-x86_64-cc
 # Any other *NIX platform
 else
 openssl/Makefile: .openssl.is.fresh
