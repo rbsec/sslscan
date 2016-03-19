@@ -23,7 +23,7 @@ WARNINGS  = -Wall -Wformat=2
 DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
 
 # for dynamic linking
-LIBS      = -lssl -lcrypto
+LIBS      = -lssl -lcrypto -ldl
 
 # for static linking
 ifeq ($(STATIC_BUILD), TRUE)
@@ -34,8 +34,8 @@ LIBS         = -lssl -lcrypto -ldl -lz
 GIT_VERSION  := $(GIT_VERSION)-static
 else
 # for dynamic linking
-LDFLAGS   += -L/usr/local/ssl/lib/ -L/usr/local/opt/openssl/lib
-CFLAGS    += -I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/ -I/usr/local/opt/openssl/include
+LDFLAGS   += -L/usr/local/ssl/lib/ -L/usr/local/opt/openssl/lib -L/opt/local/lib
+CFLAGS    += -I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/ -I/usr/local/opt/openssl/include -I/opt/local/include/ -I/opt/local/include/openssl/
 endif
 
 .PHONY: all sslscan clean install uninstall static opensslpull
