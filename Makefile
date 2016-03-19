@@ -59,8 +59,13 @@ install:
 		echo "Before installing you need to build sslscan with either \`make\` or \`make static\`\n"; \
 		exit 1; \
 	fi
+ifeq ($(OS), Darwin)
+	install sslscan $(DESTDIR)$(BINDIR)/sslscan;
+	install sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
+else
 	install -D sslscan $(DESTDIR)$(BINDIR)/sslscan;
 	install -D sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
+endif
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/sslscan
