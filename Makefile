@@ -80,7 +80,7 @@ opensslpull:
 # Need to build OpenSSL differently on OSX
 ifeq ($(OS), Darwin)
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./Configure darwin64-x86_64-cc
+	cd ./openssl; ./Configure enable-ssl2 enable-weak-ssl-ciphers zlib darwin64-x86_64-cc
 # Any other *NIX platform
 else
 openssl/Makefile: .openssl.is.fresh
