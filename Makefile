@@ -77,7 +77,7 @@ opensslpull:
 	if [ -d openssl -a -d openssl/.git ]; then \
 		cd ./openssl && git checkout OpenSSL_1_0_2-stable && git pull | grep -q "Already up-to-date." && [ -e ../.openssl.is.fresh ] || touch ../.openssl.is.fresh ; \
 	else \
-		git clone https://github.com/openssl/openssl ./openssl && cd ./openssl && git checkout OpenSSL_1_0_2-stable && touch ../.openssl.is.fresh ; \
+		git clone --depth 1 -b OpenSSL_1_0_2-stable https://github.com/openssl/openssl ./openssl && cd ./openssl && touch ../.openssl.is.fresh ; \
 	fi
 	sed -i.bak 's/# if 0/# if 1/g' openssl/ssl/s2_lib.c
 	rm openssl/ssl/s2_lib.c.bak
