@@ -34,8 +34,8 @@ LIBS         = -lssl -lcrypto -ldl -lz
 GIT_VERSION  := $(GIT_VERSION)-static
 else
 # for dynamic linking
-LDFLAGS   += -L/usr/local/ssl/lib/ -L/usr/local/opt/openssl/lib -L/opt/local/lib
-CFLAGS    += -I/usr/local/ssl/include/ -I/usr/local/ssl/include/openssl/ -I/usr/local/opt/openssl/include -I/opt/local/include/ -I/opt/local/include/openssl/
+LDFLAGS   += -L/usr/local/lib -L/usr/local/ssl/lib -L/usr/local/opt/openssl/lib -L/opt/local/lib
+CFLAGS    += -I/usr/local/include -I/usr/local/ssl/include -I/usr/local/ssl/include/openssl -I/usr/local/opt/openssl/include -I/opt/local/include -I/opt/local/include/openssl
 endif
 
 .PHONY: all sslscan clean install uninstall static opensslpull
