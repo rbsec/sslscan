@@ -23,14 +23,20 @@ WARNINGS  = -Wall -Wformat=2
 DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
 
 # for dynamic linking
-LIBS      = -lssl -lcrypto -ldl
+LIBS      = -lssl -lcrypto
+ifneq ($(OS), FreeBSD)
+	LIBS += -ldl
+endif
 
 # for static linking
 ifeq ($(STATIC_BUILD), TRUE)
 PWD          = $(shell pwd)/openssl
 LDFLAGS      += -L${PWD}/
 CFLAGS       += -I${PWD}/include/ -I${PWD}/
-LIBS         = -lssl -lcrypto -ldl -lz
+LIBS         = -lssl -lcrypto -lz
+ifneq ($(OS), FreeBSD)
+	LIBS += -ldl
+endif
 GIT_VERSION  := $(GIT_VERSION)-static
 else
 # for dynamic linking
