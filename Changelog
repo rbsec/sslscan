@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version: 1.11.5
+Date   : 24/03/2016
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Fix bug in heartbleed check (credit nuxi)
+         > Makefile improvements and fixes for OSX and FreeBSD
+         > Optimize OpenSSL clone
+         > Implement --show-times to display handshake times in milliseconds
+
 Version: 1.11.4
 Date   : 06/03/2016
 Author : rbsec <robin@rbsec.net>
