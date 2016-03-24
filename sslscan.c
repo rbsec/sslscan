@@ -1239,6 +1239,12 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     uint32_t cipherid;
     const SSL_CIPHER *sslCipherPointer;
     const char *cleanSslMethod = printableSslMethod(sslMethod);
+    struct timeval tval_start, tval_end, tval_elapsed;
+    if (options->showTimes)
+    {
+        gettimeofday(&tval_start, NULL);
+    }
+
 
 
     // Create request buffer...
@@ -1431,6 +1437,17 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 {
                     ssl_print_tmp_key(options, ssl);
                 }
+                // Timing
+                if (options->showTimes)
+                {
+                    int msec;
+                    gettimeofday(&tval_end, NULL);
+                    timersub(&tval_end, &tval_start, &tval_elapsed);
+                    msec = tval_elapsed.tv_sec * 1000 + (int)tval_elapsed.tv_usec/1000;
+                    printf("%s %dms%s", COL_GREY, msec, RESET);
+                    printf_xml(" time=\"%d\"", msec);
+                }
+
                 printf("\n");
                 printf_xml(" />\n");
 
@@ -1463,6 +1480,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     // Could not connect
     else
         status = false;
+
 
     return status;
 }
@@ -3117,6 +3135,7 @@ int main(int argc, char *argv[])
     options.checkCertificate = true;
     options.showClientCiphers = false;
     options.showCipherIds = false;
+    options.showTimes = false;
     options.ciphersuites = true;
     options.reneg = true;
     options.compression = true;
@@ -3184,6 +3203,12 @@ int main(int argc, char *argv[])
         else if (strcmp("--show-cipher-ids", argv[argLoop]) == 0)
         {
             options.showCipherIds = true;
+        }
+
+        // Show handshake times
+        else if (strcmp("--show-times", argv[argLoop]) == 0)
+        {
+            options.showTimes = true;
         }
 
         // Show client auth trusted CAs
@@ -3478,6 +3503,7 @@ int main(int argc, char *argv[])
             printf("  %s--show-client-cas%s    Show trusted CAs for TLS client auth\n", COL_GREEN, RESET);
             printf("  %s--show-ciphers%s       Show supported client ciphers\n", COL_GREEN, RESET);
             printf("  %s--show-cipher-ids%s    Show cipher ids\n", COL_GREEN, RESET);
+            printf("  %s--show-times%s         Show handhake times in milliseconds\n", COL_GREEN, RESET);
 #ifndef OPENSSL_NO_SSL2
             printf("  %s--ssl2%s               Only check SSLv2 ciphers\n", COL_GREEN, RESET);
 #endif

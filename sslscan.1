@@ -63,6 +63,11 @@ Show a complete list of ciphers supported by sslscan
 .B \-\-show\-cipher-ids
 Print the hexadecimal cipher IDs
 .TP
+.B \-\-show\-times
+Show the time taken for each handshake in milliseconds. Note that only a single request is made with each cipher, and that the size of the ClientHello is not constant, so this should not be used for proper benchmarking or performance testing.
+
+You might want to also use \-\-no\-cipher\-details to make the output a bit clearer.
+.TP
 .B \-\-ssl2
 .br
 Only check SSLv2 ciphers
