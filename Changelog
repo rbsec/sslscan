@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version: 1.11.6
+Date   : 09/04/2016
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Re-eanble support for weak (<1024) DH keys in OpenSSL
+
 Version: 1.11.5
 Date   : 24/03/2016
 Author : rbsec <robin@rbsec.net>

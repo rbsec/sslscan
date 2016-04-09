@@ -66,8 +66,8 @@ install:
 		exit 1; \
 	fi
 ifeq ($(OS), Darwin)
-	install -d sslscan $(DESTDIR)$(BINDIR)/sslscan;
-	install -d sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
+	install sslscan $(DESTDIR)$(BINDIR)/sslscan;
+	install sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
 else
 	install -D sslscan $(DESTDIR)$(BINDIR)/sslscan;
 	install -D sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
@@ -85,8 +85,15 @@ opensslpull:
 	else \
 		git clone --depth 1 -b OpenSSL_1_0_2-stable https://github.com/openssl/openssl ./openssl && cd ./openssl && touch ../.openssl.is.fresh ; \
 	fi
+	# Re-enable SSLv2 EXPORT ciphers
 	sed -i.bak 's/# if 0/# if 1/g' openssl/ssl/s2_lib.c
 	rm openssl/ssl/s2_lib.c.bak
+	# Re-enable weak (<1024 bit) DH keys
+	sed -i.bak 's/dh_size < [0-9]\+/dh_size < 512/g' openssl/ssl/s3_clnt.c
+	rm openssl/ssl/s3_clnt.c.bak
+	# Break the weak DH key test so OpenSSL compiles
+	sed -i.bak 's/dhe512/zzz/g' openssl/test/testssl
+	rm openssl/test/testssl.bak
 
 # Need to build OpenSSL differently on OSX
 ifeq ($(OS), Darwin)
