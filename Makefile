@@ -87,6 +87,8 @@ opensslpull:
 	fi
 	sed -i.bak 's/# if 0/# if 1/g' openssl/ssl/s2_lib.c
 	rm openssl/ssl/s2_lib.c.bak
+	sed -i.bak 's/dh_size < [0-9]\+/dh_size < 768/g' openssl/ssl/s3_clnt.c
+	rm openssl/ssl/s3_clnt.c.bak
 
 # Need to build OpenSSL differently on OSX
 ifeq ($(OS), Darwin)
