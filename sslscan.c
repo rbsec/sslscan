@@ -919,7 +919,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
 #if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                             // SSL_get_secure_renegotiation_support() appeared first in OpenSSL 0.9.8m
-                            printf_verbose("Attempting secure_renegotiation_support()");
+                            printf_verbose("Attempting secure_renegotiation_support()\n");
                             renOut->secure = SSL_get_secure_renegotiation_support(ssl);
                             if( renOut->secure )
                             {
