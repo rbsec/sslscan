@@ -102,6 +102,9 @@ static int use_unsafe_renegotiation_op = 0;
  * SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION? */
 static int use_unsafe_renegotiation_flag = 0;
 
+/** Does output xml to stdout? */
+static int xml_to_stdout = 0;
+
 // Adds Ciphers to the Cipher List structure
 int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
@@ -1312,8 +1315,10 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     {
 
                         // Stdout BIO...
-                        stdoutBIO = BIO_new(BIO_s_file());
-                        BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                        if (!xml_to_stdout) {
+                            stdoutBIO = BIO_new(BIO_s_file());
+                            BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                        }
 
                         // HTTP Get...
                         SSL_write(ssl, requestBuffer, sizeof(requestBuffer));
@@ -1578,8 +1583,10 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                         if (cipherStatus == 1)
                         {
                             // Setup BIO's
-                            stdoutBIO = BIO_new(BIO_s_file());
-                            BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                            if (!xml_to_stdout) {
+                                stdoutBIO = BIO_new(BIO_s_file());
+                                BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                            }
                             if (options->xmlOutput)
                             {
                                 fileBIO = BIO_new(BIO_s_file());
@@ -1996,8 +2003,10 @@ int ocspRequest(struct sslCheckOptions *options)
                         if (cipherStatus == 1)
                         {
                             // Setup BIO's
-                            stdoutBIO = BIO_new(BIO_s_file());
-                            BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                            if (!xml_to_stdout) {
+                                stdoutBIO = BIO_new(BIO_s_file());
+                                BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                            }
                             if (options->xmlOutput)
                             {
                                 fileBIO = BIO_new(BIO_s_file());
@@ -2263,8 +2272,10 @@ int showCertificate(struct sslCheckOptions *options)
                         if (cipherStatus == 1)
                         {
                             // Setup BIO's
-                            stdoutBIO = BIO_new(BIO_s_file());
-                            BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                            if (!xml_to_stdout) {
+                                stdoutBIO = BIO_new(BIO_s_file());
+                                BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                            }
                             if (options->xmlOutput)
                             {
                                 fileBIO = BIO_new(BIO_s_file());
@@ -2700,8 +2711,10 @@ int showTrustedCAs(struct sslCheckOptions *options)
                         if (cipherStatus >= 0)
                         {
                             // Setup BIO's
-                            stdoutBIO = BIO_new(BIO_s_file());
-                            BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                            if (!xml_to_stdout) {
+                                stdoutBIO = BIO_new(BIO_s_file());
+                                BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
+                            }
                             if (options->xmlOutput)
                             {
                                 fileBIO = BIO_new(BIO_s_file());
@@ -3446,11 +3459,19 @@ int main(int argc, char *argv[])
     // Open XML file output...
     if ((xmlArg > 0) && (mode != mode_help))
     {
-        options.xmlOutput = fopen(argv[xmlArg] + 6, "w");
-        if (options.xmlOutput == NULL)
+        if (strcmp(argv[xmlArg] + 6, "-") == 0)
         {
-            printf_error("%sERROR: Could not open XML output file %s.%s\n", COL_RED, argv[xmlArg] + 6, RESET);
-            exit(0);
+            options.xmlOutput = stdout;
+            xml_to_stdout = 1;
+        }
+        else
+        {
+            options.xmlOutput = fopen(argv[xmlArg] + 6, "w");
+            if (options.xmlOutput == NULL)
+            {
+                printf_error("%sERROR: Could not open XML output file %s.%s\n", COL_RED, argv[xmlArg] + 6, RESET);
+                exit(0);
+            }
         }
 
         // Output file header...
@@ -3539,6 +3560,7 @@ int main(int argc, char *argv[])
             printf("  %s--timeout=<sec>%s      Set socket timeout. Default is 3s\n", COL_GREEN, RESET);
             printf("  %s--sleep=<msec>%s       Pause between connection request. Default is disabled\n", COL_GREEN, RESET);
             printf("  %s--xml=<file>%s         Output results to an XML file\n", COL_GREEN, RESET);
+            printf("                       <file> can be -, which means stdout\n");
             printf("  %s--version%s            Display the program version\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output\n", COL_GREEN, RESET);
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L

@@ -57,6 +57,7 @@
 #define tls_v12 6
 
 // Macros for various outputs
+#define printf(format, ...)         if (!xml_to_stdout) fprintf(stdout, format, ##__VA_ARGS__)
 #define printf_error(format, ...)   fprintf(stderr, format, ##__VA_ARGS__)
 #define printf_xml(format, ...)     if (options->xmlOutput) fprintf(options->xmlOutput, format, ##__VA_ARGS__)
 #define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
