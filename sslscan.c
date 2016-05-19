@@ -932,10 +932,10 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                             {
 #endif
                                 // We can't assume that just because the secure renegotiation
-                                // support failed the server doesn't support insecure renegotiations·
+                                // support failed the server doesn't support insecure renegotiations
 
                                 // assume ssl is connected and error free up to here
-                                //setBlocking(ssl); // this is unnecessary if it is already blocking·
+                                //setBlocking(ssl); // this is unnecessary if it is already blocking
                                 printf_verbose("Attempting SSL_renegotiate(ssl)\n");
                                 SSL_renegotiate(ssl); // Ask to renegotiate the connection
                                 // This hangs when an 'encrypted alert' is sent by the server
