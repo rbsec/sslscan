@@ -66,8 +66,10 @@ install:
 		exit 1; \
 	fi
 ifeq ($(OS), Darwin)
-	install -d sslscan $(DESTDIR)$(BINDIR)/sslscan;
-	install -d sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
+	install -d $(DESTDIR)$(BINDIR)/;
+	install sslscan $(DESTDIR)$(BINDIR)/sslscan;
+	install -d $(DESTDIR)$(MAN1DIR)/;
+	install sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
 else
 	install -D sslscan $(DESTDIR)$(BINDIR)/sslscan;
 	install -D sslscan.1 $(DESTDIR)$(MAN1DIR)/sslscan.1;
