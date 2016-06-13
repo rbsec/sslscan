@@ -5,7 +5,7 @@ Version: 1.11.7
 Date   : 13/06/2016
 Author : rbsec <robin@rbsec.net>
 Changes: The following are a list of changes
-         > Check for TLS Fallback Signaling Cipher Suite Value (SCSV)
+         > Check for TLS Fallback SCSV
          > Allow xml to be output on stdout (--xml=-)
 
 Version: 1.11.6

@@ -123,7 +123,7 @@ struct sslCheckOptions
     int showTimes;
     int ciphersuites;
     int reneg;
-    int scsv;
+    int fallback;
     int compression;
     int heartbleed;
     int starttls_ftp;
@@ -203,7 +203,7 @@ int freeRenegotiationOutput(struct renegotiationOutput *);
 
 int testCompression(struct sslCheckOptions *, const SSL_METHOD *);
 int testRenegotiation(struct sslCheckOptions *, const SSL_METHOD *);
-int testSCSV(struct sslCheckOptions *, const SSL_METHOD *);
+int testfallback(struct sslCheckOptions *, const SSL_METHOD *);
 int testHeartbleed(struct sslCheckOptions *, const SSL_METHOD *);
 int testCipher(struct sslCheckOptions *, const SSL_METHOD *);
 int testProtocolCiphers(struct sslCheckOptions *, const SSL_METHOD *);

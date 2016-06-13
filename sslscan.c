@@ -837,7 +837,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
 }
 
 // Check for TLS_FALLBACK_SCSV
-int testSCSV(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
+int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
 {
     // Variables...
     int status = true;
@@ -927,12 +927,12 @@ int testSCSV(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                                 }
                                 else
                                 {
-                                    printf("Server doesn't support TLS - skipping SCSV check");
+                                    printf("Server doesn't support TLS - skipping TLS Fallback SCSV check");
                                 }
                             }
                             else
                             {
-                                printf("Server %sdoes not%s support SCSV\n\n", COL_RED, RESET);
+                                printf("Server %sdoes not%s support TLS Fallback SCSV\n\n", COL_RED, RESET);
                             }
                         }
                         else
@@ -942,7 +942,7 @@ int testSCSV(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                                 ERR_get_error();
                                 if (SSL_get_error(ssl, connStatus == 6))
                                 {
-                                    printf("Server %ssupports%s SCSV\n\n", COL_GREEN, RESET);
+                                    printf("Server %ssupports%s TLS Fallback SCSV\n\n", COL_GREEN, RESET);
                                 }
                             }
                             else
@@ -993,7 +993,7 @@ int testSCSV(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
     // Call function again with downgraded protocol
     if (!downgraded)
     {
-        testSCSV(options, secondMethod);
+        testFallback(options, secondMethod);
     }
     return status;
 }
@@ -3132,10 +3132,10 @@ int testHost(struct sslCheckOptions *options)
         printf("\n");
     }
 
-    if (status == true && options->scsv )
+    if (status == true && options->fallback )
     {
-        printf("  %sTLS Fallback Signaling Cipher Suite Value (SCSV):%s\n", COL_BLUE, RESET);
-        testSCSV(options, NULL);
+        printf("  %sTLS Fallback SCSV:%s\n", COL_BLUE, RESET);
+        testFallback(options, NULL);
     }
     
     if (status == true && options->reneg )
@@ -3320,7 +3320,7 @@ int main(int argc, char *argv[])
     options.showTimes = false;
     options.ciphersuites = true;
     options.reneg = true;
-    options.scsv = true;
+    options.fallback = true;
     options.compression = true;
     options.heartbleed = true;
     options.starttls_ftp = false;
@@ -3444,9 +3444,9 @@ int main(int argc, char *argv[])
         else if (strcmp("--no-ciphersuites", argv[argLoop]) == 0)
             options.ciphersuites = false;
 
-        // Should we check for TLS Fallback Signaling Cipher Suite Value (SCSV)?
-        else if (strcmp("--no-scsv", argv[argLoop]) == 0)
-            options.scsv = false;
+        // Should we check for TLS Falback SCSV?
+        else if (strcmp("--no-fallback", argv[argLoop]) == 0)
+            options.fallback = false;
 
         // Should we check for TLS renegotiation?
         else if (strcmp("--no-renegotiation", argv[argLoop]) == 0)
@@ -3717,7 +3717,7 @@ int main(int argc, char *argv[])
             printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted client certificates\n", COL_GREEN, RESET);
             printf("  %s--no-ciphersuites%s    Do not check for supported ciphersuites\n", COL_GREEN, RESET);
-            printf("  %s--no-scsv%s            Do not check for TLS SCSV\n", COL_GREEN, RESET);
+            printf("  %s--no-fallback%s        Do not check for TLS Fallback SCSV\n", COL_GREEN, RESET);
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
             printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
