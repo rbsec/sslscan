@@ -649,11 +649,17 @@ int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOu
         outputData->supported, outputData->secure);
 
     if (outputData->secure)
+    {
         printf("%sSecure%s session renegotiation supported\n\n", COL_GREEN, RESET);
+    }
     else if (outputData->supported)
+    {
         printf("%sInsecure%s session renegotiation supported\n\n", COL_RED, RESET);
+    }
     else
+    {
        printf("Session renegotiation %snot supported%s\n\n", COL_GREEN, RESET);
+    }
 
     return true;
 }
@@ -847,7 +853,6 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
     int sslversion;
     SSL *ssl = NULL;
     BIO *cipherConnectionBio;
-    SSL_SESSION session;
     const SSL_METHOD *secondMethod;
 
     // Function gets called a second time with downgraded protocol
@@ -2728,9 +2733,13 @@ int showCertificate(struct sslCheckOptions *options)
                                 printf("  Verify Certificate:\n");
                                 verifyError = SSL_get_verify_result(ssl);
                                 if (verifyError == X509_V_OK)
+                                {
                                     printf("    Certificate passed verification\n");
+                                }
                                 else
+                                {
                                     printf("    %s\n", X509_verify_cert_error_string(verifyError));
+                                }
 
                                 // Free X509 Certificate...
                                 X509_free(x509Cert);
