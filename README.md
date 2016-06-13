@@ -36,6 +36,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Flag TLSv1.0 ciphers in output as weak.
 * Experimental OSX support (static building only)
 * Support for scanning PostgreSQL servers (credit nuxi)
+* Check for TLS Fallback Signaling Cipher Suite Value (SCSV) support
 
 ### Building on Windows
 Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can

@@ -836,6 +836,169 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     return status;
 }
 
+// Check for TLS_FALLBACK_SCSV
+int testSCSV(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
+{
+    // Variables...
+    int status = true;
+    int downgraded = true;
+    int connStatus = false;
+    int socketDescriptor = 0;
+    int sslversion;
+    SSL *ssl = NULL;
+    BIO *cipherConnectionBio;
+    SSL_SESSION session;
+    const SSL_METHOD *secondMethod;
+
+    // Function gets called a second time with downgraded protocol
+    if (!sslMethod)
+    {
+        sslMethod = SSLv23_method();
+        downgraded = false;
+    }
+
+    // Connect to host
+    socketDescriptor = tcpConnect(options);
+    if (socketDescriptor != 0)
+    {
+        // Setup Context Object...
+        options->ctx = SSL_CTX_new(sslMethod);
+        tls_reneg_init(options);
+        if (options->ctx != NULL)
+        {
+            if (downgraded)
+            {
+                SSL_CTX_set_mode(options->ctx, SSL_MODE_SEND_FALLBACK_SCSV);
+            }
+            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            {
+
+                // Load Certs if required...
+                if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
+                    status = loadCerts(options);
+
+                if (status == true)
+                {
+                    // Create SSL object...
+                    ssl = SSL_new(options->ctx);
+
+#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
+                    // Make sure we can connect to insecure servers
+                    // OpenSSL is going to change the default at a later date
+                    SSL_set_options(ssl, SSL_OP_LEGACY_SERVER_CONNECT);
+#endif
+
+#ifdef SSL_OP_NO_COMPRESSION
+                    // Make sure to clear the no compression flag
+                    SSL_clear_options(ssl, SSL_OP_NO_COMPRESSION);
+#endif
+
+                   if (ssl != NULL)
+                    {
+                        // Connect socket and BIO
+                        cipherConnectionBio = BIO_new_socket(socketDescriptor, BIO_NOCLOSE);
+
+                        // Connect SSL and BIO
+                        SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
+
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+                        // This enables TLS SNI
+                        SSL_set_tlsext_host_name(ssl, options->host);
+#endif
+
+                        // Connect SSL over socket
+                        connStatus = SSL_connect(ssl);
+                        if (connStatus)
+                        {
+                            if (!downgraded)
+                            {
+                                sslversion = SSL_version(ssl);
+                                if (sslversion == TLS1_2_VERSION)
+                                {
+                                    secondMethod = TLSv1_1_client_method();
+                                }
+                                else if (sslversion == TLS1_VERSION)
+                                {
+                                    secondMethod = TLSv1_client_method();
+                                }
+                                else if (sslversion == TLS1_VERSION)
+                                {
+                                    printf("Server only supports TLSv1.0");
+                                }
+                                else
+                                {
+                                    printf("Server doesn't support TLS - skipping SCSV check");
+                                }
+                            }
+                            else
+                            {
+                                printf("Server %sdoes not%s support SCSV\n\n", COL_RED, RESET);
+                            }
+                        }
+                        else
+                        {
+                            if (SSL_get_error(ssl, connStatus == 1))
+                            {
+                                ERR_get_error();
+                                if (SSL_get_error(ssl, connStatus == 6))
+                                {
+                                    printf("Server %ssupports%s SCSV\n\n", COL_GREEN, RESET);
+                                }
+                            }
+                            else
+                            {
+                                printf("Connect failed: %d\n", SSL_get_error(ssl, connStatus));
+                            }
+                        }
+
+                        // Disconnect SSL over socket
+                        SSL_shutdown(ssl);
+
+                        // Free SSL object
+                        SSL_free(ssl);
+                    }
+                    else
+                    {
+                        status = false;
+                        printf_error("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                    }
+                }
+            }
+            else
+            {
+                status = false;
+                printf_error("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+            }
+            // Free CTX Object
+            SSL_CTX_free(options->ctx);
+        }
+        // Error Creating Context Object
+        else
+        {
+            status = false;
+            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+        }
+
+        // Disconnect from host
+        close(socketDescriptor);
+    }
+    else
+    {
+        // Could not connect
+        printf_error("%sERROR: Could not connect.%s\n", COL_RED, RESET);
+        status = false;
+        exit(status);
+    }
+
+    // Call function again with downgraded protocol
+    if (!downgraded)
+    {
+        testSCSV(options, secondMethod);
+    }
+    return status;
+}
+
+
 // Check if the server supports renegotiation
 int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
@@ -2968,6 +3131,12 @@ int testHost(struct sslCheckOptions *options)
         }
         printf("\n");
     }
+
+    if (status == true && options->scsv )
+    {
+        printf("  %sTLS Fallback Signaling Cipher Suite Value (SCSV):%s\n", COL_BLUE, RESET);
+        testSCSV(options, NULL);
+    }
     
     if (status == true && options->reneg )
     {
@@ -3151,6 +3320,7 @@ int main(int argc, char *argv[])
     options.showTimes = false;
     options.ciphersuites = true;
     options.reneg = true;
+    options.scsv = true;
     options.compression = true;
     options.heartbleed = true;
     options.starttls_ftp = false;
@@ -3273,6 +3443,10 @@ int main(int argc, char *argv[])
         // Should we check for supported cipher suites
         else if (strcmp("--no-ciphersuites", argv[argLoop]) == 0)
             options.ciphersuites = false;
+
+        // Should we check for TLS Fallback Signaling Cipher Suite Value (SCSV)?
+        else if (strcmp("--no-scsv", argv[argLoop]) == 0)
+            options.scsv = false;
 
         // Should we check for TLS renegotiation?
         else if (strcmp("--no-renegotiation", argv[argLoop]) == 0)
