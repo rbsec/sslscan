@@ -942,17 +942,23 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                         }
                         else
                         {
-                            if (SSL_get_error(ssl, connStatus == 1))
+                            if (downgraded)
                             {
-                                ERR_get_error();
-                                if (SSL_get_error(ssl, connStatus == 6))
+                                if (SSL_get_error(ssl, connStatus == 1))
                                 {
-                                    printf("Server %ssupports%s TLS Fallback SCSV\n\n", COL_GREEN, RESET);
+                                    ERR_get_error();
+                                    if (SSL_get_error(ssl, connStatus == 6))
+                                    {
+                                        printf("Server %ssupports%s TLS Fallback SCSV\n\n", COL_GREEN, RESET);
+                                        status = false;
+                                    }
                                 }
                             }
                             else
                             {
-                                printf("Connect failed: %d\n", SSL_get_error(ssl, connStatus));
+                                printf("%sConnection failed%s - unable to determine TLS Fallback SCSV support\n\n",
+                                        COL_YELLOW, RESET);
+                                status = false;
                             }
                         }
 
@@ -996,7 +1002,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
     }
 
     // Call function again with downgraded protocol
-    if (!downgraded)
+    if (status && !downgraded)
     {
         testFallback(options, secondMethod);
     }
