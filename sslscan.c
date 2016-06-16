@@ -929,10 +929,12 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                                 else if (sslversion == TLS1_VERSION)
                                 {
                                     printf("Server only supports TLSv1.0");
+                                    status = false;
                                 }
                                 else
                                 {
-                                    printf("Server doesn't support TLS - skipping TLS Fallback SCSV check");
+                                    printf("Server doesn't support TLS - skipping TLS Fallback SCSV check\n\n");
+                                    status = false;
                                 }
                             }
                             else
