@@ -1416,6 +1416,9 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     int resultSize = 0;
     int cipherbits;
     uint32_t cipherid;
+    char *safetyLength;
+    char *safetyLevel;
+    char *safetyAlgo;
     const SSL_CIPHER *sslCipherPointer;
     const char *cleanSslMethod = printableSslMethod(sslMethod);
     struct timeval tval_start, tval_end, tval_elapsed;
@@ -1529,6 +1532,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 if (strcmp(cleanSslMethod, "SSLv2") == 0)
                 {
                     printf("%sSSLv2%s    ", COL_RED, RESET);
+		    safetyAlgo = "red";
                 }
                 else
 #endif
@@ -1536,17 +1540,20 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     if (strcmp(cleanSslMethod, "SSLv3") == 0)
                     {
                         printf("%sSSLv3%s    ", COL_RED, RESET);
+			safetyAlgo = "red";
                     }
                     else
 #endif
                         if (strcmp(cleanSslMethod, "TLSv1.0") == 0)
                         {
                             printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
+			    safetyAlgo = "yellow";
                         }
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
                         else 
                         {
                             printf("%s  ", cleanSslMethod);
+			    safetyAlgo = "grey";
                         }
 #endif
                 if (cipherbits < 10)
@@ -1558,18 +1565,22 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 if (cipherbits == 0)
                 {
                     printf("%s%d%s bits  ", COL_RED_BG, cipherbits, RESET);
+		    safetyLength = "red_bg";
                 }
                 else if (cipherbits >= 112)
                 {
                     printf("%s%d%s bits  ", COL_GREEN, cipherbits, RESET);
+		    safetyLength = "green";
                 }
                 else if (cipherbits > 56)
                 {
                     printf("%s%d%s bits  ", COL_YELLOW, cipherbits, RESET);
+		    safetyLength = "yellow";
                 }
                 else
                 {
                     printf("%s%d%s bits  ", COL_RED, cipherbits, RESET);
+		    safetyLength = "red";
                 }
                 while (tempInt != 0)
                 {
@@ -1588,10 +1599,12 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 if (strstr(sslCipherPointer->name, "NULL"))
                 {
                     printf("%s%-29s%s", COL_RED_BG, sslCipherPointer->name, RESET);
+		    safetyLevel = "red_bg";
                 }
                 else if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
                 {
                     printf("%s%-29s%s", COL_PURPLE, sslCipherPointer->name, RESET);
+		    safetyLevel = "purple";
                 }
                 else if (strstr(sslCipherPointer->name, "EXP")
 #ifndef OPENSSL_NO_SSL3
@@ -1600,18 +1613,22 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                         )
                 {
                     printf("%s%-29s%s", COL_RED, sslCipherPointer->name, RESET);
+		    safetyLevel = "red";
                 }
                 else if (strstr(sslCipherPointer->name, "RC4"))
                 {
                     printf("%s%-29s%s", COL_YELLOW, sslCipherPointer->name, RESET);
+		    safetyLevel = "yellow";
                 }
                 else if (strstr(sslCipherPointer->name, "GCM") && strstr(sslCipherPointer->name, "DHE"))
                 {
                     printf("%s%-29s%s", COL_GREEN, sslCipherPointer->name, RESET);
+		    safetyLevel = "green";
                 }
                 else
                 {
                     printf("%-29s", sslCipherPointer->name);
+		    safetyLevel = "gray";
                 }
 
                 if (options->cipher_details == true)
@@ -1630,7 +1647,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 }
 
                 printf("\n");
-                printf_xml(" />\n");
+                printf_xml(" safety-level=\"%s\" safety-length=\"%s\" safety-algo=\"%s\" />\n", safetyLevel, safetyLength, safetyAlgo);
 
                 // Disconnect SSL over socket
                 if (cipherStatus == 1)
