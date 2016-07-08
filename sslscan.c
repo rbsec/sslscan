@@ -91,6 +91,7 @@
 #endif
 
 #include "sslscan.h"
+#include "sslscan-xml.h"
 
 /* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
  * many versions and releases of OpenSSL. */
@@ -303,7 +304,7 @@ int tcpConnect(struct sslCheckOptions *options)
         }
     }
 
-    // We could use an XML parser but frankly it seems like a security disaster
+    // We could use an XML_ parser but frankly it seems like a security disaster
     if (options->starttls_xmpp == true && tlsStarted == false)
     {
 
@@ -1416,9 +1417,9 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     int resultSize = 0;
     int cipherbits;
     uint32_t cipherid;
-    char *safetyLength;
-    char *safetyLevel;
-    char *safetyAlgo;
+    char *lengthSafety;
+    char *overallSafety;
+    char *algoSafety;
     const SSL_CIPHER *sslCipherPointer;
     const char *cleanSslMethod = printableSslMethod(sslMethod);
     struct timeval tval_start, tval_end, tval_elapsed;
@@ -1532,7 +1533,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 if (strcmp(cleanSslMethod, "SSLv2") == 0)
                 {
                     printf("%sSSLv2%s    ", COL_RED, RESET);
-		    safetyAlgo = "red";
+		    algoSafety = XML_RED;
                 }
                 else
 #endif
@@ -1540,20 +1541,20 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     if (strcmp(cleanSslMethod, "SSLv3") == 0)
                     {
                         printf("%sSSLv3%s    ", COL_RED, RESET);
-			safetyAlgo = "red";
+			algoSafety = XML_RED;
                     }
                     else
 #endif
                         if (strcmp(cleanSslMethod, "TLSv1.0") == 0)
                         {
                             printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
-			    safetyAlgo = "yellow";
+			    algoSafety = XML_YELLOW;
                         }
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
                         else 
                         {
                             printf("%s  ", cleanSslMethod);
-			    safetyAlgo = "grey";
+			    algoSafety = XML_GRAY;
                         }
 #endif
                 if (cipherbits < 10)
@@ -1565,22 +1566,22 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 if (cipherbits == 0)
                 {
                     printf("%s%d%s bits  ", COL_RED_BG, cipherbits, RESET);
-		    safetyLength = "red_bg";
+		    lengthSafety = XML_RED_BG;
                 }
                 else if (cipherbits >= 112)
                 {
                     printf("%s%d%s bits  ", COL_GREEN, cipherbits, RESET);
-		    safetyLength = "green";
+		    lengthSafety = XML_GREEN;
                 }
                 else if (cipherbits > 56)
                 {
                     printf("%s%d%s bits  ", COL_YELLOW, cipherbits, RESET);
-		    safetyLength = "yellow";
+		    lengthSafety = XML_YELLOW;
                 }
                 else
                 {
                     printf("%s%d%s bits  ", COL_RED, cipherbits, RESET);
-		    safetyLength = "red";
+		    lengthSafety = XML_RED;
                 }
                 while (tempInt != 0)
                 {
@@ -1599,12 +1600,12 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 if (strstr(sslCipherPointer->name, "NULL"))
                 {
                     printf("%s%-29s%s", COL_RED_BG, sslCipherPointer->name, RESET);
-		    safetyLevel = "red_bg";
+		    overallSafety = XML_RED_BG;
                 }
                 else if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
                 {
                     printf("%s%-29s%s", COL_PURPLE, sslCipherPointer->name, RESET);
-		    safetyLevel = "purple";
+		    overallSafety = XML_PURPLE;
                 }
                 else if (strstr(sslCipherPointer->name, "EXP")
 #ifndef OPENSSL_NO_SSL3
@@ -1613,22 +1614,22 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                         )
                 {
                     printf("%s%-29s%s", COL_RED, sslCipherPointer->name, RESET);
-		    safetyLevel = "red";
+		    overallSafety = XML_RED;
                 }
                 else if (strstr(sslCipherPointer->name, "RC4"))
                 {
                     printf("%s%-29s%s", COL_YELLOW, sslCipherPointer->name, RESET);
-		    safetyLevel = "yellow";
+		    overallSafety = XML_YELLOW;
                 }
                 else if (strstr(sslCipherPointer->name, "GCM") && strstr(sslCipherPointer->name, "DHE"))
                 {
                     printf("%s%-29s%s", COL_GREEN, sslCipherPointer->name, RESET);
-		    safetyLevel = "green";
+		    overallSafety = XML_GREEN;
                 }
                 else
                 {
                     printf("%-29s", sslCipherPointer->name);
-		    safetyLevel = "gray";
+		    overallSafety = XML_GRAY;
                 }
 
                 if (options->cipher_details == true)
@@ -1647,7 +1648,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 }
 
                 printf("\n");
-                printf_xml(" safety-level=\"%s\" safety-length=\"%s\" safety-algo=\"%s\" />\n", safetyLevel, safetyLength, safetyAlgo);
+                printf_xml(" overall-safety=\"%s\" length-safety=\"%s\" algo-safety=\"%s\" />\n", overallSafety, lengthSafety, algoSafety);
 
                 // Disconnect SSL over socket
                 if (cipherStatus == 1)
@@ -3095,7 +3096,7 @@ int testHost(struct sslCheckOptions *options)
     struct sslCipher *sslCipherPointer = NULL;
     int status = true;
     
-    // XML Output...
+    // XML_ Output...
     printf_xml(" <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
 
     // Verbose warning about STARTTLS and SSLv3
@@ -3314,7 +3315,7 @@ int testHost(struct sslCheckOptions *options)
         status = showTrustedCAs(options);
     }
 
-    // XML Output...
+    // XML_ Output...
     printf_xml(" </ssltest>\n");
 
     // Return status...
@@ -3436,7 +3437,7 @@ int main(int argc, char *argv[])
         else if (strcmp("--version", argv[argLoop]) == 0)
             mode = mode_version;
 
-        // XML Output
+        // XML_ Output
         else if (strncmp("--xml=", argv[argLoop], 6) == 0)
             xmlArg = argLoop;
 
@@ -3664,7 +3665,7 @@ int main(int argc, char *argv[])
             mode = mode_help;
     }
 
-    // Open XML file output...
+    // Open XML_ file output...
     if ((xmlArg > 0) && (mode != mode_help))
     {
         if (strcmp(argv[xmlArg] + 6, "-") == 0)
@@ -3677,7 +3678,7 @@ int main(int argc, char *argv[])
             options.xmlOutput = fopen(argv[xmlArg] + 6, "w");
             if (options.xmlOutput == NULL)
             {
-                printf_error("%sERROR: Could not open XML output file %s.%s\n", COL_RED, argv[xmlArg] + 6, RESET);
+                printf_error("%sERROR: Could not open XML_ output file %s.%s\n", COL_RED, argv[xmlArg] + 6, RESET);
                 exit(0);
             }
         }
@@ -3768,7 +3769,7 @@ int main(int argc, char *argv[])
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
             printf("  %s--timeout=<sec>%s      Set socket timeout. Default is 3s\n", COL_GREEN, RESET);
             printf("  %s--sleep=<msec>%s       Pause between connection request. Default is disabled\n", COL_GREEN, RESET);
-            printf("  %s--xml=<file>%s         Output results to an XML file\n", COL_GREEN, RESET);
+            printf("  %s--xml=<file>%s         Output results to an XML_ file\n", COL_GREEN, RESET);
             printf("                       <file> can be -, which means stdout\n");
             printf("  %s--version%s            Display the program version\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output\n", COL_GREEN, RESET);
@@ -3872,7 +3873,7 @@ int main(int argc, char *argv[])
             break;
     }
 
-    // Close XML file, if required...
+    // Close XML_ file, if required...
     if ((xmlArg > 0) && (mode != mode_help))
     {
         fprintf(options.xmlOutput, "</document>\n");

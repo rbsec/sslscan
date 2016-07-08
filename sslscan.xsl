@@ -178,36 +178,36 @@
 	  <xsl:for-each select="document/ssltest/cipher">
 	  <tr>
 		<xsl:choose>
-			<xsl:when test="@safety-algo='yellow'">
+			<xsl:when test="@algo-safety='yellow'">
 				<td class='yellow'><xsl:value-of select="@sslversion"/></td>
 			</xsl:when>
 			<xsl:otherwise>
-				<td class='gray'><xsl:value-of select="@sslversion"/></td>
+				<td class='grey'><xsl:value-of select="@sslversion"/></td>
 			</xsl:otherwise>
 		</xsl:choose>
 		<xsl:choose>
-			<xsl:when test="@safety-level='red'">
+			<xsl:when test="@overall-safety='red'">
 				<td class='red'><xsl:value-of select="@cipher"/></td>
 			</xsl:when>
-			<xsl:when test="@safety-level='green'">
+			<xsl:when test="@overall-safety='green'">
 				<td class='green'><xsl:value-of select="@cipher"/></td>
 			</xsl:when>
-			<xsl:when test="@safety-level='purple'">
+			<xsl:when test="@overall-safety='purple'">
 				<td class='purple'><xsl:value-of select="@cipher"/></td>
 			</xsl:when>
-			<xsl:when test="@safety-level='yellow'">
+			<xsl:when test="@overall-safety='yellow'">
 				<td class='yellow'><xsl:value-of select="@cipher"/></td>
 			</xsl:when>
 			<xsl:otherwise>
-				<td class='gray'><xsl:value-of select="@cipher"/></td>
+				<td class='grey'><xsl:value-of select="@cipher"/></td>
 			</xsl:otherwise>
 		</xsl:choose>
 		<xsl:choose>
-			<xsl:when test="@safety-length='green'">
+			<xsl:when test="@length-safety='green'">
 				<td class='green'><xsl:value-of select="@bits"/></td>
 			</xsl:when>
 			<xsl:otherwise>
-				<td class='gray'><xsl:value-of select="@bits"/></td>
+				<td class='grey'><xsl:value-of select="@bits"/></td>
 			</xsl:otherwise>
 		</xsl:choose>
 		<xsl:choose>
@@ -215,7 +215,7 @@
 				<td class='green'><xsl:value-of select="@status"/></td>
 			</xsl:when>
 			<xsl:otherwise>
-				<td class='gray'><xsl:value-of select="@status"/></td>
+				<td class='grey'><xsl:value-of select="@status"/></td>
 			</xsl:otherwise>
 		</xsl:choose>
 	  </tr>
