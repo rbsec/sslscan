@@ -1,0 +1,24 @@
+/*
+Theme Name: Janiko (for mediawiki)
+*/
+
+/**
+|------------------------
+| =Reset default browser CSS. http://meyerweb.com/eric/tools/css/reset/ v2.0 | 20110126 License: none (public domain)
+|------------------------
+*/
+
+body { 
+	font-family: PT Sans, Roboto,Candara, Calibri, sans-serif;
+}
+
+.red { color: red; }
+.green { color:ForestGreen; }
+.purple { color:purple; }
+.yellow { color:olive; }
+.inline { display:inline;}
+.col-250 { width:250px; }
+.col-700 { width:700px; }
+.table_certif { text-align:left; }
+.table_algos { text-align:left; }
+
