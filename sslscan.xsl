@@ -1,36 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:my="my:my" exclude-result-prefixes="my">
+
+	<xsl:param name="pLang" select="'fr'"/>
+	<my:texts>
+		<dot>.</dot>
+		<pageTitle lang="en">This is the title in English</pageTitle>
+		<pageTitle lang="fr">Titre en français</pageTitle>
+		<enabled lang="en">enabled</enabled>
+		<enabled lang="fr">activé</enabled>
+		<disabled lang="en">disabled</disabled>
+		<disabled lang="fr">inactif</disabled>
+		<compTLS lang="en">TLS compression is </compTLS>
+		<compTLS lang="fr">La compression TLS est </compTLS>
+	 </my:texts>
+	<xsl:variable name="vTexts" select="document('')/*/my:texts"/>
+
 
 <xsl:template match="/">
+
 <html>
   <head>
 	<link href="janiko.css" rel="stylesheet" type="text/css" />
 	<link href='http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css' />
   </head>
   <body class='mediawiki skin-janiko'>
-  
+
+	<title>
+		<xsl:value-of select="$vTexts/pageTitle[@lang = $pLang]"/>
+	</title>
+
+
+	<!--div lang="en" xml:lang="en">
+		<h1>Welcome!</h1> 
+		<p>Lots of text in English...</p>
+	</div>
+	<div lang="fr" xml:lang="fr">
+		<h1>Bienvenue !</h1> 
+		<p>Beaucoup de texte en français...</p>
+	</div-->
+
     <!-- Hostname -->
     <h2><xsl:value-of select="document/ssltest/@host"/>:<xsl:value-of select="document/ssltest/@port"/></h2>
 	
 	<!-- Compression -->
-	<xsl:choose>
-	  <xsl:when test="document/ssltest/compression/@supported='0'">
-	    <p><xsl:text>La compression TLS n'est pas supportée.</xsl:text></p>
-	  </xsl:when>
-	  <xsl:when test="document/ssltest/compression/@supported='1'">
-	    <p><xsl:text>La compression TLS est supportée.</xsl:text></p>
-	  </xsl:when>
-	</xsl:choose>
+	<p>
+		<xsl:value-of select="$vTexts/compTLS[@lang = $pLang]"/>
+		<xsl:choose>
+			<xsl:when test="document/ssltest/compression/@supported='0'">
+				<xsl:value-of select="$vTexts/enabled[@lang = $pLang]"/>
+			</xsl:when>
+			<xsl:when test="document/ssltest/compression/@supported='1'">
+				<xsl:value-of select="$vTexts/disabled[@lang = $pLang]"/>
+			</xsl:when>
+		</xsl:choose>
+		<xsl:value-of select="$vTexts/dot"/>
+	</p>
 	
 	<!-- Renégociation, sécurisée ou pas -->
+	<p>
 	<xsl:variable name= "renego" select="document/ssltest/renegotiation/@supported"/>
 	<xsl:variable name= "renego_secure" select="document/ssltest/renegotiation/@secure"/>
 	<xsl:choose>
 	  <xsl:when test="$renego='0'">
-	    <p><xsl:text>La renégociation n'est pas supportée.</xsl:text></p>
+	    <xsl:text>La renégociation n'est pas supportée.</xsl:text>
 	  </xsl:when>
 	  <xsl:when test="$renego='1'">
-	    <p style='display:inline;'><xsl:text>La renégociation est supportée de façon </xsl:text>
+	    <xsl:text>La renégociation est supportée de façon </xsl:text>
 		<xsl:choose>
 		  <xsl:when test="$renego_secure='0'">
 			<div class="invalide"><xsl:text>non sécurisée !</xsl:text></div>
@@ -39,28 +74,29 @@
 			<div class="valide"><xsl:text>sécurisée.</xsl:text></div>
 		  </xsl:when>	  
 		</xsl:choose>
-		</p>
       </xsl:when>	  
 	</xsl:choose>
+	</p>
 	
 	<!-- Faille heartbleed -->
 	<xsl:variable name= "heart_TLS10" select="document/ssltest/heartbleed[@sslversion='TLSv1.0']/@vulnerable"/>
 	<xsl:variable name= "heart_TLS11" select="document/ssltest/heartbleed[@sslversion='TLSv1.1']/@vulnerable"/>
 	<xsl:variable name= "heart_TLS12" select="document/ssltest/heartbleed[@sslversion='TLSv1.2']/@vulnerable"/>
 	<!-- Si vulnérable -->
+	<p>
 	<xsl:choose>
 		<xsl:when test="$heart_TLS10='1'">
-			<div class="invalide">Vulnérable</div> à HeartBleed en TLS 1.0.<br/>
+			<div class="red">Vulnérable</div> à HeartBleed en TLS 1.0.
 		</xsl:when>
 	</xsl:choose>
 	<xsl:choose>
 		<xsl:when test="$heart_TLS11='1'">
-			<div class="invalide">Vulnérable</div> à HeartBleed en TLS 1.1.<br/>
+			<div class="red">Vulnérable</div> à HeartBleed en TLS 1.1.
 		</xsl:when>
 	</xsl:choose>
 	<xsl:choose>
 		<xsl:when test="$heart_TLS12='1'">
-			<div class="invalide">Vulnérable</div> à HeartBleed en TLS 1.2.<br/>
+			<div class="red">Vulnérable</div> à HeartBleed en TLS 1.2.
 		</xsl:when>
 	</xsl:choose>
 	<!-- Si pas vulnérable -->
@@ -68,9 +104,9 @@
 		<xsl:when test="$heart_TLS10='1'"/>
 		<xsl:when test="$heart_TLS11='1'"/>
 		<xsl:when test="$heart_TLS12='1'"/>
-		<xsl:otherwise>Non vulnérable à la faille HeartBleed.</xsl:otherwise>
+		<xsl:otherwise><div class="green">Non vulnérable</div> à la faille HeartBleed.</xsl:otherwise>
 	</xsl:choose>
-
+	</p>
 
 
 	<!-- Certificat du site -->

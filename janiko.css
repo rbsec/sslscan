@@ -1,0 +1,1012 @@
+/*
+Theme Name: Janiko (for mediawiki)
+*/
+
+/**
+|------------------------
+| =Reset default browser CSS. http://meyerweb.com/eric/tools/css/reset/ v2.0 | 20110126 License: none (public domain)
+|------------------------
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	text-decoration: none;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+div {
+	display: block;
+}
+
+/**
+|------------------------
+| =Body
+|------------------------
+*/
+
+body { 
+	font-family: PT Sans, Roboto,Candara, Calibri, sans-serif;
+	font-size: 12px;
+	line-height: 17px;
+	color: #444;
+	background: #f3f3f3;
+}
+
+/* Main content */
+
+#body-width {
+	width:980px;
+	margin:0 auto;
+}
+
+.container-wrap {
+	box-shadow: 0 2px 6px rgba(100, 100, 100, 0.3);
+	width: 956px;
+	padding: 0 10px;
+	padding-left: 12px;
+	padding-right: 12px;
+	background-color: #FFF;
+	border: solid 1px #eee;
+	display: inline-block;
+	background: #fbf8fb;
+}
+
+.container-wrap-inner {
+padding-left: 12px;
+padding-right: 12px;
+margin: 0 0 0 0;
+}
+
+.content-part-css {
+width: 680px;
+}
+
+#content-part {
+	float:left;
+	width:680px;
+	padding:10px;
+}
+
+#sidebar {
+	float:right;
+	width:230px;
+	padding:10px;
+	padding-top: 40px;
+	line-height: 22px;
+}
+
+.mw-editsection {
+	font-size: 0.5em;
+}
+
+.mw-editsection-bracket-left {
+	color: IndianRed;
+}	
+
+.mw-editsection-bracket-right  {
+	color: IndianRed;
+	margin-right: 20px;
+}	
+
+div#actions-list {
+	font-size: 10px;
+	margin-bottom: 8px;
+	margin-top: -2px;
+	margin-left: 2px;
+	letter-spacing : 3px;
+}
+
+div#actions-list a {
+	color: gray;
+}
+
+.catlinks {
+	background-color: #fefefa;
+	font-size: 0.8em;
+	border: none;
+	border-top: 1px #aaa solid;
+	border-bottom: 1px #aaa solid;
+	margin-bottom: 8px;
+}
+
+hr {
+	height: 1px;
+	padding:0 0 0 0;
+	margin-top: 16px;
+	margin-bottom: 8px;
+	color: Crimson;
+}
+
+/**
+|------------------------
+| =Header
+|------------------------
+*/
+#top-header {
+	font-size: 13px;
+	width: 100%;
+	background: #222;
+	color: #ddd;
+	line-height: 43px;
+}
+
+#top-header-title {
+  margin-left: auto;
+  margin-right: auto;
+  width: 980px;
+}
+
+#top-header-title  ul {
+	margin: 0 0 0 0;
+}
+#top-header-title  ul  li {
+	list-style: none;
+	display: inline-block;
+	margin-right: 11px;
+}
+
+#top-header-title  ul  li a {
+	color: #aaa;
+}
+
+#top-header-title  ul  li a:hover {
+	color: white;
+}
+
+#header {
+	overflow: visible;
+	height: auto;
+	width: 100%;
+}
+
+.header-container {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 18px;
+  margin-bottom: 18px;
+  width: 980px;
+}
+  
+#header h1  {
+	display: block;
+	font-family : Candara, Calibri, sans-serif;
+	font-size: 45px; 
+ 	font-weight: bold;
+	line-height: 45px;
+	Color: IndianRed;
+	margin: 0 0 0 0;
+}
+#header h1 a {
+	text-decoration: none;
+	Color: IndianRed;
+}
+#header .site-description {
+	display: block;
+	margin: 0 0 0 50px;
+}
+
+
+/**
+|------------------------
+| =Paragraph
+|------------------------
+*/
+
+p { 
+	line-height: 18px;
+	margin: 0 0 8px 0;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+
+p img { 
+	margin: 0;
+}
+
+big {
+	font-size: 1.5em;
+	font-weight: bold;
+	padding-top: 8px;
+	line-height: auto;
+}
+
+
+/**
+|------------------------
+| =Specific
+|------------------------
+*/
+
+.rappel {
+	font-family: PT Sans, Segoe UI, Calibri, sans-serif;
+	font-size: 9px;
+	padding-left: 16px;
+	color: gray;
+}
+.domaine, .champ { color: green; display: inline; font-weight: bold; }
+.champ_simple { color: green; display: inline; font-weight: normal; }
+.ip { color: green;	display: inline; font-weight: bold; }
+.valide { color: green; display: inline; font-weight: bold; }
+.invalide { color: red; display: inline; font-weight: bold; }
+pre {
+	font-family: consolas, courrier new;
+	font-size: 9px;
+	color: dimgray;
+}
+
+.modulo { color: DarkSeaGreen; display: inline; font-weight: normal; font-size:0.8em; display: none; }
+
+.red { color: red; display:inline;}
+.green { color:ForestGreen; display:inline;}
+.purple { color:purple; display:inline;}
+.yellow { color:olive; display:inline;}
+
+
+/**
+|------------------------
+| =Sidebar (specific)
+|------------------------
+*/
+#sidebar h3 {
+	color: IndianRed;
+	font-weight: bold;
+	font-size: 1.4em;
+	border-bottom: 1px dotted #ddd;
+}
+
+#sidebar li {
+	border-bottom: 1px dotted #eee;
+	list-style: square outside none;
+	color: Crimson;
+	margin-left: 14px;
+}
+
+/* Strange margin-left with Chrome ; anyone can help ? */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+	#sidebar li {
+		border-bottom: 1px dotted #eee;
+		list-style: square outside none;
+		color: Crimson;
+		margin-left: 0px;
+	}
+}
+
+/**
+|------------------------
+| =Headings
+|------------------------
+*/
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: Roboto, sans-serif;
+	color: #333;
+	clear: both;
+	overflow: visible;
+}
+
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit; }
+
+h1 { 
+	font-size: 30px; 
+	line-height: 38px; 
+	margin-bottom: 0px;
+	margin-top: 8px;
+}
+
+h2 { 
+	font-size: 24px;
+	letter-spacing: 2px;
+	line-height: 1em; 
+	margin-bottom: 6px;
+	margin-top: 20px;
+	color: Tomato;
+	border-bottom: 1px solid Tomato;
+}
+
+h3 { 
+	font-size: 16px;
+	letter-spacing: 2px;
+	font-weight: bold;
+	margin-bottom: 4px;
+	margin-top: 10px;	
+	margin-left: 0px;
+	Color: Tomato;
+}
+
+h4 { 
+	font-size: 14px;
+	font-style: italic;
+	letter-spacing: 3px;
+	margin-bottom: 2px;	
+	margin-top: 8px;	
+	margin-left: 1px;
+	Color: LightSalmon;
+}
+
+h5 { 
+	font-size: 12px;
+	line-height: 20px;
+}
+
+h6 { 
+	font-size: 12px;
+	line-height: 19px;
+}
+
+/**
+|------------------------
+| =Text Elements
+|------------------------
+*/
+
+strong {
+	font-weight: bold;
+}
+
+cite, em, i {
+	font-style: italic;
+}
+
+small { 
+	font-size: 80%;
+}
+
+pre {
+	background: #f8f8f8;
+	font-size: 11px;
+	line-height: 12px;
+	font-family: Courrier New, monospace;
+	color: #808080;
+	padding: 15px 30px;
+	overflow: auto;	
+	border: 1px solid #eee;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	margin-bottom: 20px;
+}
+pre strong {
+	color: #444;
+	font-weight: 900;
+}
+
+code, kbd {
+	color: #000;
+	font-family: consolas, courrier, fixed-sys;
+}
+
+abbr, acronym, dfn {
+	border-bottom: 1px dotted #666;
+	cursor: help;
+}
+
+address {
+	display: block;
+	margin: 0 0 20px 0;
+}
+
+ins {
+	background: #f0f0f0;
+	text-decoration: none;
+}
+
+sup, sub {
+	font-size: 10px;
+	height: 0;
+	line-height: 1;
+	position: relative;
+	vertical-align: baseline;
+}
+
+sup {
+	bottom: 1ex;
+}
+
+sub {
+	top: .5ex;
+}
+
+/**
+|------------------------
+| =Blockquote
+|------------------------
+*/
+
+blockquote {
+	font-size: 11px;
+	line-height: 18px;
+	padding-left: 30px;
+	margin-bottom: 20px;
+	margin-top: 20px;
+	background: transparent url(images/quote.png) no-repeat top left;
+	
+}
+
+blockquote em,
+blockquote i,
+blockquote cite {
+	font-style: normal;
+}
+
+blockquote cite {
+	color: #555;
+	font-size: 10px;
+	font-weight: bold;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	display: block;
+	text-align: right;
+}
+
+blockquote cite a {
+	display: block;
+	margin: 10px 0 0 0;
+}
+
+/**
+|------------------------
+| =Links
+|------------------------
+*/
+
+a, a:visited {
+	color: #222;
+}
+
+a:hover,
+a:focus {
+	color: Red;
+	text-decoration: none;
+}
+p a, ol li a {
+	border-bottom: 1px dashed #ccc;
+	color: RoyalBlue;
+}
+p a:visited, ol li a:visited {
+	color: SteelBlue;
+	border-bottom: 1px dashed #ffffff;
+}
+
+a.link_modulo, a.link_modulo:visited {color:blue;}
+a.link_modulo:hover {color:Red;}
+
+a img {
+	border: none;
+}
+
+a:focus, a:hover, a:active {
+	outline: none;
+}
+
+p a, 
+p a:visited { 
+	line-height: inherit;
+}
+
+/* -- external links --*/
+a.extiw, a.external {
+	color: DarkGreen;
+	text-decoration: none;
+	border-bottom: 1px dashed #ccc;
+}
+a.extiw:visited, a.external:visited {
+	color: DarkGreen;
+	text-decoration: none;
+	border-bottom: 1px dashed #ffffff;
+}
+a.extiw:hover, a.extiw:focus, a.external:hover, a.external:focus {
+	color: DarkGreen;
+	text-decoration: none;
+}
+
+
+
+/**
+|------------------------
+| =Footer
+|------------------------
+*/
+
+#footer a,
+#footer a:visited {
+	color: #717171;
+	text-decoration: none;
+}
+
+#footer a:hover {
+	color: #fff;
+}
+
+.printfooter {
+	margin-bottom: 16px;
+}
+
+.footerlinks {
+	font-size: 10px;
+	margin-top: 16px;
+	border-top: 1px solid #fac0cc;
+	padding-top: 8px;
+}
+
+#footer-info, #footer-places {
+	list-style: none;
+	margin: 0 0 0 0;
+	color: #999;
+}
+
+ul#footer-places a {
+	font-size: 11px;
+	color: black;
+	display: inline;
+	float: left;
+	margin-right: 20px;
+	margin-top: 4px;
+	/*border-bottom: 1px dashed #ccc;
+	border-top: 1px dashed #ccc;
+	padding-left: 8px;
+	padding-right: 8px;*/
+}
+ul#footer-places a:hover {
+	color: red;
+}
+ul#footer-places {
+	text-align: center;
+}
+
+/**
+|------------------------
+| =List
+|------------------------
+*/
+
+ul, ol {
+	margin: 0 0 18px 30px;
+}
+
+ul {
+	list-style: square;
+}
+
+ul ul {
+	list-style: circle;
+}
+
+ul ul ul {
+	list-style: disc;
+}
+
+ol {
+	list-style: decimal;
+}
+
+ol ol {
+	list-style: lower-alpha;
+}
+
+ol ol ol {
+	list-style: lower-roman;
+}
+
+ol ol ol ol {
+	list-style: lower-alpha;
+}
+
+ul ul, ul ol,
+ol ol, ol ul { 
+	margin: 4px 0 5px 30px;
+}
+
+ul ul li, ul ol li,
+ol ol li, ol ul li { 
+	/*margin-bottom: 6px;*/
+	font-size: 98%; 
+}
+
+li { 
+	/*line-height: 18px; 
+	margin-bottom: 12px;*/
+}
+
+li p { 
+	/*line-height: 18px;*/
+}
+
+dl {
+	margin-bottom: 18px;
+}
+
+dt {
+	font-weight: bold;
+}
+
+dd {
+	margin-bottom: 18px;
+}
+/** References (Cite) */
+#mw-content-text > div.references-small {
+	font-size: 0.9em;
+	line-height: 1.25em;
+	color: #777;
+}
+#mw-content-text > div.references-small li {
+	margin-bottom: 8px;
+}
+
+
+/** Special List : TOC */
+
+div#toc.toc {
+	background-color: #fdfdfa;
+	line-height: 1.2em;
+}
+
+div#toc.toc ul a {
+	font-size: 90%;
+	color: #777;
+}
+
+
+/**
+|------------------------
+| =Table
+|------------------------
+*/
+
+td {
+	display: table-cell;
+	vertical-align: inherit;
+	padding: 1px 4px 1px 0px;
+}
+th {
+	display: table-cell;
+	vertical-align: inherit;
+	padding: 1px 4px 1px 2px;
+}
+
+.table_algos, .table_certif {
+	border: 0;
+}
+
+.table_certif_head {
+	font-weight: bold;
+}
+
+.table_certif th {
+	text-align:left;
+	background-color: #ddd;
+	border: 2px solid  #f3f3f3;
+}
+
+.table_algos tr {
+	border: 0;
+
+}
+
+.table_algos tbody tr th {
+	text-align:left;
+	background-color: #ddd;
+	color: black;
+	font-weight: bold;
+	border: 2px solid  #f3f3f3;
+}
+
+/**
+|------------------------
+| =Form
+|------------------------
+*/
+
+input[type=text],
+input[type=submit],
+textarea,
+select {
+	font-size: 12px;
+	font-family: Calibri, sans-serif;
+	margin-left: 8px;
+}
+input {
+	font-size: 12px;
+	line-height: 1em;
+	font-family: Calibri, sans-serif;
+	margin-left: 8px;
+}
+
+#url input {
+	font-size: 18px;
+	line-height: 1.2em;
+	font-family: Calibri, sans-serif;
+	margin-left: 8px;
+	color: IndianRed;
+	border-top:0px;
+	border-left:0px;
+	border-right:0px;
+	border-bottom: 1px solid #ccc;
+	padding:5px 5px 2px 5px;
+}
+
+
+/**
+|------------------------
+| =General Classes
+|------------------------
+*/
+
+.alignleft {
+	display: inline;
+	float: left;
+	margin-right: 20px;
+}
+
+.alignright {
+	display: inline;
+	float: right;
+	margin-left: 20px;
+}
+
+.aligncenter {
+	clear: both;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.center {
+	text-align: center;
+}
+
+.sticky {
+}
+
+
+/**
+|------------------------
+| =Menu Primary
+|------------------------
+*/
+
+.menu1 {
+	position: relative;
+	z-index: 9999;
+	padding: 0;	
+	margin: 0 0 0 0;
+}
+
+.menu1-data {
+}
+
+.menu1 ul,
+.menu1 ul * {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.menu1 ul {
+	margin-bottom: 0;
+	line-height: 1.0;
+}
+
+.menu1 ul ul {
+	position: absolute;
+	top: -999em;
+	width: 10em;
+}
+
+.menu1 ul ul li {
+	width:100%;
+}
+
+.menu1 ul li:hover {
+	visibility: inherit;
+}
+
+.menu1 ul li {
+	float: left; 
+	position: relative;
+	word-wrap: break-word;
+}
+
+.menu1 ul li li {
+	background: none;
+}
+
+.menu1 ul li:hover ul, 
+.menu1 ul li.sfHover ul {
+	left: 0px;
+	top: 43px;
+	z-index: 200;
+}
+
+.menu1 ul li:hover li ul,
+.menu1 ul li.sfHover li ul {
+	top: -999em;
+}
+
+.menu1 ul li li:hover ul,
+.menu1 ul li li.sfHover ul {
+	left: 10em;
+	top: 0px;
+}
+
+.menu1 ul li li:hover li ul,
+.menu1 ul li li.sfHover li ul {
+	top: -999em;
+}
+
+.menu1 ul li li li:hover ul,
+.menu1 ul li li li.sfHover ul {
+	left: 10em;
+	top: 0px;
+}
+
+/** Top Level Anchors */
+.menu1 ul a,
+.menu1 ul a:visited {
+	display: block;
+	font-size: 13px;
+	position: relative;
+	padding: 15px 0 15px 14px;
+	text-decoration: none;
+	color: #ddd;
+}
+
+.menu1 ul li:first-child a,
+.menu1 ul li:first-child a:visited {
+	padding-left: 0;
+}
+
+.menu1 ul ul.sub-menu li a,
+.menu1 ul ul.sub-menu li a:visited {
+	padding-left: 14px;
+}
+
+/** Nested Anchors */
+.menu1 ul ul.sub-menu a,
+.menu1 ul ul.sub-menu a:visited,
+.menu1 ul ul.children a,
+.menu1 ul ul.children a:visited {
+	font-size: 13px;
+	padding: 12px 12px 12px 16px;
+	border-top: solid #393939 1px;
+}
+
+.menu1 ul li {
+}
+
+.menu1 ul li li {
+	background-color: #444;
+}
+
+/** Global Anchors Hover */
+.menu1 ul li:hover,
+.menu1 ul li.sfHover,
+.menu1 ul a:focus,
+.menu1 ul a:hover,
+.menu1 ul a:active {
+	color: #fff;
+}
+
+/** Nested Anchors Hover */
+.menu1 ul ul.sub-menu li:hover,
+.menu1 ul ul.sub-menu li.sfHover,
+.menu1 ul ul.sub-menu a:focus,
+.menu1 ul ul.sub-menu a:hover,
+.menu1 ul ul.sub-menu a:active,
+.menu1 ul ul.children li:hover,
+.menu1 ul ul.children li.sfHover,
+.menu1 ul ul.children a:focus,
+.menu1 ul ul.children a:hover,
+.menu1 ul ul.children a:active {
+	opacity: 1;
+}
+
+/** Menu Last Child */
+.menu1 ul ul.sub-menu li:last-child,
+.menu1 ul ul.children li:last-child {
+	border-bottom: solid #393939 1px;
+}
+
+/** Menu Indicator */
+.menu1 ul .sf-sub-indicator {
+	display: inline-block;
+	width: 7px;
+	height: 12px;
+	margin: 0 0 0 8px;
+	text-indent: -9999px;
+	background: url(images/menu-indicator-down.png) no-repeat;
+	/*border: solid 1px red;*/
+}
+
+.menu1 ul ul .sf-sub-indicator {
+	position: absolute;
+	width: 7px;
+	height: 15px;
+	top: 8px;
+	right: 15px;
+	text-indent: -9999px;
+	background: url(images/menu-indicator-right.png) no-repeat;
+	/*border: solid 1px red;*/
+}
+
+
+/**
+|------------------------
+| =Preferences
+|------------------------
+*/
+fieldset {
+	border: 1px dotted #ccc;
+	margin: 1em 0 2em 0;
+	padding: 0 1em 1em;
+	line-height: 1.5em;
+	
+	&.prefsection {
+		border: none;
+		padding: 0;
+		margin: 1em;
+
+		legend.mainLegend {
+			display: none;
+		}
+	}
+}
+
+td.mw-allpages-nav a {
+	display: none;
+}
+
+legend {
+	font-weight: bolder;
+	display: block;
+	padding-left: 16px;
+	padding-right: 16px;
+	-webkit-padding-start: 16px;
+	-webkit-padding-end: 16px;
+	border: none;
+	border-image-source: initial;
+	border-image-slice: initial;
+	border-image-width: initial;
+	border-image-outset: initial;
+	border-image-repeat: initial;
+}
