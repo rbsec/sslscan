@@ -110,15 +110,17 @@
 	    <xsl:value-of select="$vTexts/negoNotSupported[@lang = $pLang]"/>
 	  </xsl:when>
 	  <xsl:when test="$renego='1'">
+		<div class="inline"><!-- do not remove ; needed for IE11 -->
 	    <xsl:value-of select="$vTexts/negoSupported[@lang = $pLang]"/>
 		<xsl:choose>
 		  <xsl:when test="$renego_secure='0'">
-			<div class="red inline"><xsl:value-of select="$vTexts/unsecure[@lang = $pLang]"/></div><xsl:value-of select="$vTexts/dot"/>
+			<div class="inline red"><xsl:value-of select="$vTexts/unsecure[@lang = $pLang]"/></div><xsl:value-of select="$vTexts/dot"/>
 		  </xsl:when>	  
 		  <xsl:when test="$renego_secure='1'">
-			<div class="green inline"><xsl:value-of select="$vTexts/secure[@lang = $pLang]"/></div><xsl:value-of select="$vTexts/dot"/>
+			<div class="inline green"><xsl:value-of select="$vTexts/secure[@lang = $pLang]"/></div><xsl:value-of select="$vTexts/dot"/>
 		  </xsl:when>	  
 		</xsl:choose>
+		</div>
       </xsl:when>	  
 	</xsl:choose>
 	</p>
@@ -235,9 +237,9 @@
 	<h4><xsl:value-of select="$vTexts/supportedAlgos[@lang = $pLang]"/></h4>
 	<table class='table_algos'>
 	  <tr>
-		<th style="width:80px;" ><xsl:value-of select="$vTexts/SSLVersion[@lang = $pLang]"/></th>
-		<th style="width:300px;"><xsl:value-of select="$vTexts/algo[@lang = $pLang]"/></th>
-		<th style="width:100px;"><xsl:value-of select="$vTexts/length[@lang = $pLang]"/></th>
+		<th style="width:120px;" ><xsl:value-of select="$vTexts/SSLVersion[@lang = $pLang]"/></th>
+		<th style="width:320px;"><xsl:value-of select="$vTexts/algo[@lang = $pLang]"/></th>
+		<th style="width:120px;"><xsl:value-of select="$vTexts/length[@lang = $pLang]"/></th>
 		<th style="width:80px;" ><xsl:value-of select="$vTexts/status[@lang = $pLang]"/></th>
 	  </tr>
 	  <xsl:for-each select="document/ssltest/cipher">

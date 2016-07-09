@@ -11,9 +11,12 @@ body {
 .green { color:ForestGreen; }
 .purple { color:purple; }
 .yellow { color:olive; }
-.inline { display:inline;}
+.inline { 
+  display: -moz-inline-box; 
+  display: inline-block; 
+}
 .col-250 { width:250px; }
 .col-700 { width:700px; }
 .table_certif { text-align:left; }
 .table_algos { text-align:left; }
-
+th { text-align:left; }
