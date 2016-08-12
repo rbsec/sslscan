@@ -34,6 +34,8 @@
  *   files in the program, then also delete it here.                       *
  ***************************************************************************/
 
+#define _GNU_SOURCE
+
 // Includes...
 #ifdef _WIN32
   #define WIN32_LEAN_AND_MEAN
@@ -433,6 +435,36 @@ int tcpConnect(struct sslCheckOptions *options)
             printf_verbose("STARTLS IRC setup complete.\nServer reported %s\n", buffer);
         } else {
             printf_verbose("STARTLS IRC setup not complete.\nServer reported %s\n", buffer);
+        }
+    }
+
+    // Setup a LDAP STARTTLS socket
+    if (options->starttls_ldap == true && tlsStarted == false)
+    {
+        tlsStarted = 1;
+        memset(buffer, 0, BUFFERSIZE);
+        char starttls[] = {'0', 0x1d, 0x02, 0x01, 0x01, 'w', 0x18, 0x80, 0x16,
+            '1', '.', '3', '.', '6', '.', '1', '.', '4', '.', '1', '.',
+            '1', '4', '6', '6', '.', '2', '0', '0', '3', '7'};
+        char ok[] = "1.3.6.1.4.1.1466.20037";
+        char unsupported[] = "unsupported extended operation";
+
+        // Send TLS
+        send(socketDescriptor, starttls, sizeof(starttls), 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
+
+        if (memmem(buffer, BUFFERSIZE, ok, sizeof(ok))) {
+            printf_verbose("STARTLS LDAP setup complete.\n");
+        }
+        else if (memmem(buffer, BUFFERSIZE, unsupported, sizeof(unsupported))) {
+            printf_error("%sSTARTLS LDAP connection to %s:%d failed with '%s'.%s\n",
+                         COL_RED, options->host, options->port, unsupported, RESET);
+            return 0;
+        } else {
+            printf_error("%sSTARTLS LDAP connection to %s:%d failed with unknown error.%s\n",
+                         COL_RED, options->host, options->port, RESET);
+            return 0;
         }
     }
 
@@ -3343,6 +3375,7 @@ int main(int argc, char *argv[])
     options.starttls_ftp = false;
     options.starttls_imap = false;
     options.starttls_irc = false;
+    options.starttls_ldap = false;
     options.starttls_pop3 = false;
     options.starttls_smtp = false;
     options.starttls_xmpp = false;
@@ -3488,6 +3521,10 @@ int main(int argc, char *argv[])
         else if (strcmp("--starttls-irc", argv[argLoop]) == 0)
             options.starttls_irc = true;
 
+        // StartTLS... LDAP
+        else if (strcmp("--starttls-ldap", argv[argLoop]) == 0)
+            options.starttls_ldap = true;
+
         // StartTLS... POP3
         else if (strcmp("--starttls-pop3", argv[argLoop]) == 0)
             options.starttls_pop3 = true;
@@ -3627,6 +3664,8 @@ int main(int argc, char *argv[])
                     options.port = 143;
                 else if (options.starttls_irc)
                     options.port = 6667;
+                else if (options.starttls_ldap)
+                    options.port = 389;
                 else if (options.starttls_pop3)
                     options.port = 110;
                 else if (options.starttls_smtp)
@@ -3741,6 +3780,7 @@ int main(int argc, char *argv[])
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-irc%s       STARTTLS setup for IRC\n", COL_GREEN, RESET);
+            printf("  %s--starttls-ldap%s      STARTTLS setup for LDAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
