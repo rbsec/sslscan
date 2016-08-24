@@ -6,7 +6,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 
 * Highlight SSLv2 and SSLv3 ciphers in output.
 * Highlight CBC ciphers on SSLv3 (POODLE)
-* Highlight RC4 ciphers in output.
+* Highlight 3DES and RC4 ciphers in output.
 * Highlight PFS+GCM ciphers as good in output.
 * Highlight NULL (0 bit), weak (<40 bit) and medium (40 < n <= 56) ciphers in output.
 * Highlight anonymous (ADH and AECDH) ciphers in output (purple).

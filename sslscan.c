@@ -1601,7 +1601,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 {
                     printf("%s%-29s%s", COL_RED, sslCipherPointer->name, RESET);
                 }
-                else if (strstr(sslCipherPointer->name, "RC4"))
+                else if (strstr(sslCipherPointer->name, "RC4") || strstr(sslCipherPointer->name, "DES"))
                 {
                     printf("%s%-29s%s", COL_YELLOW, sslCipherPointer->name, RESET);
                 }
