@@ -3655,8 +3655,16 @@ int main(int argc, char *argv[])
 
             // Get port (if it exists)...
             tempInt++;
-            if (tempInt < maxSize - 1)
-                options.port = atoi(hostString + tempInt);
+            if (tempInt < maxSize)
+            {
+                errno = 0;
+                options.port = strtol((hostString + tempInt), NULL, 10);
+                if (options.port < 1 || options.port > 65535)
+                {
+                    printf("\n%sInvalid port specified%s\n\n", COL_RED, RESET);
+                    exit(1);
+                }
+            }
             else if (options.port == 0) {
                 if (options.starttls_ftp)
                     options.port = 21;
