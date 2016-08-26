@@ -5,8 +5,6 @@ Fix the certificate formatting (prefix it with whitespace)
 Add support for SOCKS5 proxy (or audit for 'usewithtor')
     It seems to work fine with 'usewithtor'
     It still seems prudent to add proper proxy support
-Add STARTTLS support for LDAP:
-    http://www.rfc-editor.org/rfc/rfc2830.txt
 Fix XMPP scans that do not support StartTLS:
     "<stream:error><invalid-namespace xmlns='urn:ietf:params:xml:ns:xmpp-streams'/></stream:error>"
 Add HTML report generation

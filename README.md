@@ -37,6 +37,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Experimental OSX support (static building only)
 * Support for scanning PostgreSQL servers (credit nuxi)
 * Check for TLS Fallback SCSV support
+* Added StartTLS support for LDAP (--starttls-ldap)
 
 ### Building on Windows
 Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can

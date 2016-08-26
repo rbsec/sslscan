@@ -129,6 +129,7 @@ struct sslCheckOptions
     int starttls_ftp;
     int starttls_imap;
     int starttls_irc;
+    int starttls_ldap;
     int starttls_pop3;
     int starttls_smtp;
     int starttls_xmpp;
