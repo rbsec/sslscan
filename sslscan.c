@@ -905,7 +905,9 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
         {
             if (downgraded)
             {
+#ifdef SSL_MODE_SEND_FALLBACK_SCSV
                 SSL_CTX_set_mode(options->ctx, SSL_MODE_SEND_FALLBACK_SCSV);
+#endif
             }
             if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
             {
