@@ -874,6 +874,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     return status;
 }
 
+#ifdef SSL_MODE_SEND_FALLBACK_SCSV
 // Check for TLS_FALLBACK_SCSV
 int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
 {
@@ -1042,6 +1043,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
     }
     return status;
 }
+#endif
 
 
 // Check if the server supports renegotiation
@@ -3180,13 +3182,16 @@ int testHost(struct sslCheckOptions *options)
         }
         printf("\n");
     }
-
     if (status == true && options->fallback )
     {
         printf("  %sTLS Fallback SCSV:%s\n", COL_BLUE, RESET);
+#ifdef SSL_MODE_SEND_FALLBACK_SCSV
         testFallback(options, NULL);
+#else
+        printf("%sOpenSSL version does not support SCSV fallback%s\n\n", COL_RED, RESET);
+
+#endif
     }
-    
     if (status == true && options->reneg )
     {
         printf("  %sTLS renegotiation:%s\n", COL_BLUE, RESET);
@@ -3781,7 +3786,9 @@ int main(int argc, char *argv[])
             printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted client certificates\n", COL_GREEN, RESET);
             printf("  %s--no-ciphersuites%s    Do not check for supported ciphersuites\n", COL_GREEN, RESET);
+#ifdef SSL_MODE_SEND_FALLBACK_SCSV
             printf("  %s--no-fallback%s        Do not check for TLS Fallback SCSV\n", COL_GREEN, RESET);
+#endif
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
             printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
