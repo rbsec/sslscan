@@ -5,39 +5,40 @@
 This is a fork of ioerror's version of sslscan (the original readme of which is included below). Changes are as follows:
 
 * Highlight SSLv2 and SSLv3 ciphers in output.
-* Highlight CBC ciphers on SSLv3 (POODLE)
+* Highlight CBC ciphers on SSLv3 (POODLE).
 * Highlight 3DES and RC4 ciphers in output.
 * Highlight PFS+GCM ciphers as good in output.
 * Highlight NULL (0 bit), weak (<40 bit) and medium (40 < n <= 56) ciphers in output.
 * Highlight anonymous (ADH and AECDH) ciphers in output (purple).
-* Hide certificate information by default (display with --get-certificate).
-* Hide rejected ciphers by default (display with --failed).
+* Hide certificate information by default (display with `--get-certificate`).
+* Hide rejected ciphers by default (display with `--failed`).
 * Added TLSv1.1 and TLSv1.2 support (merged from twwbond/sslscan).
 * Compiles if OpenSSL does not support SSLv2 ciphers (merged from digineo/sslscan).
-* Supports IPv6 hostnames (can be forced with --ipv6).
-* Check for TLS compression (CRIME, disable with --no-compression).
-* Disable cipher suite checking (--no-ciphersuites).
-* Disable coloured output (--no-colour).
+* Supports IPv6 hostnames (can be forced with `--ipv6`).
+* Check for TLS compression (CRIME, disable with `--no-compression`).
+* Disable cipher suite checking `--no-ciphersuites`.
+* Disable coloured output `--no-colour`.
 * Removed undocumented -p output option.
-* Added check for OpenSSL HeartBleed (CVE-2014-0160, disable with --no-heartbleed).
+* Added check for OpenSSL HeartBleed (CVE-2014-0160, disable with `--no-heartbleed`).
 * Flag certificates signed with MD5 or SHA-1, or with short (<2048 bit) RSA keys.
-* Support scanning RDP servers with --rdp (credit skettler).
+* Support scanning RDP servers with `--rdp` (credit skettler).
 * Added option to specify socket timeout.
 * Added option for static compilation (credit dmke).
-* Added --sleep option to pause between requests.
-* Disable output for anything than specified checks (--no-preferred).
-* Determine the list of CAs acceptable for client certificates (--show-client-cas).
-* Experimental build support on OSX (credit MikeSchroll)
+* Added `--sleep` option to pause between requests.
+* Disable output for anything than specified checks `--no-preferred`.
+* Determine the list of CAs acceptable for client certificates `--show-client-cas`.
+* Experimental build support on OSX (credit MikeSchroll).
 * Flag some self-signed SSL certificates.
 * Experimental Windows support (credit jtesta).
-* Display EC curve names and DHE key lengths with OpenSSL >= 1.0.2 (--no-cipher-details)
-* Flag weak DHE keys with OpenSSL >= 1.0.2 (--cipher-details)
-* Flag expired certificates
+* Display EC curve names and DHE key lengths with OpenSSL >= 1.0.2 `--no-cipher-details`.
+* Flag weak DHE keys with OpenSSL >= 1.0.2 `--cipher-details`.
+* Flag expired certificates.
 * Flag TLSv1.0 ciphers in output as weak.
-* Experimental OSX support (static building only)
-* Support for scanning PostgreSQL servers (credit nuxi)
-* Check for TLS Fallback SCSV support
-* Added StartTLS support for LDAP (--starttls-ldap)
+* Experimental OSX support (static building only).
+* Support for scanning PostgreSQL servers (credit nuxi).
+* Check for TLS Fallback SCSV support.
+* Added StartTLS support for LDAP `--starttls-ldap`.
+* Added SNI support `--sni-name` (credit Ken).
 
 ### Building on Windows
 Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can

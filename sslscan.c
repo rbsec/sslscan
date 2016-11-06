@@ -801,7 +801,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
 
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // This enables TLS SNI
-                        SSL_set_tlsext_host_name(ssl, options->host);
+                        SSL_set_tlsext_host_name(ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -941,7 +941,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
 
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // This enables TLS SNI
-                        SSL_set_tlsext_host_name(ssl, options->host);
+                        SSL_set_tlsext_host_name(ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -1108,7 +1108,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                         // untested.  Please report success or failure!  However, this code change
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
-                        SSL_set_tlsext_host_name(ssl, options->host);
+                        SSL_set_tlsext_host_name(ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -1485,7 +1485,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                 // This enables TLS SNI
-                SSL_set_tlsext_host_name (ssl, options->host);
+                SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 
                 // Connect SSL over socket
@@ -1785,7 +1785,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                         // untested.  Please report success or failure!  However, this code change
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
-                        SSL_set_tlsext_host_name (ssl, options->host);
+                        SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -2203,7 +2203,7 @@ int ocspRequest(struct sslCheckOptions *options)
                         // untested.  Please report success or failure!  However, this code change
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
-                        SSL_set_tlsext_host_name (ssl, options->host);
+                        SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 						SSL_set_tlsext_status_type(ssl, TLSEXT_STATUSTYPE_ocsp);
 						SSL_CTX_set_tlsext_status_cb(options->ctx, ocsp_resp_cb);
@@ -2474,7 +2474,7 @@ int showCertificate(struct sslCheckOptions *options)
                         // untested.  Please report success or failure!  However, this code change
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
-                        SSL_set_tlsext_host_name (ssl, options->host);
+                        SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -2917,7 +2917,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
                         // untested.  Please report success or failure!  However, this code change
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
-                        SSL_set_tlsext_host_name (ssl, options->host);
+                        SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -3612,6 +3612,13 @@ int main(int argc, char *argv[])
 		else if (strcmp("--ocsp", argv[argLoop]) == 0)
 			options.ocspStatus = true;
 
+        // SNI name
+        else if (strncmp("--sni-name=", argv[argLoop], 11) == 0)
+            strncpy(options.sniname, argv[argLoop]+11, strlen(argv[argLoop])-11);
+
+		else if (strcmp("--ocsp", argv[argLoop]) == 0)
+			options.ocspStatus = true;
+
 
         // Host (maybe port too)...
         else if (argLoop + 1 == argc)
@@ -3657,6 +3664,12 @@ int main(int argc, char *argv[])
                     hostString[tempInt] = 0;
 
             strncpy(options.host, hostString, sizeof(options.host) -1);
+
+            // No SNI name passed on command line
+            if (strlen(options.sniname) == 0)
+            {
+                strncpy(options.sniname, options.host, sizeof(options.host));
+            }
 
             // Get port (if it exists)...
             tempInt++;
@@ -3760,6 +3773,7 @@ int main(int argc, char *argv[])
             printf("%sOptions:%s\n", COL_BLUE, RESET);
             printf("  %s--targets=<file>%s     A file containing a list of hosts to check.\n", COL_GREEN, RESET);
             printf("                       Hosts can  be supplied  with ports (host:port)\n");
+            printf("  %s--sni-name=<name>%s    Hostname for SNI\n", COL_GREEN, RESET);
             printf("  %s--ipv4%s               Only use IPv4\n", COL_GREEN, RESET);
             printf("  %s--ipv6%s               Only use IPv6\n", COL_GREEN, RESET);
             printf("  %s--show-certificate%s   Show full certificate information\n", COL_GREEN, RESET);
