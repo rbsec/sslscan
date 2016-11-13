@@ -91,7 +91,7 @@ opensslpull:
 	sed -i.bak 's/# if 0/# if 1/g' openssl/ssl/s2_lib.c
 	rm openssl/ssl/s2_lib.c.bak
 	# Re-enable weak (<1024 bit) DH keys
-	sed -i.bak 's/dh_size < [0-9]\+/dh_size < 512/g' openssl/ssl/s3_clnt.c
+	sed -i.bak -E 's/dh_size < [0-9]+/dh_size < 512/g' openssl/ssl/s3_clnt.c
 	rm openssl/ssl/s3_clnt.c.bak
 	# Break the weak DH key test so OpenSSL compiles
 	sed -i.bak 's/dhe512/zzz/g' openssl/test/testssl
