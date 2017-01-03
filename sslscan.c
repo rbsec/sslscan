@@ -454,10 +454,18 @@ int tcpConnect(struct sslCheckOptions *options)
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
 
+#ifdef __USE_GNU
         if (memmem(buffer, BUFFERSIZE, ok, sizeof(ok))) {
+#else
+        if (strnstr(buffer, ok, BUFFERSIZE)) {
+#endif
             printf_verbose("STARTLS LDAP setup complete.\n");
         }
+#ifdef __USE_GNU
         else if (memmem(buffer, BUFFERSIZE, unsupported, sizeof(unsupported))) {
+#else
+        else if (strnstr(buffer, unsupported, BUFFERSIZE)) {
+#endif
             printf_error("%sSTARTLS LDAP connection to %s:%d failed with '%s'.%s\n",
                          COL_RED, options->host, options->port, unsupported, RESET);
             return 0;
