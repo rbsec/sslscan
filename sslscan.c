@@ -305,10 +305,25 @@ int tcpConnect(struct sslCheckOptions *options)
         }
     }
 
+    if (options->starttls_mysql == true && tlsStarted == false)
+    {
+        tlsStarted = 1;
+        // Taken from https://github.com/tetlowgm/sslscan/blob/master/sslscan.c
+
+        const char mysqlssl[] = { 0x20, 0x00, 0x00, 0x01, 0x85, 0xae, 0x7f, 0x00, 
+            0x00, 0x00, 0x00, 0x01, 0x21, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00};
+
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
+        send(socketDescriptor, mysqlssl, sizeof(mysqlssl), 0);
+    }
+
     // We could use an XML parser but frankly it seems like a security disaster
     if (options->starttls_xmpp == true && tlsStarted == false)
     {
-
         /* This is so ghetto, you cannot release it! */
         char xmpp_setup[1024]; // options->host is 512 bytes long
         /* XXX: TODO - options->host isn't always the host you want to test
@@ -3391,6 +3406,7 @@ int main(int argc, char *argv[])
     options.starttls_ldap = false;
     options.starttls_pop3 = false;
     options.starttls_smtp = false;
+    options.starttls_mysql = false;
     options.starttls_xmpp = false;
     options.starttls_psql = false;
     options.xmpp_server = false;
@@ -3545,6 +3561,10 @@ int main(int argc, char *argv[])
         // StartTLS... SMTP
         else if (strcmp("--starttls-smtp", argv[argLoop]) == 0)
             options.starttls_smtp = true;
+
+        // StartTLS... MYSQL
+        else if (strcmp("--starttls-mysql", argv[argLoop]) == 0)
+            options.starttls_mysql = true;
 
         // StartTLS... XMPP
         else if (strcmp("--starttls-xmpp", argv[argLoop]) == 0)
@@ -3704,6 +3724,8 @@ int main(int argc, char *argv[])
                     options.port = 110;
                 else if (options.starttls_smtp)
                     options.port = 25;
+                else if (options.starttls_mysql)
+                    options.port = 3306;
                 else if (options.starttls_xmpp)
                     options.port = 5222;
                 else if (options.starttls_psql)
@@ -3820,6 +3842,7 @@ int main(int argc, char *argv[])
             printf("  %s--starttls-ldap%s      STARTTLS setup for LDAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
+            printf("  %s--starttls-mysql%s     STARTTLS setup for MYSQL\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
             printf("  %s--starttls-psql%s      STARTTLS setup for PostgreSQL\n", COL_GREEN, RESET);
             printf("  %s--xmpp-server%s        Use a server-to-server XMPP handshake\n", COL_GREEN, RESET);
