@@ -1,0 +1,22 @@
+/*
+ * CSS by Janiko
+*/
+
+
+body { 
+	font-family: PT Sans, Roboto,Candara, Calibri, sans-serif;
+}
+
+.red { color: red; }
+.green { color:ForestGreen; }
+.purple { color:purple; }
+.yellow { color:olive; }
+.inline { 
+  display: -moz-inline-box; 
+  display: inline-block; 
+}
+.col-250 { width:250px; }
+.col-700 { width:700px; }
+.table_certif { text-align:left; }
+.table_algos { text-align:left; }
+th { text-align:left; }
