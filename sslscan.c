@@ -304,7 +304,7 @@ int tcpConnect(struct sslCheckOptions *options)
         }
     }
 
-    // We could use an XML_ parser but frankly it seems like a security disaster
+    // We could use an XML parser but frankly it seems like a security disaster
     if (options->starttls_xmpp == true && tlsStarted == false)
     {
 
@@ -3096,7 +3096,7 @@ int testHost(struct sslCheckOptions *options)
     struct sslCipher *sslCipherPointer = NULL;
     int status = true;
     
-    // XML_ Output...
+    // XML Output...
     printf_xml(" <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
 
     // Verbose warning about STARTTLS and SSLv3
@@ -3315,7 +3315,7 @@ int testHost(struct sslCheckOptions *options)
         status = showTrustedCAs(options);
     }
 
-    // XML_ Output...
+    // XML Output...
     printf_xml(" </ssltest>\n");
 
     // Return status...
@@ -3437,7 +3437,7 @@ int main(int argc, char *argv[])
         else if (strcmp("--version", argv[argLoop]) == 0)
             mode = mode_version;
 
-        // XML_ Output
+        // XML Output
         else if (strncmp("--xml=", argv[argLoop], 6) == 0)
             xmlArg = argLoop;
 
@@ -3665,7 +3665,7 @@ int main(int argc, char *argv[])
             mode = mode_help;
     }
 
-    // Open XML_ file output...
+    // Open XML file output...
     if ((xmlArg > 0) && (mode != mode_help))
     {
         if (strcmp(argv[xmlArg] + 6, "-") == 0)
@@ -3678,7 +3678,7 @@ int main(int argc, char *argv[])
             options.xmlOutput = fopen(argv[xmlArg] + 6, "w");
             if (options.xmlOutput == NULL)
             {
-                printf_error("%sERROR: Could not open XML_ output file %s.%s\n", COL_RED, argv[xmlArg] + 6, RESET);
+                printf_error("%sERROR: Could not open XML output file %s.%s\n", COL_RED, argv[xmlArg] + 6, RESET);
                 exit(0);
             }
         }
@@ -3769,7 +3769,7 @@ int main(int argc, char *argv[])
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
             printf("  %s--timeout=<sec>%s      Set socket timeout. Default is 3s\n", COL_GREEN, RESET);
             printf("  %s--sleep=<msec>%s       Pause between connection request. Default is disabled\n", COL_GREEN, RESET);
-            printf("  %s--xml=<file>%s         Output results to an XML_ file\n", COL_GREEN, RESET);
+            printf("  %s--xml=<file>%s         Output results to an XML file\n", COL_GREEN, RESET);
             printf("                       <file> can be -, which means stdout\n");
             printf("  %s--version%s            Display the program version\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output\n", COL_GREEN, RESET);
@@ -3873,7 +3873,7 @@ int main(int argc, char *argv[])
             break;
     }
 
-    // Close XML_ file, if required...
+    // Close XML file, if required...
     if ((xmlArg > 0) && (mode != mode_help))
     {
         fprintf(options.xmlOutput, "</document>\n");
