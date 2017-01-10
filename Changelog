@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version: 1.11.8
+Date   : 06/11/2016
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Support alternate SNI hostnames (--sni=)
+         > Allow building with no support for TLS SCSV Fallback
+
 Version: 1.11.7
 Date   : 13/06/2016
 Author : rbsec <robin@rbsec.net>
