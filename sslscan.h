@@ -114,6 +114,7 @@ struct sslCheckOptions
 {
     // Program Options...
     char host[512];
+    char sniname[512];
     int port;
     int showCertificate;
     int checkCertificate;
@@ -129,6 +130,7 @@ struct sslCheckOptions
     int starttls_ftp;
     int starttls_imap;
     int starttls_irc;
+    int starttls_ldap;
     int starttls_pop3;
     int starttls_smtp;
     int starttls_xmpp;
@@ -203,7 +205,9 @@ int freeRenegotiationOutput(struct renegotiationOutput *);
 
 int testCompression(struct sslCheckOptions *, const SSL_METHOD *);
 int testRenegotiation(struct sslCheckOptions *, const SSL_METHOD *);
+#ifdef SSL_MODE_SEND_FALLBACK_SCSV
 int testfallback(struct sslCheckOptions *, const SSL_METHOD *);
+#endif
 int testHeartbleed(struct sslCheckOptions *, const SSL_METHOD *);
 int testCipher(struct sslCheckOptions *, const SSL_METHOD *);
 int testProtocolCiphers(struct sslCheckOptions *, const SSL_METHOD *);
