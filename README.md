@@ -39,6 +39,7 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Check for TLS Fallback SCSV support.
 * Added StartTLS support for LDAP `--starttls-ldap`.
 * Added SNI support `--sni-name` (credit Ken).
+* Support STARTTLS for MySQL (credit bk2017).
 
 ### Building on Windows
 Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can
