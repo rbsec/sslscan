@@ -1121,14 +1121,14 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                                 printf_verbose("Attempting SSL_do_handshake(ssl)\n");
                                 SSL_do_handshake(ssl); // Send renegotiation request to server //TODO :: XXX hanging here
 
-                                if (ssl->state == SSL_ST_OK)
+                                if (SSL_get_state(ssl) == SSL_ST_OK)
                                 {
                                     res = SSL_do_handshake(ssl); // Send renegotiation request to server
                                     if( res != 1 )
                                     {
                                         printf_error("\n\nSSL_do_handshake() call failed\n");
                                     }
-                                    if (ssl->state == SSL_ST_OK)
+                                    if (SSL_get_state(ssl) == SSL_ST_OK)
                                     {
                                         /* our renegotiation is complete */
                                         renOut->supported = true;
