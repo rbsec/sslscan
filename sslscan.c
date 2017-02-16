@@ -34,6 +34,8 @@
  *   files in the program, then also delete it here.                       *
  ***************************************************************************/
 
+#define _GNU_SOURCE
+
 // Includes...
 #ifdef _WIN32
   #define WIN32_LEAN_AND_MEAN
@@ -303,10 +305,25 @@ int tcpConnect(struct sslCheckOptions *options)
         }
     }
 
+    if (options->starttls_mysql == true && tlsStarted == false)
+    {
+        tlsStarted = 1;
+        // Taken from https://github.com/tetlowgm/sslscan/blob/master/sslscan.c
+
+        const char mysqlssl[] = { 0x20, 0x00, 0x00, 0x01, 0x85, 0xae, 0x7f, 0x00, 
+            0x00, 0x00, 0x00, 0x01, 0x21, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00};
+
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
+        send(socketDescriptor, mysqlssl, sizeof(mysqlssl), 0);
+    }
+
     // We could use an XML parser but frankly it seems like a security disaster
     if (options->starttls_xmpp == true && tlsStarted == false)
     {
-
         /* This is so ghetto, you cannot release it! */
         char xmpp_setup[1024]; // options->host is 512 bytes long
         /* XXX: TODO - options->host isn't always the host you want to test
@@ -433,6 +450,44 @@ int tcpConnect(struct sslCheckOptions *options)
             printf_verbose("STARTLS IRC setup complete.\nServer reported %s\n", buffer);
         } else {
             printf_verbose("STARTLS IRC setup not complete.\nServer reported %s\n", buffer);
+        }
+    }
+
+    // Setup a LDAP STARTTLS socket
+    if (options->starttls_ldap == true && tlsStarted == false)
+    {
+        tlsStarted = 1;
+        memset(buffer, 0, BUFFERSIZE);
+        char starttls[] = {'0', 0x1d, 0x02, 0x01, 0x01, 'w', 0x18, 0x80, 0x16,
+            '1', '.', '3', '.', '6', '.', '1', '.', '4', '.', '1', '.',
+            '1', '4', '6', '6', '.', '2', '0', '0', '3', '7'};
+        char ok[] = "1.3.6.1.4.1.1466.20037";
+        char unsupported[] = "unsupported extended operation";
+
+        // Send TLS
+        send(socketDescriptor, starttls, sizeof(starttls), 0);
+        if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
+            return 0;
+
+#ifdef __USE_GNU
+        if (memmem(buffer, BUFFERSIZE, ok, sizeof(ok))) {
+#else
+        if (strnstr(buffer, ok, BUFFERSIZE)) {
+#endif
+            printf_verbose("STARTLS LDAP setup complete.\n");
+        }
+#ifdef __USE_GNU
+        else if (memmem(buffer, BUFFERSIZE, unsupported, sizeof(unsupported))) {
+#else
+        else if (strnstr(buffer, unsupported, BUFFERSIZE)) {
+#endif
+            printf_error("%sSTARTLS LDAP connection to %s:%d failed with '%s'.%s\n",
+                         COL_RED, options->host, options->port, unsupported, RESET);
+            return 0;
+        } else {
+            printf_error("%sSTARTLS LDAP connection to %s:%d failed with unknown error.%s\n",
+                         COL_RED, options->host, options->port, RESET);
+            return 0;
         }
     }
 
@@ -769,7 +824,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
 
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // This enables TLS SNI
-                        SSL_set_tlsext_host_name(ssl, options->host);
+                        SSL_set_tlsext_host_name(ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -842,6 +897,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     return status;
 }
 
+#ifdef SSL_MODE_SEND_FALLBACK_SCSV
 // Check for TLS_FALLBACK_SCSV
 int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
 {
@@ -908,7 +964,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
 
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // This enables TLS SNI
-                        SSL_set_tlsext_host_name(ssl, options->host);
+                        SSL_set_tlsext_host_name(ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -1010,6 +1066,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
     }
     return status;
 }
+#endif
 
 
 // Check if the server supports renegotiation
@@ -1074,7 +1131,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                         // untested.  Please report success or failure!  However, this code change
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
-                        SSL_set_tlsext_host_name(ssl, options->host);
+                        SSL_set_tlsext_host_name(ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -1451,7 +1508,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                 // This enables TLS SNI
-                SSL_set_tlsext_host_name (ssl, options->host);
+                SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 
                 // Connect SSL over socket
@@ -1601,7 +1658,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 {
                     printf("%s%-29s%s", COL_RED, sslCipherPointer->name, RESET);
                 }
-                else if (strstr(sslCipherPointer->name, "RC4"))
+                else if (strstr(sslCipherPointer->name, "RC4") || strstr(sslCipherPointer->name, "DES"))
                 {
                     printf("%s%-29s%s", COL_YELLOW, sslCipherPointer->name, RESET);
                 }
@@ -1751,7 +1808,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                         // untested.  Please report success or failure!  However, this code change
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
-                        SSL_set_tlsext_host_name (ssl, options->host);
+                        SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -2169,7 +2226,7 @@ int ocspRequest(struct sslCheckOptions *options)
                         // untested.  Please report success or failure!  However, this code change
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
-                        SSL_set_tlsext_host_name (ssl, options->host);
+                        SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 						SSL_set_tlsext_status_type(ssl, TLSEXT_STATUSTYPE_ocsp);
 						SSL_CTX_set_tlsext_status_cb(options->ctx, ocsp_resp_cb);
@@ -2440,7 +2497,7 @@ int showCertificate(struct sslCheckOptions *options)
                         // untested.  Please report success or failure!  However, this code change
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
-                        SSL_set_tlsext_host_name (ssl, options->host);
+                        SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -2883,7 +2940,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
                         // untested.  Please report success or failure!  However, this code change
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
-                        SSL_set_tlsext_host_name (ssl, options->host);
+                        SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 
                         // Connect SSL over socket
@@ -3148,13 +3205,16 @@ int testHost(struct sslCheckOptions *options)
         }
         printf("\n");
     }
-
     if (status == true && options->fallback )
     {
         printf("  %sTLS Fallback SCSV:%s\n", COL_BLUE, RESET);
+#ifdef SSL_MODE_SEND_FALLBACK_SCSV
         testFallback(options, NULL);
+#else
+        printf("%sOpenSSL version does not support SCSV fallback%s\n\n", COL_RED, RESET);
+
+#endif
     }
-    
     if (status == true && options->reneg )
     {
         printf("  %sTLS renegotiation:%s\n", COL_BLUE, RESET);
@@ -3343,8 +3403,10 @@ int main(int argc, char *argv[])
     options.starttls_ftp = false;
     options.starttls_imap = false;
     options.starttls_irc = false;
+    options.starttls_ldap = false;
     options.starttls_pop3 = false;
     options.starttls_smtp = false;
+    options.starttls_mysql = false;
     options.starttls_xmpp = false;
     options.starttls_psql = false;
     options.xmpp_server = false;
@@ -3488,6 +3550,10 @@ int main(int argc, char *argv[])
         else if (strcmp("--starttls-irc", argv[argLoop]) == 0)
             options.starttls_irc = true;
 
+        // StartTLS... LDAP
+        else if (strcmp("--starttls-ldap", argv[argLoop]) == 0)
+            options.starttls_ldap = true;
+
         // StartTLS... POP3
         else if (strcmp("--starttls-pop3", argv[argLoop]) == 0)
             options.starttls_pop3 = true;
@@ -3495,6 +3561,10 @@ int main(int argc, char *argv[])
         // StartTLS... SMTP
         else if (strcmp("--starttls-smtp", argv[argLoop]) == 0)
             options.starttls_smtp = true;
+
+        // StartTLS... MYSQL
+        else if (strcmp("--starttls-mysql", argv[argLoop]) == 0)
+            options.starttls_mysql = true;
 
         // StartTLS... XMPP
         else if (strcmp("--starttls-xmpp", argv[argLoop]) == 0)
@@ -3570,6 +3640,13 @@ int main(int argc, char *argv[])
 		else if (strcmp("--ocsp", argv[argLoop]) == 0)
 			options.ocspStatus = true;
 
+        // SNI name
+        else if (strncmp("--sni-name=", argv[argLoop], 11) == 0)
+            strncpy(options.sniname, argv[argLoop]+11, strlen(argv[argLoop])-11);
+
+		else if (strcmp("--ocsp", argv[argLoop]) == 0)
+			options.ocspStatus = true;
+
 
         // Host (maybe port too)...
         else if (argLoop + 1 == argc)
@@ -3616,10 +3693,24 @@ int main(int argc, char *argv[])
 
             strncpy(options.host, hostString, sizeof(options.host) -1);
 
+            // No SNI name passed on command line
+            if (strlen(options.sniname) == 0)
+            {
+                strncpy(options.sniname, options.host, sizeof(options.host));
+            }
+
             // Get port (if it exists)...
             tempInt++;
-            if (tempInt < maxSize - 1)
-                options.port = atoi(hostString + tempInt);
+            if (tempInt < maxSize)
+            {
+                errno = 0;
+                options.port = strtol((hostString + tempInt), NULL, 10);
+                if (options.port < 1 || options.port > 65535)
+                {
+                    printf("\n%sInvalid port specified%s\n\n", COL_RED, RESET);
+                    exit(1);
+                }
+            }
             else if (options.port == 0) {
                 if (options.starttls_ftp)
                     options.port = 21;
@@ -3627,10 +3718,14 @@ int main(int argc, char *argv[])
                     options.port = 143;
                 else if (options.starttls_irc)
                     options.port = 6667;
+                else if (options.starttls_ldap)
+                    options.port = 389;
                 else if (options.starttls_pop3)
                     options.port = 110;
                 else if (options.starttls_smtp)
                     options.port = 25;
+                else if (options.starttls_mysql)
+                    options.port = 3306;
                 else if (options.starttls_xmpp)
                     options.port = 5222;
                 else if (options.starttls_psql)
@@ -3708,6 +3803,7 @@ int main(int argc, char *argv[])
             printf("%sOptions:%s\n", COL_BLUE, RESET);
             printf("  %s--targets=<file>%s     A file containing a list of hosts to check.\n", COL_GREEN, RESET);
             printf("                       Hosts can  be supplied  with ports (host:port)\n");
+            printf("  %s--sni-name=<name>%s    Hostname for SNI\n", COL_GREEN, RESET);
             printf("  %s--ipv4%s               Only use IPv4\n", COL_GREEN, RESET);
             printf("  %s--ipv6%s               Only use IPv6\n", COL_GREEN, RESET);
             printf("  %s--show-certificate%s   Show full certificate information\n", COL_GREEN, RESET);
@@ -3734,15 +3830,19 @@ int main(int argc, char *argv[])
             printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
             printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted client certificates\n", COL_GREEN, RESET);
             printf("  %s--no-ciphersuites%s    Do not check for supported ciphersuites\n", COL_GREEN, RESET);
+#ifdef SSL_MODE_SEND_FALLBACK_SCSV
             printf("  %s--no-fallback%s        Do not check for TLS Fallback SCSV\n", COL_GREEN, RESET);
+#endif
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
             printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-irc%s       STARTTLS setup for IRC\n", COL_GREEN, RESET);
+            printf("  %s--starttls-ldap%s      STARTTLS setup for LDAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
+            printf("  %s--starttls-mysql%s     STARTTLS setup for MYSQL\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
             printf("  %s--starttls-psql%s      STARTTLS setup for PostgreSQL\n", COL_GREEN, RESET);
             printf("  %s--xmpp-server%s        Use a server-to-server XMPP handshake\n", COL_GREEN, RESET);
