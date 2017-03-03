@@ -1850,13 +1850,9 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                     printf("Signature Algorithm: ");
                                     i2t_ASN1_OBJECT(certAlgorithm, sizeof(certAlgorithm), x509Cert->cert_info->signature->algorithm);
                                     strtok(certAlgorithm, "\n");
-                                    if (strstr(certAlgorithm, "md5"))
+                                    if (strstr(certAlgorithm, "md5") || strstr(certAlgorithm, "sha1"))
                                     {
                                         printf("%s%s%s\n", COL_RED, certAlgorithm, RESET);
-                                    }
-                                    else if (strstr(certAlgorithm, "sha1"))
-                                    {
-                                        printf("%s%s%s\n", COL_YELLOW, certAlgorithm, RESET);
                                     }
                                     else if (strstr(certAlgorithm, "sha512") || strstr(certAlgorithm, "sha256"))
                                     {
