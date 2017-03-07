@@ -107,6 +107,10 @@ static int use_unsafe_renegotiation_flag = 0;
 /** Does output xml to stdout? */
 static int xml_to_stdout = 0;
 
+#if OPENSSL_VERSION_NUMBER < 0x1000100L
+unsigned long SSL_CIPHER_get_id(const SSL_CIPHER* cipher) { return cipher->id; }
+#endif
+
 // Adds Ciphers to the Cipher List structure
 int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
@@ -974,11 +978,13 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                             if (!downgraded)
                             {
                                 sslversion = SSL_version(ssl);
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
                                 if (sslversion == TLS1_2_VERSION)
                                 {
                                     secondMethod = TLSv1_1_client_method();
-                                }
-                                else if (sslversion == TLS1_VERSION)
+                                } else
+#endif
+                                if (sslversion == TLS1_VERSION)
                                 {
                                     secondMethod = TLSv1_client_method();
                                 }
@@ -1527,8 +1533,8 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     return false;
                 }
 
-		cipherid = SSL_CIPHER_get_id(sslCipherPointer);
-		cipherid = cipherid & 0x00ffffff;  // remove first byte which is the version (0x03 for TLSv1/SSLv3)
+                cipherid = SSL_CIPHER_get_id(sslCipherPointer);
+                cipherid = cipherid & 0x00ffffff;  // remove first byte which is the version (0x03 for TLSv1/SSLv3)
 
                 // Show Cipher Status
                 printf_xml("  <cipher status=\"");
