@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Version: 1.11.9
+Date   : 09/04/2017
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Add support for STARTTLS on mysql (--starttls-mysql)
+         > Display SNI information in XML output
+         > Fix some compiler warnings
+         > Mark SHA-1 certificates as weak
+         > Fix build on some platforms
+
 Version: 1.11.8
 Date   : 06/11/2016
 Author : rbsec <robin@rbsec.net>
