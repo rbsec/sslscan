@@ -3138,7 +3138,7 @@ int testHost(struct sslCheckOptions *options)
     int status = true;
     
     // XML Output...
-    printf_xml(" <ssltest host=\"%s\" port=\"%d\">\n", options->host, options->port);
+    printf_xml(" <ssltest host=\"%s\" sniname=\"%s\" port=\"%d\">\n", options->host, options->sniname, options->port);
 
     // Verbose warning about STARTTLS and SSLv3
     if (options->sslVersion == ssl_v3 || options->sslVersion == ssl_all)
@@ -3146,8 +3146,8 @@ int testHost(struct sslCheckOptions *options)
         printf_verbose("Some servers will fail to response to SSLv3 ciphers over STARTTLS\nIf your scan hangs, try using the --tlsall option\n\n");
     }
 
-    // Test renegotiation
-    printf("Testing SSL server %s%s%s on port %s%d%s\n\n", COL_GREEN, options->host, RESET, COL_GREEN, options->port, RESET);
+    printf("Testing SSL server %s%s%s on port %s%d%s using SNI name %s%s%s\n\n", COL_GREEN, options->host, RESET,
+            COL_GREEN, options->port, RESET, COL_GREEN, options->sniname, RESET);
 
     if (options->showClientCiphers == true)
     {
