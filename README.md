@@ -61,6 +61,20 @@ required to compile OpenSSL from source on OS X. Once you have, just run:
 
 ### OpenSSL issues
 
+#### OpenSSL 1.1.0 Support
+OpenSSL 1.1.0 introduced a number of significant changes, including the removal
+of old and insecure features such as SSLv2. While this is a very good thing for
+the SSL ecosystem as a whole, it is a problem for sslscan, which relies on
+these legacy features being available in order to detect them on client system.
+
+Keeping these features available while also adding support for the new features
+such as TLSv1.3 would either require maintaining a separate fork of OpenSSL
+with all the required features enabled, or a complete rewrite of sslscan to use
+a different library (or to handle the TLS handshake itself). As such, it is
+likely that sslscan **will never support OpenSSL 1.1.0.**  It is recommended
+that you continue to build statically against OpenSSL 1.0.1, as describeed in
+the following section.
+
 #### Statically linking a custom OpenSSL build
 
 It is possible to ignore the OpenSSL system installation and ship your own
