@@ -3678,21 +3678,25 @@ int main(int argc, char *argv[])
                 hostString++;
             }
 
-            while ((hostString[tempInt] != 0) && ((squareBrackets == true && hostString[tempInt] != ']') || (squareBrackets == false && hostString[tempInt] != ':')))
+            while ((hostString[tempInt] != 0) && ((squareBrackets == true && hostString[tempInt] != ']')
+                        || (squareBrackets == false && hostString[tempInt] != ':')))
+            {
                 tempInt++;
+            }
 
-                if (squareBrackets == true && hostString[tempInt] == ']')
+            if (squareBrackets == true && hostString[tempInt] == ']')
+            {
+                hostString[tempInt] = 0;
+                if (tempInt < maxSize && hostString[tempInt + 1] == ':')
                 {
+                    tempInt++;
                     hostString[tempInt] = 0;
-                    if (tempInt < maxSize && hostString[tempInt + 1] == ':')
-                    {
-                        tempInt++;
-                        hostString[tempInt] = 0;
-                    }
                 }
-                else
-                    hostString[tempInt] = 0;
-
+            }
+            else
+            {
+                hostString[tempInt] = 0;
+            }
             strncpy(options.host, hostString, sizeof(options.host) -1);
 
             // No SNI name passed on command line
