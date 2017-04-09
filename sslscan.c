@@ -3924,7 +3924,18 @@ int main(int argc, char *argv[])
                                 tempInt++;
                                 if (strlen(line + tempInt) > 0)
                                 {
-                                    options.port = atoi(line + tempInt);
+                                    int port;
+                                    port = atoi(line + tempInt);
+                                    // Invalid port
+                                    if (port == 0)
+                                    {
+                                        printf_error("%sERROR: Invalid port specified.%s", COL_RED, RESET);
+                                        exit(1);
+                                    }
+                                    else
+                                    {
+                                        options.port = port;
+                                    }
                                 }
                                 // Otherwise assume 443
                                 else
