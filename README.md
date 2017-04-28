@@ -67,13 +67,10 @@ of old and insecure features such as SSLv2. While this is a very good thing for
 the SSL ecosystem as a whole, it is a problem for sslscan, which relies on
 these legacy features being available in order to detect them on client system.
 
-Keeping these features available while also adding support for the new features
-such as TLSv1.3 would either require maintaining a separate fork of OpenSSL
-with all the required features enabled, or a complete rewrite of sslscan to use
-a different library (or to handle the TLS handshake itself). As such, it is
-likely that sslscan **will never support OpenSSL 1.1.0.**  It is recommended
-that you continue to build statically against OpenSSL 1.0.1, as describeed in
-the following section.
+In order to work around this, sslscan builds against [Peter Mosmans'](https://github.com/PeterMosmans/openssl)
+fork of OpenSSL, which backports the Chacha20 and Poly1305 ciphers to OpenSSL
+1.0.2, while keeping the dangerous legacy features (such as SSLv2 and EXPORT
+ciphers) enabled.
 
 #### Statically linking a custom OpenSSL build
 
