@@ -107,6 +107,6 @@ static: openssl/libcrypto.a
 	$(MAKE) sslscan STATIC_BUILD=TRUE
 
 clean:
-	if [ -d openssl -a -d openssl/.git ]; then ( cd ./openssl; git clean -fx ); fi;
+	if [ -d openssl ]; then ( rm -rf openssl ); fi;
 	rm -f sslscan
 	rm -f .openssl.is.fresh
