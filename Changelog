@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version: 1.11.10
+Date   : 04/05/2017
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Build against Peter Mosmans' branch of OpenSSL
+         > Support for ChaCha ciphers
+         > NOTE: you will need to run `make clean && make static`.
+
 Version: 1.11.9
 Date   : 09/04/2017
 Author : rbsec <robin@rbsec.net>
