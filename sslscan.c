@@ -64,6 +64,18 @@
 
     // Visual Studio doesn't have ssize_t...
     typedef int ssize_t;
+  #else
+    void *memmem(const void *haystack_start, size_t haystack_len, const void *needle, size_t needle_len);
+    /* Taken from https://sourceforge.net/p/mingw/bugs/_discuss/thread/ec0291f1/93ae/attachment/patchset-wrapped.diff:*/
+    #define timersub(a, b, result) \
+    do { \
+        (result)->tv_sec = (a)->tv_sec - (b)->tv_sec; \
+        (result)->tv_usec = (a)->tv_usec - (b)->tv_usec; \
+        if ((result)->tv_usec < 0) { \
+            --(result)->tv_sec; \
+            (result)->tv_usec += 1000000L; \
+        } \
+    } while (0)
   #endif
 #else
   #include <netdb.h>
@@ -3982,5 +3994,30 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+/* MinGW doesn't have a memmem() implementation. */
+#ifdef _WIN32
+
+/* Implementation taken from: https://sourceforge.net/p/mingw/msys2-runtime/ci/f21dc72d306bd98e55a08461a9530c4b0ce1dffe/tree/newlib/libc/string/memmem.c#l80 */
+/* Copyright (C) 2008 Eric Blake
+ * Permission to use, copy, modify, and distribute this software
+ * is freely granted, provided that this notice is preserved.*/
+void *memmem(const void *haystack_start, size_t haystack_len, const void *needle, size_t needle_len) {
+  const unsigned char *haystack = (const unsigned char *) haystack_start;
+  //const unsigned char *needle = (const unsigned char *) needle_start;
+
+  if (needle_len == 0)
+    return (void *)haystack;
+
+  while (needle_len <= haystack_len)
+    {
+      if (!memcmp (haystack, needle, needle_len))
+        return (void *) haystack;
+      haystack++;
+      haystack_len--;
+    }
+  return NULL;
+}
+#endif
 
 /* vim :set ts=4 sw=4 sts=4 et : */
