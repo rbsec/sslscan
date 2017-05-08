@@ -16,3 +16,6 @@ libssl*
 openssl/
 .openssl.is.fresh
 .openssl_mingw.is.fresh
+
+# custom zlib build for Windows
+zlib_mingw/
