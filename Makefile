@@ -19,7 +19,7 @@ BINDIR    = $(PREFIX)/bin
 MANDIR    = $(PREFIX)/share/man
 MAN1DIR   = $(MANDIR)/man1
 
-WARNINGS  = -Wall -Wformat=2
+WARNINGS  = -Wall -Wformat=2 -Wformat-security
 DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
 
 # for dynamic linking
@@ -27,6 +27,12 @@ LIBS      = -lssl -lcrypto
 ifneq ($(OS), FreeBSD)
 	LIBS += -ldl
 endif
+
+# Enable checks for buffer overflows, add stack protectors, generate position
+# independent code, mark the relocation table read-only, and mark the global
+# offset table read-only.
+CFLAGS  += -D_FORTIFY_SOURCE=2 -fstack-protector-all -fPIE
+LDFLAGS += -pie -z relro -z now
 
 # for static linking
 ifeq ($(STATIC_BUILD), TRUE)
@@ -91,11 +97,11 @@ opensslpull:
 # Need to build OpenSSL differently on OSX
 ifeq ($(OS), Darwin)
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./Configure enable-ssl2 enable-weak-ssl-ciphers zlib darwin64-x86_64-cc
+	cd ./openssl; ./Configure -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC enable-ssl2 enable-weak-ssl-ciphers zlib darwin64-x86_64-cc
 # Any other *NIX platform
 else
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./config no-shares enable-weak-ssl-ciphers enable-ssl2 zlib
+	cd ./openssl; ./config -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC no-shares enable-weak-ssl-ciphers enable-ssl2 zlib
 endif
 
 openssl/libcrypto.a: openssl/Makefile
