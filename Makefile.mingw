@@ -1,33 +1,52 @@
+#
+# To build a 64-bit executable:  make -f Makefile.mingw
+# To build a 32-bit executable:  make -f Makefile.mingw BUILD_32BIT=1
+#
+
+
+# Enable to echo commands for debugging.
+#SHELL = sh -xv
+
 # If we're in Linux, lets see if we can find the path to Mingw automatically...
+ARCHITECTURE=
+CC_PREFIX=
+OPENSSL_TARGET=
 ifeq ($(shell uname), Linux)
   MINGW32=$(shell which i586-mingw32msvc-gcc)
   ifneq ($(MINGW32),)
     CC=$(MINGW32)
+    ARCHITECTURE=32-bit
+    CC_PREFIX=i586-mingw32msvc-
+    OPENSSL_TARGET=mingw
   endif
 
   MINGW64=$(shell which x86_64-w64-mingw32-gcc)
   ifneq ($(MINGW64),)
-    CC=$(MINGW64)
+    ifeq ($(BUILD_32BIT),)
+      CC=$(MINGW64)
+      ARCHITECTURE=64-bit
+      CC_PREFIX=x86_64-w64-mingw32-
+      OPENSSL_TARGET=mingw64
+    endif
   endif
 endif
 
 ifndef CC
-  CC=gcc
+  $(error "Failed to determine the compiler!")
 endif
 
 .PHONY: clean
 
 # Enable security options like stack protectors and variable formatting checks.
+# Sadly, we can't use -pie, because MinGW produces a broken executable when
+# enabled.
 SECURITY_OPTIONS=-fstack-protector-all -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security
 
 # Turn on linker optimizations, and DEP support (--nxcompat)
 LINK_OPTIONS=-Wl,-O1 -Wl,--discard-all -Wl,--no-undefined -Wl,--dynamicbase -Wl,--nxcompat -static
 
-# Set ARCHITECTURE to either x86 or x86_64...
-ARCHITECTURE=32-bit
-ifeq ($(shell $(CC) -dumpmachine), x86_64-w64-mingw32)
-  ARCHITECTURE=64-bit
-endif
+CFLAGS += -Iopenssl_mingw/include -D__USE_GNU
+LDFLAGS += -lws2_32 -lgdi32
 
 # Set the version string for the program.
 VERSION = "$(shell grep -E -o -m 1 "[0-9]+\.[0-9]+\.[0-9]+" Changelog) Windows $(ARCHITECTURE) (Mingw)"
@@ -35,9 +54,39 @@ VERSION = "$(shell grep -E -o -m 1 "[0-9]+\.[0-9]+\.[0-9]+" Changelog) Windows $
 
 all: sslscan
 
-sslscan: sslscan.c
-	$(CC) -I$(OPENSSL_PATH)/include -DVERSION=\"$(VERSION)\" $(DEFINES) $(SECURITY_OPTIONS) $(LINK_OPTIONS) -o sslscan.exe sslscan.c $(OPENSSL_PATH)/libssl.a $(OPENSSL_PATH)/libcrypto.a -lws2_32 -lgdi32
-	strip sslscan.exe
+.openssl_mingw.is.fresh: opensslpull
+	true
+
+zlibpull:
+#	If the zlib dir already exists, issue a pull, otherwise clone it from GitHub.  Either way, check out the latest tag.
+	if [ -d zlib_mingw -a -d zlib_mingw/.git ]; then \
+		cd ./zlib_mingw && git pull && git checkout tags/`git describe --abbrev=0 --tags` ; \
+	else \
+		git clone --depth 1 https://github.com/madler/zlib ./zlib_mingw && cd ./zlib_mingw && git checkout tags/`git describe --abbrev=0` ; \
+	fi
+
+opensslpull:
+	if [ -d openssl_mingw -a -d openssl_mingw/.git ]; then \
+		cd ./openssl_mingw && git checkout OpenSSL_1_0_2-stable && git pull | grep -q "Already up-to-date." && [ -e ../.openssl_mingw.is.fresh ] || touch ../.openssl_mingw.is.fresh ; \
+	else \
+		git clone --depth 1 -b OpenSSL_1_0_2-stable https://github.com/PeterMosmans/openssl ./openssl_mingw && cd ./openssl_mingw && touch ../.openssl_mingw.is.fresh ; \
+	fi
+
+zlib_mingw/libz.a: zlibpull
+	cd ./zlib_mingw; make -f win32/Makefile.gcc PREFIX=$(CC_PREFIX)
+
+openssl_mingw/Makefile: .openssl_mingw.is.fresh zlib_mingw/libz.a
+	cd ./openssl_mingw; ./Configure --cross-compile-prefix=$(CC_PREFIX) --with-zlib-include=`pwd`/../zlib_mingw --with-zlib-lib=`pwd`/../zlib_mingw -fstack-protector-all -D_FORTIFY_SOURCE=2 $(OPENSSL_TARGET) no-shared enable-weak-ssl-ciphers enable-ssl2 zlib
+
+openssl_mingw/libcrypto.a: openssl_mingw/Makefile
+	$(MAKE) -C openssl_mingw depend
+	$(MAKE) -j 10 -C openssl_mingw all
+
+sslscan: openssl_mingw/libcrypto.a sslscan.c
+	$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" $(DEFINES) $(SECURITY_OPTIONS) $(LINK_OPTIONS) -o sslscan.exe sslscan.c openssl_mingw/libssl.a openssl_mingw/libcrypto.a zlib_mingw/libz.a $(LDFLAGS)
+	$(CC_PREFIX)strip sslscan.exe
 
 clean:
-	rm -f *.o sslscan.exe
+	rm -f *.o sslscan.exe .openssl_mingw.is.fresh
+	if [ -f openssl_mingw/Makefile ]; then $(MAKE) -C openssl_mingw clean; fi
+	if [ -f zlib_mingw/win32/Makefile.gcc ]; then $(MAKE) -C zlib_mingw -f win32/Makefile.gcc clean; fi
