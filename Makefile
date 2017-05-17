@@ -32,7 +32,11 @@ endif
 # independent code, mark the relocation table read-only, and mark the global
 # offset table read-only.
 CFLAGS  += -D_FORTIFY_SOURCE=2 -fstack-protector-all -fPIE
-LDFLAGS += -pie -z relro -z now
+
+# Don't enable some hardening flags on OS X because it uses an old version of Clang
+ifneq ($(OS), Darwin)
+	LDFLAGS += -pie -z relro -z now
+endif
 
 # for static linking
 ifeq ($(STATIC_BUILD), TRUE)
