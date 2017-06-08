@@ -3645,11 +3645,11 @@ int main(int argc, char *argv[])
             options.rdp = 1;
 
         // IPv4 only
-        else if (strcmp("--ipv4", argv[argLoop]) == 0)
+        else if ((strcmp("--ipv4", argv[argLoop]) == 0) || (strcmp("-4", argv[argLoop]) == 0))
             options.ipv6 = false;
 
         // IPv6 only
-        else if (strcmp("--ipv6", argv[argLoop]) == 0)
+        else if ((strcmp("--ipv6", argv[argLoop]) == 0) || (strcmp("-6", argv[argLoop]) == 0))
             options.ipv4 = false;
 
 		else if (strcmp("--ocsp", argv[argLoop]) == 0)
