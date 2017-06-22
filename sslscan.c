@@ -90,6 +90,7 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <openssl/ocsp.h>
+#include <arpa/inet.h>
 #ifndef OPENSSL_NO_COMP
   #include <openssl/comp.h>
 #endif
@@ -283,7 +284,7 @@ int tcpConnect(struct sslCheckOptions *options)
 
     if(status < 0)
     {
-        printf_error("%sERROR: Could not open a connection to host %s on port %d.%s\n", COL_RED, options->host, options->port, RESET);
+        printf_error("%sERROR: Could not open a connection to host %s (%s) on port %d.%s\n", COL_RED, options->host, options->addrstr, options->port, RESET);
         close(socketDescriptor);
         return 0;
     }
@@ -3044,13 +3045,15 @@ int testConnection(struct sslCheckOptions *options)
 {
     // Variables...
     int socketDescriptor = 0;
+    struct addrinfo *ai;
     struct addrinfo *addrinfoResult = NULL;
     struct addrinfo hints;
 
     memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_family = AF_UNSPEC;
 
     // Resolve Host Name
-    options->h_addrtype = 0;
     if (options->ipv4 && options->ipv6)
     {
        // If both IPv4 and IPv6 are enabled, we restrict nothing in the
@@ -3074,31 +3077,35 @@ int testConnection(struct sslCheckOptions *options)
     }
 
     // Configure Server Address and Port
-    if (addrinfoResult->ai_family == AF_INET6)
+    for (ai = addrinfoResult; ai != NULL; ai = ai->ai_next)
     {
-        options->serverAddress6.sin6_family = addrinfoResult->ai_family;
-        memcpy((char *) &options->serverAddress6, addrinfoResult->ai_addr, addrinfoResult->ai_addrlen);
-        options->serverAddress6.sin6_port = htons(options->port);
+        if (ai->ai_family == AF_INET6)
+        {
+            options->serverAddress6.sin6_family = ai->ai_family;
+            memcpy((char *) &options->serverAddress6, ai->ai_addr, ai->ai_addrlen);
+            options->serverAddress6.sin6_port = htons(options->port);
+            inet_ntop(ai->ai_family, &options->serverAddress6.sin6_addr, options->addrstr, sizeof(options->addrstr));
+        }
+        else
+        {
+            options->serverAddress.sin_family = ai->ai_family;
+            memcpy((char *) &options->serverAddress, ai->ai_addr, ai->ai_addrlen);
+            options->serverAddress.sin_port = htons(options->port);
+            inet_ntop(ai->ai_family, &options->serverAddress.sin_addr, options->addrstr, sizeof(options->addrstr));
+        }
+        options->h_addrtype = ai->ai_family;
+
+        socketDescriptor = tcpConnect(options);
+        if (socketDescriptor != 0)
+        {
+            close(socketDescriptor);
+            freeaddrinfo(addrinfoResult); addrinfoResult = NULL;
+            printf("%sConnected to %s%s\n\n", COL_GREEN, options->addrstr, RESET);
+            return true;
+        }
     }
-    else
-    {
-        options->serverAddress.sin_family = addrinfoResult->ai_family;
-        memcpy((char *) &options->serverAddress, addrinfoResult->ai_addr, addrinfoResult->ai_addrlen);
-        options->serverAddress.sin_port = htons(options->port);
-    }
-    options->h_addrtype = addrinfoResult->ai_family;
     freeaddrinfo(addrinfoResult); addrinfoResult = NULL;
-    
-    socketDescriptor = tcpConnect(options);
-    if (socketDescriptor != 0)
-    {
-        close(socketDescriptor);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
 int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
@@ -3645,15 +3652,15 @@ int main(int argc, char *argv[])
             options.rdp = 1;
 
         // IPv4 only
-        else if (strcmp("--ipv4", argv[argLoop]) == 0)
+        else if ((strcmp("--ipv4", argv[argLoop]) == 0) || (strcmp("-4", argv[argLoop]) == 0))
             options.ipv6 = false;
 
         // IPv6 only
-        else if (strcmp("--ipv6", argv[argLoop]) == 0)
+        else if ((strcmp("--ipv6", argv[argLoop]) == 0) || (strcmp("-6", argv[argLoop]) == 0))
             options.ipv4 = false;
 
-		else if (strcmp("--ocsp", argv[argLoop]) == 0)
-			options.ocspStatus = true;
+        else if (strcmp("--ocsp", argv[argLoop]) == 0)
+            options.ocspStatus = true;
 
         // SNI name
         else if (strncmp("--sni-name=", argv[argLoop], 11) == 0)

@@ -115,6 +115,7 @@ struct sslCheckOptions
     // Program Options...
     char host[512];
     char sniname[512];
+    char addrstr[INET6_ADDRSTRLEN];
     int port;
     int showCertificate;
     int checkCertificate;
