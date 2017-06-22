@@ -3830,8 +3830,8 @@ int main(int argc, char *argv[])
             printf("  %s--targets=<file>%s     A file containing a list of hosts to check.\n", COL_GREEN, RESET);
             printf("                       Hosts can  be supplied  with ports (host:port)\n");
             printf("  %s--sni-name=<name>%s    Hostname for SNI\n", COL_GREEN, RESET);
-            printf("  %s--ipv4%s               Only use IPv4\n", COL_GREEN, RESET);
-            printf("  %s--ipv6%s               Only use IPv6\n", COL_GREEN, RESET);
+            printf("  %s--ipv4, -4%s           Only use IPv4\n", COL_GREEN, RESET);
+            printf("  %s--ipv6, -6%s           Only use IPv6\n", COL_GREEN, RESET);
             printf("  %s--show-certificate%s   Show full certificate information\n", COL_GREEN, RESET);
             printf("  %s--no-check-certificate%s  Don't warn about weak certificate algorithm or keys\n", COL_GREEN, RESET);
             printf("  %s--show-client-cas%s    Show trusted CAs for TLS client auth\n", COL_GREEN, RESET);
