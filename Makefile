@@ -1,5 +1,5 @@
 # set gcc as default if CC is not set
-ifndef CC
+ifndef $(CC)
   CC=gcc
 endif
 
@@ -27,6 +27,10 @@ LIBS      = -lssl -lcrypto
 ifneq ($(OS), FreeBSD)
 	LIBS += -ldl
 endif
+ifeq ($(OS), SunOS)
+	CFLAGS += -m64
+	LIBS   += -lsocket -lnsl
+endif
 
 # Enable checks for buffer overflows, add stack protectors, generate position
 # independent code, mark the relocation table read-only, and mark the global
@@ -35,7 +39,9 @@ CFLAGS  += -D_FORTIFY_SOURCE=2 -fstack-protector-all -fPIE
 
 # Don't enable some hardening flags on OS X because it uses an old version of Clang
 ifneq ($(OS), Darwin)
+ifneq ($(OS), SunOS)
 	LDFLAGS += -pie -z relro -z now
+endif
 endif
 
 # for static linking
@@ -46,6 +52,9 @@ CFLAGS       += -I${PWD}/include/ -I${PWD}/
 LIBS         = -lssl -lcrypto -lz
 ifneq ($(OS), FreeBSD)
 	LIBS += -ldl
+endif
+ifeq ($(OS), SunOS)
+	LIBS += -lsocket -lnsl
 endif
 GIT_VERSION  := $(GIT_VERSION)-static
 else
