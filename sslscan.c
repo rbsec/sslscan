@@ -3527,6 +3527,7 @@ int main(int argc, char *argv[])
             COL_GREEN = "";
             COL_PURPLE = "";
             COL_RED_BG = "";
+            COL_GREY = "";
         }
 
         // Client Certificates
