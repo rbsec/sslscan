@@ -90,7 +90,9 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <openssl/ocsp.h>
-#include <arpa/inet.h>
+#ifdef __linux__
+    #include <arpa/inet.h>
+#endif
 #ifndef OPENSSL_NO_COMP
   #include <openssl/comp.h>
 #endif
