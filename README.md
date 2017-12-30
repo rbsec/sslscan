@@ -84,8 +84,8 @@ system, as they would use the version packaged by the distro's maintainers.
 To compile your own OpenSSL version, you'll probably need to install the
 OpenSSL build dependencies:
 
-    apt-get install build-essential git zlib1g-dev
-    apt-get build-dep openssl
+    apt install build-essential git zlib1g-dev
+    apt build-dep openssl
 
 then run
 
