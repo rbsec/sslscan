@@ -36,7 +36,7 @@ I. Cross-compiling from Linux
   A. Building a 64-bit Windows executable
 
     0.) Install Mingw-w64.  On Debian-like systems, this can be done with:
-        apt install mingw-w64
+        apt-get install mingw-w64
 
     1.) Compile sslscan.  It will download the OpenSSL sources from GitHub
         automatically:
@@ -46,7 +46,7 @@ I. Cross-compiling from Linux
   B. Building a 32-bit Windows executable
 
     0.) Install MinGW.  On Debian-like systems, this can be done with:
-        apt install mingw32
+        apt-get install mingw32
 
     1.) Compile sslscan.  It will download the OpenSSL sources from GitHub
         automatically:
