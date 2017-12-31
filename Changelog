@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version: 1.11.11
+Date   : 31/12/2017
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Added -4 and -6 options to force IPv4 and IPv6.
+         > Fix build on Solaris and Windows.
+         > Fix cross-compiling.
+
 Version: 1.11.10
 Date   : 04/05/2017
 Author : rbsec <robin@rbsec.net>
