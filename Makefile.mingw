@@ -11,6 +11,10 @@
 ARCHITECTURE=
 CC_PREFIX=
 OPENSSL_TARGET=
+ifneq ($(BUILD_32BIT),)
+  DEFINES=-DBUILD_32BIT=1
+endif
+
 ifeq ($(shell uname), Linux)
   MINGW32=$(shell which i586-mingw32msvc-gcc)
   ifneq ($(MINGW32),)

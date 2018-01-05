@@ -76,6 +76,10 @@
             (result)->tv_usec += 1000000L; \
         } \
     } while (0)
+ 
+    #ifdef BUILD_32BIT
+      #include "win32bit-compat.h"
+    #endif
   #endif
 #else
   #include <netdb.h>
