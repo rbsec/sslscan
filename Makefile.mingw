@@ -79,8 +79,8 @@ openssl_mingw/Makefile: .openssl_mingw.is.fresh zlib_mingw/libz.a
 	cd ./openssl_mingw; ./Configure --cross-compile-prefix=$(CC_PREFIX) --with-zlib-include=`pwd`/../zlib_mingw --with-zlib-lib=`pwd`/../zlib_mingw -fstack-protector-all -D_FORTIFY_SOURCE=2 $(OPENSSL_TARGET) no-shared enable-weak-ssl-ciphers enable-ssl2 zlib
 
 openssl_mingw/libcrypto.a: openssl_mingw/Makefile
-	$(MAKE) -C openssl_mingw depend
-	$(MAKE) -j 10 -C openssl_mingw all
+	$(MAKE) -C openssl_mingw depend CC=$(CC)
+	$(MAKE) -j 10 -C openssl_mingw all CC=$(CC)
 
 sslscan: openssl_mingw/libcrypto.a sslscan.c
 	$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" $(DEFINES) $(SECURITY_OPTIONS) $(LINK_OPTIONS) -o sslscan.exe sslscan.c openssl_mingw/libssl.a openssl_mingw/libcrypto.a zlib_mingw/libz.a $(LDFLAGS)

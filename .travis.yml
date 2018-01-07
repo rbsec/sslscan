@@ -2,20 +2,15 @@ sudo: required
 dist: trusty
 language: c
 
-compiler:
-  - clang
-  - gcc
-
-env:
-  - TARGET=sslscan
-  - TARGET=static
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq mingw-w64
 
 script:
-  - make $TARGET CC=$CC
-
-matrix:
-  exclude:
-    # OpenSSL can't be compiled out-of-the box with clang, see
-    # http://wiki.openssl.org/index.php/Compilation_and_Installation#Modifying_Build_Settings
-    - compiler: clang
-      env: TARGET=static
+  - make sslscan CC=clang
+  - make sslscan CC=gcc
+  # OpenSSL can't be compiled out-of-the box with clang, see
+  # http://wiki.openssl.org/index.php/Compilation_and_Installation#Modifying_Build_Settings
+  #- make static CC=clang
+  - make static CC=gcc
+  - make -f Makefile.mingw
