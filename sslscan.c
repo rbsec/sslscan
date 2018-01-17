@@ -81,6 +81,9 @@
       #include "win32bit-compat.h"
     #endif
   #endif
+  #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+    #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+  #endif
 #else
   #include <netdb.h>
   #include <sys/socket.h>
@@ -3410,6 +3413,8 @@ int main(int argc, char *argv[])
     WORD wVersionRequested;
     WSADATA wsaData;
     int err;
+    HANDLE hConsole;
+    DWORD consoleMode;
 #endif
 
     // Init...
@@ -3452,6 +3457,21 @@ int main(int argc, char *argv[])
     options.sslVersion = ssl_all;
 
 #ifdef _WIN32
+    /* Attempt to enable console colors.  This succeeds in Windows 10.  For other
+     * OSes, color is disabled. */
+    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    if ((hConsole == INVALID_HANDLE_VALUE) || (!GetConsoleMode(hConsole, &consoleMode)) || (!SetConsoleMode(hConsole, consoleMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING))) {
+        RESET = "";
+        COL_RED = "";
+        COL_YELLOW = "";
+        COL_BLUE = "";
+        COL_GREEN = "";
+        COL_PURPLE = "";
+        COL_GREY = "";
+        COL_RED_BG = "";
+    }
+
+    /* Initialize networking library. */
     wVersionRequested = MAKEWORD(2, 2);
     err = WSAStartup(wVersionRequested, &wsaData);
     if (err != 0)
