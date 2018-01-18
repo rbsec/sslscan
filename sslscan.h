@@ -64,6 +64,17 @@
 
 // Colour Console Output...
 // Always better to do "const char RESET[] = " because it saves relocation records.
+// Default colours were hard to read on Windows, so use lighter ones
+#ifdef _WIN32
+char *RESET = "[0m";            // DEFAULT
+char *COL_RED = "[91m";
+char *COL_YELLOW = "[93m";
+char *COL_BLUE = "[1;36m";
+char *COL_GREEN = "[92m";
+char *COL_PURPLE = "[95m";
+char *COL_GREY = "[1;30m";
+char *COL_RED_BG = "[41m";
+#else
 char *RESET = "[0m";            // DEFAULT
 char *COL_RED = "[31m";
 char *COL_YELLOW = "[33m";
@@ -72,6 +83,7 @@ char *COL_GREEN = "[32m";
 char *COL_PURPLE = "[35m";
 char *COL_GREY = "[1;30m";
 char *COL_RED_BG = "[41m";
+#endif
 
 #ifdef _WIN32
     #define SLEEPMS(ms) Sleep(ms);
