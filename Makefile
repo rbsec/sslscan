@@ -1,7 +1,5 @@
 # set gcc as default if CC is not set
-ifndef $(CC)
-  CC=gcc
-endif
+CC?=gcc
 
 GIT_VERSION = $(shell git describe --tags --always --dirty=-wip)
 
