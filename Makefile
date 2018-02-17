@@ -1,7 +1,4 @@
 # set gcc as default if CC is not set
-ifndef $(CC)
-  CC=gcc
-endif
 
 GIT_VERSION = $(shell git describe --tags --always --dirty=-wip)
 
@@ -13,8 +10,20 @@ endif
 # Detect OS
 OS := $(shell uname)
 
+# Handle different version of Make
+ifeq ($(OS), SunOS)
+	ifndef $(CC)
+		CC=gcc
+	endif
+	ifndef $(PREFIX)
+		PREFIX = /usr
+	endif
+else
+	CC ?= gcc
+	PREFIX ?= /usr
+endif
+
 SRCS      = sslscan.c
-PREFIX    ?= /usr
 BINDIR    = $(PREFIX)/bin
 MANDIR    = $(PREFIX)/share/man
 MAN1DIR   = $(MANDIR)/man1
