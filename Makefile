@@ -49,7 +49,10 @@ CFLAGS  += -D_FORTIFY_SOURCE=2 -fstack-protector-all -fPIE
 # Don't enable some hardening flags on OS X because it uses an old version of Clang
 ifneq ($(OS), Darwin)
 ifneq ($(OS), SunOS)
+# Cygwin's linker does not support -z option.
+ifneq ($(findstring CYGWIN,$(OS)),CYGWIN)
 	LDFLAGS += -pie -z relro -z now
+endif
 endif
 endif
 
