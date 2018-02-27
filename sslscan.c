@@ -2486,7 +2486,7 @@ int showCertificate(struct sslCheckOptions *options)
 #endif
         else {
             printf_verbose("sslMethod = TLSv1_method()\n");
-            printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
+            printf_verbose("If server doesn't support TLSv1.0, manually specify TLS version\n");
             sslMethod = TLSv1_method();
         }
         options->ctx = SSL_CTX_new(sslMethod);
@@ -2929,7 +2929,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
 #endif
         else {
             printf_verbose("sslMethod = TLSv1_method()\n");
-            printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
+            printf_verbose("If server doesn't support TLSv1.0, manually specify TLS version\n");
             sslMethod = TLSv1_method();
         }
         options->ctx = SSL_CTX_new(sslMethod);
