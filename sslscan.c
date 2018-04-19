@@ -1042,6 +1042,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                             else
                             {
                                 printf("Server %sdoes not%s support TLS Fallback SCSV\n\n", COL_RED, RESET);
+                                printf_xml("  <fallback>false</fallback>\n");
                             }
                         }
                         else
@@ -1054,6 +1055,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                                     if (SSL_get_error(ssl, connStatus == 6))
                                     {
                                         printf("Server %ssupports%s TLS Fallback SCSV\n\n", COL_GREEN, RESET);
+                                        printf_xml("  <fallback>true</fallback>\n");
                                         status = false;
                                     }
                                 }
