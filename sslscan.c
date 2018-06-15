@@ -1022,13 +1022,13 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                                 if (sslversion == TLS1_2_VERSION)
                                 {
                                     secondMethod = TLSv1_1_client_method();
+                                }
+                                else if (sslversion == TLS1_1_VERSION)
+                                {
+                                    secondMethod = TLSv1_client_method();
                                 } else
 #endif
                                 if (sslversion == TLS1_VERSION)
-                                {
-                                    secondMethod = TLSv1_client_method();
-                                }
-                                else if (sslversion == TLS1_VERSION)
                                 {
                                     printf("Server only supports TLSv1.0");
                                     status = false;
