@@ -51,7 +51,7 @@ ifneq ($(OS), Darwin)
 ifneq ($(OS), SunOS)
 # Cygwin's linker does not support -z option.
 ifneq ($(findstring CYGWIN,$(OS)),CYGWIN)
-	LDFLAGS += -pie -z relro -z now
+	LDFLAGS += -pie -Wl,-z,relro -Wl,-z,now
 endif
 endif
 endif
