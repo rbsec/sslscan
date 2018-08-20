@@ -1030,7 +1030,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
 #endif
                                 if (sslversion == TLS1_VERSION)
                                 {
-                                    printf("Server only supports TLSv1.0");
+                                    printf("Server only supports TLSv1.0\n\n");
                                     status = false;
                                 }
                                 else
