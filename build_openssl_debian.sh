@@ -26,7 +26,7 @@ sudo apt-get -y build-dep openssl
 
 # Get the source
 apt-get source openssl
-cd openssl*
+cd openssl-*
 
 # Revert the patches
 quilt pop -a
