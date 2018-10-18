@@ -106,9 +106,9 @@ You can verify whether you have a statically linked OpenSSL version, if
 looks a bit like
 
         1.x.y-...-static
-        OpenSSL 1.1.0-dev xx XXX xxxx
+        OpenSSL 1.0.2-chacha xx XXX xxxx
 
-(pay attention to the `-static` suffix and the `1.1.0-dev` OpenSSL version).
+(pay attention to the `-static` suffix and the `1.0.2-chacha` OpenSSL version).
 
 
 #### Building on Kali
