@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version: 1.11.12
+Date   : 18/10/2018
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Enable colours in Windows console output if supported
+         > Include SCSV fallback in XML output
+         > Various bugfixes
+
 Version: 1.11.11
 Date   : 31/12/2017
 Author : rbsec <robin@rbsec.net>
