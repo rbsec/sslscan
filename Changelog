@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version: 1.11.13
+Date   : 24/03/2019
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Added strength attribute to XML to reflect colouring in stdout
+
 Version: 1.11.12
 Date   : 18/10/2018
 Author : rbsec <robin@rbsec.net>
