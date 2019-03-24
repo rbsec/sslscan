@@ -1521,6 +1521,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     char hexCipherId[10];
     int resultSize = 0;
     int cipherbits;
+    char *strength;
     uint32_t cipherid;
     const SSL_CIPHER *sslCipherPointer;
     const char *cleanSslMethod = printableSslMethod(sslMethod);
@@ -1694,27 +1695,33 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 if (strstr(sslCipherPointer->name, "NULL"))
                 {
                     printf("%s%-29s%s", COL_RED_BG, sslCipherPointer->name, RESET);
+                    strength = "null";
                 }
                 else if (strstr(sslCipherPointer->name, "ADH") || strstr(sslCipherPointer->name, "AECDH"))
                 {
                     printf("%s%-29s%s", COL_PURPLE, sslCipherPointer->name, RESET);
+                    strength = "anonymous";
                 }
                 else if (strstr(sslCipherPointer->name, "EXP"))
                 {
                     printf("%s%-29s%s", COL_RED, sslCipherPointer->name, RESET);
+                    strength = "weak";
                 }
                 else if (strstr(sslCipherPointer->name, "RC4") || strstr(sslCipherPointer->name, "DES"))
                 {
                     printf("%s%-29s%s", COL_YELLOW, sslCipherPointer->name, RESET);
+                    strength = "medium";
                 }
                 else if ((strstr(sslCipherPointer->name, "CHACHA20") || (strstr(sslCipherPointer->name, "GCM")))
                         && strstr(sslCipherPointer->name, "DHE"))
                 {
                     printf("%s%-29s%s", COL_GREEN, sslCipherPointer->name, RESET);
+                    strength = "strong";
                 }
                 else
                 {
                     printf("%-29s", sslCipherPointer->name);
+                    strength = "acceptable";
                 }
 
                 if (options->cipher_details == true)
@@ -1733,7 +1740,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 }
 
                 printf("\n");
-                printf_xml(" />\n");
+                printf_xml(" strength=\"%s\" />\n", strength);
 
                 // Disconnect SSL over socket
                 if (cipherStatus == 1)
