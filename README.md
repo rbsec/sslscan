@@ -143,7 +143,7 @@ looks a bit like
 #### Building on Kali
 Kali now ships with a statically built version of sslscan which supports SSLv2.
 
-The package can be found in the [Kali Git Repository](http://git.kali.org/gitweb/?p=packages/sslscan.git;a=summary).
+The package can be found in the [Kali Git Repository](https://gitlab.com/kalilinux/packages/sslscan).
 
 If for whatever reason you can't install this package, follow the instructions
 above for statically building against OpenSSL.
