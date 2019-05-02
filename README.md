@@ -142,6 +142,9 @@ looks a bit like
 
 #### Building on Kali
 Kali now ships with a statically built version of sslscan which supports SSLv2.
+You can install it with:
+
+    apt install sslscan
 
 The package can be found in the [Kali Git Repository](https://gitlab.com/kalilinux/packages/sslscan).
 
