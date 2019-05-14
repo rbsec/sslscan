@@ -61,7 +61,7 @@ required to compile OpenSSL from source on OS X. Once you have, just run:
 
 ### OpenSSL issues
 
-#### OpenSSL 1.1.0 Support
+#### OpenSSL 1.1.0 and later
 OpenSSL 1.1.0 introduced a number of significant changes, including the removal
 of old and insecure features such as SSLv2. While this is a very good thing for
 the SSL ecosystem as a whole, it is a problem for sslscan, which relies on
