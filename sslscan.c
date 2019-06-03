@@ -1574,8 +1574,8 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 }
                 else if (cipherStatus != 1)
                 {
-                    SSL_free(ssl);
                     printf_verbose("SSL_get_error(ssl, cipherStatus) said: %d\n", SSL_get_error(ssl, cipherStatus));
+                    SSL_free(ssl);
                     return false;
                 }
 
