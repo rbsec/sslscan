@@ -1574,7 +1574,18 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 }
                 else if (cipherStatus != 1)
                 {
-                    printf_verbose("SSL_get_error(ssl, cipherStatus) said: %d\n", SSL_get_error(ssl, cipherStatus));
+                    tempInt = SSL_get_error(ssl, cipherStatus);
+                    printf_verbose("SSL_get_error(ssl, cipherStatus) returned: %d (%s)\n", tempInt, SSL_ERR_to_string(tempInt));
+
+                    // I'd rather use ERR_print_errors(BIO) instead of this loop, but it needs a BIO for stdout/stderr which we
+                    // don't have yet.
+                    while (ERR_peek_error() > 0)
+                    {
+                        printf_verbose("[%s:%s@%d]:%s\n", __FILE__, __func__, __LINE__, ERR_error_string(ERR_peek_error(), NULL));
+                        // Dequeue the error, since we only peeked at it. Can't put this in the line above or we'll loop
+                        // forever when not in verbose mode.
+                        ERR_get_error();
+                    }
                     SSL_free(ssl);
                     return false;
                 }
@@ -3425,6 +3436,35 @@ int testHost(struct sslCheckOptions *options)
     return status;
 }
 
+// Return a string description of an SSL error.
+// It would be nice if there were a standard function for this...
+const char *SSL_ERR_to_string (int sslerr)
+{
+    switch (sslerr)
+    {
+        //  Values taken from openssl/ssl.h
+        case SSL_ERROR_NONE:
+            return "SSL_ERROR_NONE";
+        case SSL_ERROR_SSL:
+            return "SSL_ERROR_SSL";
+        case SSL_ERROR_WANT_READ:
+            return "SSL_ERROR_WANT_READ";
+        case SSL_ERROR_WANT_WRITE:
+            return "SSL_ERROR_WANT_WRITE";
+        case SSL_ERROR_WANT_X509_LOOKUP:
+            return "SSL_ERROR_WANT_X509_LOOKUP";
+        case SSL_ERROR_SYSCALL:
+            return "SSL_ERROR_SYSCALL";
+        case SSL_ERROR_ZERO_RETURN:
+            return "SSL_ERROR_ZERO_RETURN";
+        case SSL_ERROR_WANT_CONNECT:
+            return "SSL_ERROR_WANT_CONNECT";
+        case SSL_ERROR_WANT_ACCEPT:
+            return "SSL_ERROR_WANT_ACCEPT";
+        default:
+            return "SSL_ERROR_UNKNOWN";
+    }
+}
 
 int main(int argc, char *argv[])
 {

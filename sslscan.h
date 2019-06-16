@@ -193,6 +193,7 @@ void readLine(FILE *, char *, int);
 ssize_t sendString(int, const char[]);
 int readOrLogAndClose(int, void *, size_t, const struct sslCheckOptions *);
 const char *printableSslMethod(const SSL_METHOD *);
+const char *SSL_ERR_to_string (int sslerr);
 static int password_callback(char *, int, int, void *);
 int ssl_print_tmp_key(struct sslCheckOptions *, SSL *s);
 static int ocsp_resp_cb(SSL *s, void *arg);
