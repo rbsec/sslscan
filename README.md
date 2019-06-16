@@ -61,7 +61,7 @@ required to compile OpenSSL from source on OS X. Once you have, just run:
 
 ### OpenSSL issues
 
-#### OpenSSL 1.1.0 Support
+#### OpenSSL 1.1.0 and later
 OpenSSL 1.1.0 introduced a number of significant changes, including the removal
 of old and insecure features such as SSLv2. While this is a very good thing for
 the SSL ecosystem as a whole, it is a problem for sslscan, which relies on
@@ -142,8 +142,11 @@ looks a bit like
 
 #### Building on Kali
 Kali now ships with a statically built version of sslscan which supports SSLv2.
+You can install it with:
 
-The package can be found in the [Kali Git Repository](http://git.kali.org/gitweb/?p=packages/sslscan.git;a=summary).
+    apt install sslscan
+
+The package can be found in the [Kali Git Repository](https://gitlab.com/kalilinux/packages/sslscan).
 
 If for whatever reason you can't install this package, follow the instructions
 above for statically building against OpenSSL.
