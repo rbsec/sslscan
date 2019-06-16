@@ -1905,20 +1905,22 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                     strtok(certAlgorithm, "\n");
                                     if (strstr(certAlgorithm, "md5") || strstr(certAlgorithm, "sha1"))
                                     {
+                                        printf_xml("   <signature-algorithm strength=\"weak\">");
                                         printf("%s%s%s\n", COL_RED, certAlgorithm, RESET);
                                     }
                                     else if (strstr(certAlgorithm, "sha512") || strstr(certAlgorithm, "sha256"))
                                     {
+                                        printf_xml("   <signature-algorithm strength=\"strong\">");
                                         printf("%s%s%s\n", COL_GREEN, certAlgorithm, RESET);
                                     }
                                     else
                                     {
+                                        printf_xml("   <signature-algorithm strength=\"acceptable\">");
                                         printf("%s\n", certAlgorithm);
                                     }
 
                                     if (options->xmlOutput)
                                     {
-                                        printf_xml("   <signature-algorithm>");
                                         i2a_ASN1_OBJECT(fileBIO, x509Cert->cert_info->signature->algorithm);
                                         printf_xml("</signature-algorithm>\n");
                                     }
@@ -1941,20 +1943,22 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                                 if (publicKey->pkey.rsa)
                                                 {
                                                     keyBits = BN_num_bits(publicKey->pkey.rsa->n);
+                                                    printf_xml("   <pk error=\"false\" type=\"RSA\" bits=\"%d\" ", BN_num_bits(publicKey->pkey.rsa->n));
                                                     if (keyBits < 2048 )
                                                     {
                                                         printf("RSA Key Strength:    %s%d%s\n", COL_RED, keyBits, RESET);
+                                                        printf_xml("strength=\"weak\" />\n");
                                                     }
                                                     else if (keyBits >= 4096 )
                                                     {
                                                         printf("RSA Key Strength:    %s%d%s\n", COL_GREEN, keyBits, RESET);
+                                                        printf_xml("strength=\"strong\" />\n");
                                                     }
                                                     else
                                                     {
                                                         printf("RSA Key Strength:    %d\n", keyBits);
+                                                        printf_xml("strength=\"acceptable\" />\n");
                                                     }
-
-                                                    printf_xml("   <pk error=\"false\" type=\"RSA\" bits=\"%d\" />\n", BN_num_bits(publicKey->pkey.rsa->n));
                                                 }
                                                 else
                                                 {
