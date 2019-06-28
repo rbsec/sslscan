@@ -29,7 +29,7 @@ MANDIR    = $(PREFIX)/share/man
 MAN1DIR   = $(MANDIR)/man1
 
 WARNINGS  = -Wall -Wformat=2 -Wformat-security
-DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
+DEFINES   = -DVERSION=\"$(GIT_VERSION)\" -DOPENSSL_NO_SSL2 -DOPENSSL_NO_SSL3
 
 # for dynamic linking
 LIBS      = -lssl -lcrypto
@@ -49,10 +49,7 @@ CFLAGS  += -D_FORTIFY_SOURCE=2 -fstack-protector-all -fPIE
 # Don't enable some hardening flags on OS X because it uses an old version of Clang
 ifneq ($(OS), Darwin)
 ifneq ($(OS), SunOS)
-# Cygwin's linker does not support -z option.
-ifneq ($(findstring CYGWIN,$(OS)),CYGWIN)
-	LDFLAGS += -pie -Wl,-z,relro -Wl,-z,now
-endif
+	LDFLAGS += -pie -z relro -z now
 endif
 endif
 

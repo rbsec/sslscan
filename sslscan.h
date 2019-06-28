@@ -55,6 +55,7 @@
 #define tls_v10 4
 #define tls_v11 5
 #define tls_v12 6
+#define tls_v13 7
 
 // Macros for various outputs
 #define printf(format, ...)         if (!xml_to_stdout) fprintf(stdout, format, ##__VA_ARGS__)
@@ -193,7 +194,6 @@ void readLine(FILE *, char *, int);
 ssize_t sendString(int, const char[]);
 int readOrLogAndClose(int, void *, size_t, const struct sslCheckOptions *);
 const char *printableSslMethod(const SSL_METHOD *);
-const char *SSL_ERR_to_string (int sslerr);
 static int password_callback(char *, int, int, void *);
 int ssl_print_tmp_key(struct sslCheckOptions *, SSL *s);
 static int ocsp_resp_cb(SSL *s, void *arg);
