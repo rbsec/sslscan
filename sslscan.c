@@ -1013,6 +1013,10 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
 
                         // Connect SSL over socket
                         connStatus = SSL_connect(ssl);
+
+                        // We can't check for "acceptable" errors for "client cert required" here, since SSL Alert 40 (Handshake failure)
+                        // can be reported for either client cert required, or downgrade failure. So it's not possible to distinguish
+                        // between them.
                         if (connStatus)
                         {
                             if (!downgraded)
@@ -1062,8 +1066,8 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                             }
                             else
                             {
-                                printf("%sConnection failed%s - unable to determine TLS Fallback SCSV support\n\n",
-                                        COL_YELLOW, RESET);
+                                printf("%sConnection failed%s - unable to determine TLS Fallback SCSV support%s.\n\n",
+                                        COL_YELLOW, RESET, acceptableError() ? " - Server requires a client cert":"");
                                 status = false;
                             }
                         }
@@ -1198,7 +1202,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                       }
 
 
-                        if (cipherStatus == 1)
+                        if (cipherStatus == 1 || acceptableError());
                         {
 
 #if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
@@ -1564,13 +1568,16 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 // Connect SSL over socket
                 cipherStatus = SSL_connect(ssl);
 
-                sslCipherPointer = SSL_get_current_cipher(ssl);
-                cipherbits = SSL_CIPHER_get_bits(sslCipherPointer, NULL);
-
                 if (cipherStatus == 0)
                 {
-                    SSL_free(ssl);
-                    return false;
+                    // An "acceptable" error is eg "client certificate required". We can still produce a list of supported ciphers.
+                    if (acceptableError())
+                        cipherStatus = 1;
+                    else
+                    {
+                        SSL_free(ssl);
+                        return false;
+                    }
                 }
                 else if (cipherStatus != 1)
                 {
@@ -1589,6 +1596,15 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     SSL_free(ssl);
                     return false;
                 }
+
+                sslCipherPointer = SSL_get_current_cipher(ssl);
+                // If sslCipherPointer is NULL, SSL_CIPHER_get_bits() will segfault
+                if (sslCipherPointer == NULL)
+                {
+                    SSL_free(ssl);
+                    return false;
+                }
+                cipherbits = SSL_CIPHER_get_bits(sslCipherPointer, NULL);
 
                 cipherid = SSL_CIPHER_get_id(sslCipherPointer);
                 cipherid = cipherid & 0x00ffffff;  // remove first byte which is the version (0x03 for TLSv1/SSLv3)
@@ -1879,7 +1895,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
 
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
-                        if (cipherStatus == 1)
+                        if (cipherStatus == 1 || acceptableError())
                         {
                             // Setup BIO's
                             if (!xml_to_stdout) {
@@ -2299,7 +2315,7 @@ int ocspRequest(struct sslCheckOptions *options)
                         
 						// Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
-                        if (cipherStatus == 1)
+                        if (cipherStatus == 1 || acceptableError())
                         {
                             // Setup BIO's
                             if (!xml_to_stdout) {
@@ -2568,7 +2584,7 @@ int showCertificate(struct sslCheckOptions *options)
 
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
-                        if (cipherStatus == 1)
+                        if (cipherStatus == 1 || acceptableError())
                         {
                             // Setup BIO's
                             if (!xml_to_stdout) {
@@ -3011,7 +3027,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
 
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
-                        if (cipherStatus >= 0)
+                        if (cipherStatus >= 0 || acceptableError())
                         {
                             // Setup BIO's
                             if (!xml_to_stdout) {
@@ -3213,7 +3229,7 @@ int testHost(struct sslCheckOptions *options)
     // Verbose warning about STARTTLS and SSLv3
     if (options->sslVersion == ssl_v3 || options->sslVersion == ssl_all)
     {
-        printf_verbose("Some servers will fail to response to SSLv3 ciphers over STARTTLS\nIf your scan hangs, try using the --tlsall option\n\n");
+        printf_verbose("Some servers will fail to respond to SSLv3 ciphers over STARTTLS\nIf your scan hangs, try using the --tlsall option\n\n");
     }
 
     printf("Testing SSL server %s%s%s on port %s%d%s using SNI name %s%s%s\n\n", COL_GREEN, options->host, RESET,
@@ -3421,6 +3437,9 @@ int testHost(struct sslCheckOptions *options)
         if (status != false)
             status = checkCertificateProtocol(options, SSLv2_client_method());
 #endif
+        // Reset status to true, otherwise show trusted CAs below can never run
+        // with the default checkCertificate == true
+        status = true;
     }
 
     // Print client auth trusted CAs
@@ -3464,6 +3483,20 @@ const char *SSL_ERR_to_string (int sslerr)
         default:
             return "SSL_ERROR_UNKNOWN";
     }
+}
+
+// Define a list of "acceptable" SSL errors which might indicate a client certificate is required, and continue anyway.
+static inline int acceptableError (void)
+{
+    // Error 0x14094410 = SSL Alert 40 = Handshake Failure, probably because Server requested client Cert, which we'll treat as a "success".
+    // Error 0x14094416 = SSL Alert 46 = Certificate Unknown, treat as "success".
+    // Error 0x14094412 = SSL Alert 42 = Bad Certificate - probably means Server requested client Cert. Will also send a list of Acceptable client certificate CA names.
+    // SSL Alerts documented here: https://tools.ietf.org/html/rfc5246#section-7.2
+
+    if (ERR_peek_error() == 0x14094410L || ERR_peek_error() == 0x14094416L || ERR_peek_error() == 0x14094412L)
+        return true;
+
+    return false;
 }
 
 int main(int argc, char *argv[])

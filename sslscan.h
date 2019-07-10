@@ -198,6 +198,7 @@ static int password_callback(char *, int, int, void *);
 int ssl_print_tmp_key(struct sslCheckOptions *, SSL *s);
 static int ocsp_resp_cb(SSL *s, void *arg);
 int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent);
+static inline int acceptableError (void);
 
 int tcpConnect(struct sslCheckOptions *);
 
