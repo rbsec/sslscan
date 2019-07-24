@@ -2947,7 +2947,6 @@ int showTrustedCAs(struct sslCheckOptions *options)
     STACK_OF(X509_NAME) *sk2;
     X509_NAME *xn;
 
-
     // Connect to host
     socketDescriptor = tcpConnect(options);
     if (socketDescriptor != 0)
@@ -3024,10 +3023,10 @@ int showTrustedCAs(struct sslCheckOptions *options)
                                 BIO_set_fp(fileBIO, options->xmlOutput, BIO_NOCLOSE);
                             }
 
+                            printf("\n  %sAcceptable client certificate CA names:%s\n", COL_BLUE, RESET);
                             sk2=SSL_get_client_CA_list(ssl);
                             if ((sk2 != NULL) && (sk_X509_NAME_num(sk2) > 0))
                             {
-                                printf("\n  %sAcceptable client certificate CA names:%s\n", COL_BLUE, RESET);
                                 for (tempInt=0; tempInt<sk_X509_NAME_num(sk2); tempInt++)
                                 {
                                     xn=sk_X509_NAME_value(sk2,tempInt);
@@ -3042,6 +3041,10 @@ int showTrustedCAs(struct sslCheckOptions *options)
                                     printf("%s", buffer);
                                     printf("\n");
                                 }
+                            }
+                            else
+                            {
+                                printf("%sNone defined (any)%s\n", COL_YELLOW, RESET);
                             }
 
                             // Free BIO
@@ -3424,7 +3427,7 @@ int testHost(struct sslCheckOptions *options)
     }
 
     // Print client auth trusted CAs
-    if (status == true && options->showTrustedCAs == true)
+    if (options->showTrustedCAs == true)
     {
         status = showTrustedCAs(options);
     }
