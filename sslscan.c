@@ -3756,16 +3756,13 @@ int main(int argc, char *argv[])
         else if ((strcmp("--ipv6", argv[argLoop]) == 0) || (strcmp("-6", argv[argLoop]) == 0))
             options.ipv4 = false;
 
+        // Request OCSP response
         else if (strcmp("--ocsp", argv[argLoop]) == 0)
             options.ocspStatus = true;
 
         // SNI name
         else if (strncmp("--sni-name=", argv[argLoop], 11) == 0)
             strncpy(options.sniname, argv[argLoop]+11, strlen(argv[argLoop])-11);
-
-		else if (strcmp("--ocsp", argv[argLoop]) == 0)
-			options.ocspStatus = true;
-
 
         // Host (maybe port too)...
         else if (argLoop + 1 == argc)
