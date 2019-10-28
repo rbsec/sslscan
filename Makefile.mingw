@@ -49,8 +49,8 @@ SECURITY_OPTIONS=-fstack-protector-all -D_FORTIFY_SOURCE=2 -Wformat -Wformat-sec
 # Turn on linker optimizations, and DEP support (--nxcompat)
 LINK_OPTIONS=-Wl,-O1 -Wl,--discard-all -Wl,--no-undefined -Wl,--dynamicbase -Wl,--nxcompat -static
 
-CFLAGS += -Iopenssl_mingw/include -D__USE_GNU
-LDFLAGS += -lws2_32 -lgdi32
+CFLAGS += -Iopenssl_mingw/include -D__USE_GNU -DOPENSSL_NO_SSL2 -Wno-deprecated-declarations
+LDFLAGS += -lws2_32 -lgdi32 -lcrypt32
 
 # Set the version string for the program.
 VERSION = "$(shell grep -E -o -m 1 "[0-9]+\.[0-9]+\.[0-9]+" Changelog) Windows $(ARCHITECTURE) (Mingw)"
@@ -71,9 +71,9 @@ zlibpull:
 
 opensslpull:
 	if [ -d openssl_mingw -a -d openssl_mingw/.git ]; then \
-		cd ./openssl_mingw && git checkout OpenSSL_1_0_2-stable && git pull | grep -q "Already up-to-date." && [ -e ../.openssl_mingw.is.fresh ] || touch ../.openssl_mingw.is.fresh ; \
+		cd ./openssl_mingw && git checkout OpenSSL_1_1_1-stable && git pull | grep -q "Already up-to-date." && [ -e ../.openssl_mingw.is.fresh ] || touch ../.openssl_mingw.is.fresh ; \
 	else \
-		git clone --depth 1 -b OpenSSL_1_0_2-stable https://github.com/PeterMosmans/openssl ./openssl_mingw && cd ./openssl_mingw && touch ../.openssl_mingw.is.fresh ; \
+		git clone --depth 1 -b OpenSSL_1_1_1-stable https://github.com/openssl/openssl ./openssl_mingw && cd ./openssl_mingw && touch ../.openssl_mingw.is.fresh ; \
 	fi
 
 zlib_mingw/libz.a: zlibpull
