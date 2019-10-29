@@ -28,7 +28,7 @@ BINDIR    = $(PREFIX)/bin
 MANDIR    = $(PREFIX)/share/man
 MAN1DIR   = $(MANDIR)/man1
 
-WARNINGS  = -Wall -Wformat=2 -Wformat-security
+WARNINGS  = -Wall -Wformat=2 -Wformat-security -Wno-deprecated-declarations
 DEFINES   = -DVERSION=\"$(GIT_VERSION)\" -DOPENSSL_NO_SSL2 -DOPENSSL_NO_SSL3
 
 # for dynamic linking
@@ -111,9 +111,9 @@ uninstall:
 	true
 opensslpull:
 	if [ -d openssl -a -d openssl/.git ]; then \
-		cd ./openssl && git checkout OpenSSL_1_0_2-stable && git pull | grep -q "Already up-to-date." && [ -e ../.openssl.is.fresh ] || touch ../.openssl.is.fresh ; \
+		cd ./openssl && git checkout OpenSSL_1_1_1-stable && git pull | grep -q "Already up-to-date." && [ -e ../.openssl.is.fresh ] || touch ../.openssl.is.fresh ; \
 	else \
-		git clone --depth 1 -b OpenSSL_1_0_2-stable https://github.com/PeterMosmans/openssl ./openssl && cd ./openssl && touch ../.openssl.is.fresh ; \
+		git clone --depth 1 -b OpenSSL_1_1_1-stable https://github.com/openssl/openssl ./openssl && cd ./openssl && touch ../.openssl.is.fresh ; \
 	fi
 
 # Need to build OpenSSL differently on OSX
