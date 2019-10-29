@@ -58,7 +58,7 @@ ifeq ($(STATIC_BUILD), TRUE)
 PWD          = $(shell pwd)/openssl
 LDFLAGS      += -L${PWD}/
 CFLAGS       += -I${PWD}/include/ -I${PWD}/
-LIBS         = -lssl -lcrypto -lz
+LIBS         = -lssl -lcrypto -lz -lpthread
 ifneq ($(OS), FreeBSD)
 	LIBS += -ldl
 endif
