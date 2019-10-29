@@ -9,8 +9,6 @@ before_install:
 script:
   - make sslscan CC=clang
   - make sslscan CC=gcc
-  # OpenSSL can't be compiled out-of-the box with clang, see
-  # http://wiki.openssl.org/index.php/Compilation_and_Installation#Modifying_Build_Settings
-  #- make static CC=clang
+  - make static CC=clang
   - make static CC=gcc
   - make -f Makefile.mingw
