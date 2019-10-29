@@ -123,7 +123,7 @@ openssl/Makefile: .openssl.is.fresh
 # Any other *NIX platform
 else
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./config -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC no-shares enable-weak-ssl-ciphers enable-ssl2 zlib
+	cd ./openssl; ./config -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC no-shared enable-weak-ssl-ciphers enable-ssl2 zlib
 endif
 
 openssl/libcrypto.a: openssl/Makefile
