@@ -117,6 +117,10 @@
 
 #include "sslscan.h"
 
+#if OPENSSL_VERSION_NUMBER < 0x1010100fL
+#error "OpenSSL v1.1.1 or later is required!"
+#endif
+
 /* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
  * many versions and releases of OpenSSL. */
 /** Does the run-time openssl version look like we need
