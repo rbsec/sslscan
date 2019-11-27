@@ -1299,10 +1299,6 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
 const char* printableSslMethod(const SSL_METHOD *sslMethod)
 {
-#ifndef OPENSSL_NO_SSL3
-    if (sslMethod == SSLv3_client_method())
-        return "SSLv3";
-#endif
     if (sslMethod == TLSv1_client_method())
         return "TLSv1.0";
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
@@ -3188,9 +3184,6 @@ int testHost(struct sslCheckOptions *options)
                 populateCipherList(options, TLSv1_1_client_method());
 #endif
                 populateCipherList(options, TLSv1_client_method());
-#ifndef OPENSSL_NO_SSL3
-                populateCipherList(options, SSLv3_client_method());
-#endif
                 break;
             case tls_all:
                 populateCipherList(options, TLSv1_3_client_method());
@@ -3214,11 +3207,6 @@ int testHost(struct sslCheckOptions *options)
             case tls_v10:
                 populateCipherList(options, TLSv1_client_method());
                 break;
-#ifndef OPENSSL_NO_SSL3
-            case ssl_v3:
-                populateCipherList(options, SSLv3_client_method());
-                break;
-#endif
         }
         printf("\n  %sSupported Client Cipher(s):%s\n", COL_BLUE, RESET);
         sslCipherPointer = options->ciphers;
@@ -3294,6 +3282,29 @@ int testHost(struct sslCheckOptions *options)
 #endif
 	}
 
+    printf("  %sSSL Protocols:%s\n", COL_BLUE, RESET);
+    // Check if SSLv2 is enabled.
+    if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v2)) {
+        if (runSSLv2Test(options)) {
+	  printf("SSLv2 is %senabled%s\n", COL_RED, RESET);
+	  printf_xml("  <ssl protocol_version=\"2\" enabled=\"1\" />\n");
+	} else {
+	  printf("SSLv2 is %snot enabled%s\n", COL_GREEN, RESET);
+	  printf_xml("  <ssl protocol_version=\"2\" enabled=\"0\" />\n");
+	}
+    }
+
+    // Check if SSLv3 is enabled.
+    if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v3)) {
+        if (runSSLv3Test(options)) {
+	  printf("SSLv3 is %senabled%s\n", COL_RED, RESET);
+	  printf_xml("  <ssl protocol_version=\"3\" enabled=\"1\" />\n");
+	} else {
+	  printf("SSLv3 is %snot enabled%s\n", COL_GREEN, RESET);
+	  printf_xml("  <ssl protocol_version=\"3\" enabled=\"0\" />\n");
+	}
+    }
+    printf("\n");
 
     if (options->ciphersuites)
     {
@@ -3312,16 +3323,7 @@ int testHost(struct sslCheckOptions *options)
 #endif
                 if (status != false)
                     status = testProtocolCiphers(options, TLSv1_client_method());
-#ifndef OPENSSL_NO_SSL3
-                if (status != false)
-                    status = testProtocolCiphers(options, SSLv3_client_method());
-#endif
                 break;
-#ifndef OPENSSL_NO_SSL3
-            case ssl_v3:
-                status = testProtocolCiphers(options, SSLv3_client_method());
-                break;
-#endif
             case tls_all:
                 if (status != false)
                     status = testProtocolCiphers(options, TLSv1_3_client_method());
@@ -3370,10 +3372,6 @@ int testHost(struct sslCheckOptions *options)
 #endif
         if (status != false)
             status = checkCertificateProtocol(options, TLSv1_client_method());
-#ifndef OPENSSL_NO_SSL3
-        if (status != false)
-            status = checkCertificateProtocol(options, SSLv3_client_method());
-#endif
     }
 
     // Print client auth trusted CAs
@@ -3617,16 +3615,14 @@ int main(int argc, char *argv[])
         else if (strcmp("--starttls-psql", argv[argLoop]) == 0)
             options.starttls_psql = true;
 
-#ifndef OPENSSL_NO_SSL2
         // SSL v2 only...
         else if (strcmp("--ssl2", argv[argLoop]) == 0)
             options.sslVersion = ssl_v2;
-#endif
-#ifndef OPENSSL_NO_SSL3
+
         // SSL v3 only...
         else if (strcmp("--ssl3", argv[argLoop]) == 0)
             options.sslVersion = ssl_v3;
-#endif
+
         // TLS v1 only...
         else if (strcmp("--tls10", argv[argLoop]) == 0)
             options.sslVersion = tls_v10;
@@ -3819,14 +3815,6 @@ int main(int argc, char *argv[])
         case mode_version:
             printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, VERSION,
                     SSLeay_version(SSLEAY_VERSION), RESET);
-#ifdef OPENSSL_NO_SSL2
-            printf("\t\t%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
-            printf("\t\t%sSSLv2 ciphers will not be detected%s\n", COL_RED, RESET);
-#endif
-#ifdef OPENSSL_NO_SSL3
-            printf("\t\t%sOpenSSL version does not support SSLv3%s\n", COL_RED, RESET);
-            printf("\t\t%sSSLv3 ciphers will not be detected%s\n", COL_RED, RESET);
-#endif
 #if OPENSSL_VERSION_NUMBER < 0x10001000L
             printf("\t\t%sOpenSSL version does not support TLSv1.1%s\n", COL_RED, RESET);
             printf("\t\t%sTLSv1.1 ciphers will not be detected%s\n", COL_RED, RESET);
@@ -3844,10 +3832,6 @@ int main(int argc, char *argv[])
             printf("%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
             printf("%sSSLv2 ciphers will not be detected%s\n\n", COL_RED, RESET);
 #endif
-#ifdef OPENSSL_NO_SSL3
-            printf("%sOpenSSL version does not support SSLv3%s\n", COL_RED, RESET);
-            printf("%sSSLv3 ciphers will not be detected%s\n", COL_RED, RESET);
-#endif
             printf("%sCommand:%s\n", COL_BLUE, RESET);
             printf("  %s%s [Options] [host:port | host]%s\n\n", COL_GREEN, argv[0], RESET);
             printf("%sOptions:%s\n", COL_BLUE, RESET);
@@ -3862,12 +3846,8 @@ int main(int argc, char *argv[])
             printf("  %s--show-ciphers%s       Show supported client ciphers\n", COL_GREEN, RESET);
             printf("  %s--show-cipher-ids%s    Show cipher ids\n", COL_GREEN, RESET);
             printf("  %s--show-times%s         Show handhake times in milliseconds\n", COL_GREEN, RESET);
-#ifndef OPENSSL_NO_SSL2
             printf("  %s--ssl2%s               Only check SSLv2 ciphers\n", COL_GREEN, RESET);
-#endif
-#ifndef OPENSSL_NO_SSL3
             printf("  %s--ssl3%s               Only check SSLv3 ciphers\n", COL_GREEN, RESET);
-#endif
             printf("  %s--tls10%s              Only check TLSv1.0 ciphers\n", COL_GREEN, RESET);
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
             printf("  %s--tls11%s              Only check TLSv1.1 ciphers\n", COL_GREEN, RESET);
@@ -3921,14 +3901,6 @@ int main(int argc, char *argv[])
         case mode_multiple:
             printf("Version: %s%s%s\n%s\n%s\n", COL_GREEN, VERSION, RESET,
                     SSLeay_version(SSLEAY_VERSION), RESET);
-#ifdef OPENSSL_NO_SSL2
-            printf("%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
-            printf("%sSSLv2 ciphers will not be detected%s\n\n", COL_RED, RESET);
-#endif
-#ifdef OPENSSL_NO_SSL3
-            printf("%sOpenSSL version does not support SSLv3%s\n", COL_RED, RESET);
-            printf("%sSSLv3 ciphers will not be detected%s\n", COL_RED, RESET);
-#endif
 #if OPENSSL_VERSION_NUMBER < 0x10001000L
             printf("\t\t%sOpenSSL version does not support TLSv1.1%s\n", COL_RED, RESET);
             printf("\t\t%sTLSv1.1 ciphers will not be detected%s\n", COL_RED, RESET);
@@ -4025,6 +3997,211 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}
+
+int runSSLv2Test(struct sslCheckOptions *options) {
+  int ret = false, s = 0;
+  char sslv2_client_hello[] = {
+    0x80,
+    0x34, /* Length: 52 */
+    0x01, /* Handshake Message Type: Client Hello */
+    0x00, 0x02, /* Version: SSL 2.0 */
+    0x00, 0x1b, /* Cipher Spec Length: 27 */
+    0x00, 0x00, /* Session ID Length: 0 */
+    0x00, 0x10, /* Challenge Length: 16 */
+    0x05, 0x00, 0x80, /* SSL2_IDEA_128_CBC_WITH_MD5 */
+    0x03, 0x00, 0x80, /* SSL2_RC2_128_CBC_WITH_MD5 */
+    0x01, 0x00, 0x80, /* SSL2_RC4_128_WITH_MD5 */
+    0x07, 0x00, 0xc0, /* SSL2_DES_192_EDE3_CBC_WITH_MD5 */
+    0x08, 0x00, 0x80, /* SSL2_RC4_64_WITH_MD5 */
+    0x06, 0x00, 0x40, /* SSL2_DES_64_CBC_WITH_MD5 */
+    0x04, 0x00, 0x80, /* SSL2_RC2_128_CBC_EXPORT40_WITH_MD5 */
+    0x02, 0x00, 0x80, /* SSL2_RC4_128_EXPORT40_WITH_MD5 */
+    0x00, 0x00, 0x00, /* TLS_NULL_WITH_NULL_NULL */
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f /* Challenge */
+  };
+  char response[8] = {0};
+
+  /* Create a socket to the target. */
+  s = tcpConnect(options);
+
+  /* If a connection could not be made, return false. */
+  if (s == 0)
+    return false;
+
+  /* Send the SSLv2 Client Hello packet. */
+  if (send(s, sslv2_client_hello, sizeof(sslv2_client_hello), 0) <= 0) {
+    printf_error("send() failed: %s\n", strerror(errno));
+    exit(1);
+  }
+
+  /* Read a small amount of the response. */
+  if (recv(s, response, sizeof(response), 0) != sizeof(response))
+    goto done; /* Returns false. */
+
+  /* If the Handshake Message Type is Server Hello (0x04) and the Version is SSL 2.0
+   * (0x00, 0x02), we confirm that this is SSL v2.*/
+  if ((response[2] == 0x04) && (response[5] == 0x00) && (response[6] == 0x02))
+    ret = true;
+
+ done:
+  close(s);
+  return ret;
+}
+
+int runSSLv3Test(struct sslCheckOptions *options) {
+  int ret = false, s = 0;
+  uint32_t timestamp = htonl(time(NULL)); /* Current time stamp. */
+  char sslv3_client_hello_1[] = {
+    0x16, /* Content Type: Handshake (22) */
+    0x03, 0x00, /* Version SSL 3.0 */
+    0x00, 0xe8, /* Length: 232 */
+    0x01, /* Handshake Type: Client Hello */
+    0x00, 0x00, 0xe4, /* Length: 228 */
+    0x03, 0x00, /* Version: SSL 3.0 */
+  };
+
+  char sslv3_client_hello_2[] = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, /* Random bytes */
+    0x00, /* Session ID Length */
+    0x00, 0xbc, /* Cipher Suites Length: 188 */
+    0xc0, 0x14, /* TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA */
+    0xc0, 0x0a, /* TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA */
+    0x00, 0x39, /* TLS_DHE_RSA_WITH_AES_256_CBC_SHA */
+    0x00, 0x38, /* TLS_DHE_DSS_WITH_AES_256_CBC_SHA */
+    0x00, 0x37, /* TLS_DH_RSA_WITH_AES_256_CBC_SHA */
+    0x00, 0x36, /* TLS_DH_DSS_WITH_AES_256_CBC_SHA */
+    0x00, 0x88, /* TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA */
+    0x00, 0x87, /* TLS_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA */
+    0x00, 0x86, /* TLS_DH_RSA_WITH_CAMELLIA_256_CBC_SHA */
+    0x00, 0x85, /* TLS_DH_DSS_WITH_CAMELLIA_256_CBC_SHA */
+    0xc0, 0x19, /* TLS_ECDH_anon_WITH_AES_256_CBC_SHA */
+    0x00, 0x3a, /* TLS_DH_anon_WITH_AES_256_CBC_SHA */
+    0x00, 0x89, /* TLS_DH_anon_WITH_CAMELLIA_256_CBC_SHA */
+    0xc0, 0x0f, /* TLS_ECDH_RSA_WITH_AES_256_CBC_SHA */
+    0xc0, 0x05, /* TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA */
+    0x00, 0x35, /* TLS_RSA_WITH_AES_256_CBC_SHA */
+    0x00, 0x84, /* TLS_RSA_WITH_CAMELLIA_256_CBC_SHA */
+    0x00, 0x95, /* TLS_RSA_PSK_WITH_AES_256_CBC_SHA */
+    0xc0, 0x13, /* TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA */
+    0xc0, 0x09, /* TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA */
+    0x00, 0x33, /* TLS_DHE_RSA_WITH_AES_128_CBC_SHA */
+    0x00, 0x32, /* TLS_DHE_DSS_WITH_AES_128_CBC_SHA */
+    0x00, 0x31, /* TLS_DH_RSA_WITH_AES_128_CBC_SHA */
+    0x00, 0x30, /* TLS_DH_DSS_WITH_AES_128_CBC_SHA */
+    0x00, 0x9a, /* TLS_DHE_RSA_WITH_SEED_CBC_SHA */
+    0x00, 0x99, /* TLS_DHE_DSS_WITH_SEED_CBC_SHA */
+    0x00, 0x98, /* TLS_DH_RSA_WITH_SEED_CBC_SHA */
+    0x00, 0x97, /* TLS_DH_DSS_WITH_SEED_CBC_SHA */
+    0x00, 0x45, /* TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA */
+    0x00, 0x44, /* TLS_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA */
+    0x00, 0x43, /* TLS_DH_RSA_WITH_CAMELLIA_128_CBC_SHA */
+    0x00, 0x42, /* TLS_DH_DSS_WITH_CAMELLIA_128_CBC_SHA */
+    0xc0, 0x18, /* TLS_ECDH_anon_WITH_AES_128_CBC_SHA */
+    0x00, 0x34, /* TLS_DH_anon_WITH_AES_128_CBC_SHA */
+    0x00, 0x9b, /* TLS_DH_anon_WITH_SEED_CBC_SHA */
+    0x00, 0x46, /* TLS_DH_anon_WITH_CAMELLIA_128_CBC_SHA */
+    0xc0, 0x0e, /* TLS_ECDH_RSA_WITH_AES_128_CBC_SHA */
+    0xc0, 0x04, /* TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA */
+    0x00, 0x2f, /* TLS_RSA_WITH_AES_128_CBC_SHA */
+    0x00, 0x96, /* TLS_RSA_WITH_SEED_CBC_SHA */
+    0x00, 0x41, /* TLS_RSA_WITH_CAMELLIA_128_CBC_SHA */
+    0x00, 0x07, /* TLS_RSA_WITH_IDEA_CBC_SHA */
+    0x00, 0x94, /* TLS_RSA_PSK_WITH_AES_128_CBC_SHA */
+    0xc0, 0x11, /* TLS_ECDHE_RSA_WITH_RC4_128_SHA */
+    0xc0, 0x07, /* TLS_ECDHE_ECDSA_WITH_RC4_128_SHA */
+    0x00, 0x66, /* TLS_DHE_DSS_WITH_RC4_128_SHA */
+    0xc0, 0x16, /* TLS_ECDH_anon_WITH_RC4_128_SHA */
+    0x00, 0x18, /* TLS_DH_anon_WITH_RC4_128_MD5 */
+    0xc0, 0x0c, /* TLS_ECDH_RSA_WITH_RC4_128_SHA */
+    0xc0, 0x02, /* TLS_ECDH_ECDSA_WITH_RC4_128_SHA */
+    0x00, 0x05, /* TLS_RSA_WITH_RC4_128_SHA */
+    0x00, 0x04, /* TLS_RSA_WITH_RC4_128_MD5 */
+    0x00, 0x92, /* TLS_RSA_PSK_WITH_RC4_128_SHA */
+    0xc0, 0x12, /* TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA */
+    0xc0, 0x08, /* TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA */
+    0x00, 0x16, /* TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA */
+    0x00, 0x13, /* TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA */
+    0x00, 0x10, /* TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA */
+    0x00, 0x0d, /* TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA */
+    0xc0, 0x17, /* TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA */
+    0x00, 0x1b, /* TLS_DH_anon_WITH_3DES_EDE_CBC_SHA */
+    0xc0, 0x0d, /* TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA */
+    0xc0, 0x03, /* TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA */
+    0x00, 0x0a, /* TLS_RSA_WITH_3DES_EDE_CBC_SHA */
+    0x00, 0x93, /* TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA */
+    0x00, 0x63, /* TLS_DHE_DSS_EXPORT1024_WITH_DES_CBC_SHA */
+    0x00, 0x15, /* TLS_DHE_RSA_WITH_DES_CBC_SHA */
+    0x00, 0x12, /* TLS_DHE_DSS_WITH_DES_CBC_SHA */
+    0x00, 0x0f, /* TLS_DH_RSA_WITH_DES_CBC_SHA */
+    0x00, 0x0c, /* TLS_DH_DSS_WITH_DES_CBC_SHA */
+    0x00, 0x1a, /* TLS_DH_anon_WITH_DES_CBC_SHA */
+    0x00, 0x62, /* TLS_RSA_EXPORT1024_WITH_DES_CBC_SHA */
+    0x00, 0x09, /* TLS_RSA_WITH_DES_CBC_SHA */
+    0x00, 0x61, /* TLS_RSA_EXPORT1024_WITH_RC2_CBC_56_MD5 */
+    0x00, 0x65, /* TLS_DHE_DSS_EXPORT1024_WITH_RC4_56_SHA */
+    0x00, 0x64, /* TLS_RSA_EXPORT1024_WITH_RC4_56_SHA */
+    0x00, 0x60, /* TLS_RSA_EXPORT1024_WITH_RC4_56_MD5 */
+    0x00, 0x14, /* TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA */
+    0x00, 0x11, /* TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA */
+    0x00, 0x0e, /* TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA */
+    0x00, 0x0b, /* TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA */
+    0x00, 0x19, /* TLS_DH_anon_EXPORT_WITH_DES40_CBC_SHA */
+    0x00, 0x08, /* TLS_RSA_EXPORT_WITH_DES40_CBC_SHA */
+    0x00, 0x06, /* TLS_RSA_EXPORT_WITH_RC2_CBC_40_MD5 */
+    0x00, 0x17, /* TLS_DH_anon_EXPORT_WITH_RC4_40_MD5 */
+    0x00, 0x03, /* TLS_RSA_EXPORT_WITH_RC4_40_MD5 */
+    0xc0, 0x10, /* TLS_ECDHE_RSA_WITH_NULL_SHA */
+    0xc0, 0x06, /* TLS_ECDHE_ECDSA_WITH_NULL_SHA */
+    0xc0, 0x15, /* TLS_ECDH_anon_WITH_NULL_SHA */
+    0xc0, 0x0b, /* TLS_ECDH_RSA_WITH_NULL_SHA */
+    0xc0, 0x01, /* TLS_ECDH_ECDSA_WITH_NULL_SHA */
+    0x00, 0x02, /* TLS_RSA_WITH_NULL_SHA */
+    0x00, 0x01, /* TLS_RSA_WITH_NULL_MD5 */
+    0x00, 0xff, /* TLS_EMPTY_RENEGOTIATION_INFO_SCSV */
+    0x02, /* Compression Methods Length: 2 */
+    0x01, 0x00, /* DEFLATE, none */
+  };
+  char response[16] = {0};
+
+  /* Create a socket to the target. */
+  s = tcpConnect(options);
+
+  /* If a connection could not be made, return false. */
+  if (s == 0)
+    return false;
+
+  /* Send the SSLv3 Client Hello packet. */
+  if (send(s, sslv3_client_hello_1, sizeof(sslv3_client_hello_1), 0) <= 0) {
+    printf_error("send() failed: %s\n", strerror(errno));
+    exit(1);
+  }
+
+  if (send(s, &timestamp, sizeof(timestamp), 0) <= 0) {
+    printf_error("send() failed: %s\n", strerror(errno));
+    exit(1);
+  }
+
+  if (send(s, sslv3_client_hello_2, sizeof(sslv3_client_hello_2), 0) <= 0) {
+    printf_error("send() failed: %s\n", strerror(errno));
+    exit(1);
+  }
+
+  /* Read a small amount of the response. */
+  if (recv(s, response, sizeof(response), 0) != sizeof(response))
+    goto done; /* Returns false. */
+
+  /* If the Handshake Message Type is Server Hello (0x04) and the Version is SSL 3.0
+   * (0x00, 0x02), we confirm that this is SSL v2.*/
+  if ((response[0] == 0x16) && /* Content Type is Handshake (22) */
+      (response[1] == 0x03) && (response[2] == 0x00) && /* Version is SSL 3.0 */
+      (response[5] == 0x02) && /* Handshake Type is Server Hello (2) */
+      (response[9] == 0x03) && (response[10] == 0x00)) /* Version is SSL 3.0 (again) */
+    ret = true;
+
+ done:
+  close(s);
+  return ret;
 }
 
 /* MinGW doesn't have a memmem() implementation. */

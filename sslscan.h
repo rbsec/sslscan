@@ -223,6 +223,8 @@ int checkCertificateProtocols(struct sslCheckOptions *, const SSL_METHOD *);
 int checkCertificate(struct sslCheckOptions *, const SSL_METHOD *);
 int showCertificate(struct sslCheckOptions *);
 
+int runSSLv2Test(struct sslCheckOptions *options);
+int runSSLv3Test(struct sslCheckOptions *options);
 #endif
 
 /* vim :set ts=4 sw=4 sts=4 et : */
