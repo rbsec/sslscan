@@ -81,6 +81,9 @@
       #include "win32bit-compat.h"
     #endif
   #endif
+
+  const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
+
   #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
     #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
   #endif
@@ -88,10 +91,10 @@
   #include <netdb.h>
   #include <sys/socket.h>
   #include <sys/select.h>
-  #include <sys/time.h>
 #endif
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/pkcs12.h>
@@ -4055,7 +4058,8 @@ int runSSLv2Test(struct sslCheckOptions *options) {
 
 int runSSLv3Test(struct sslCheckOptions *options) {
   int ret = false, s = 0;
-  uint32_t timestamp = htonl(time(NULL)); /* Current time stamp. */
+  uint32_t timestamp = 0;
+  unsigned char timestamp_bytes[4] = {0};
   char sslv3_client_hello_1[] = {
     0x16, /* Content Type: Handshake (22) */
     0x03, 0x00, /* Version SSL 3.0 */
@@ -4181,7 +4185,13 @@ int runSSLv3Test(struct sslCheckOptions *options) {
     exit(1);
   }
 
-  if (send(s, &timestamp, sizeof(timestamp), 0) <= 0) {
+  timestamp = htonl(time(NULL)); /* Current time stamp. */
+  timestamp_bytes[0] = timestamp & 0xff;
+  timestamp_bytes[1] = (timestamp >> 8) & 0xff;
+  timestamp_bytes[2] = (timestamp >> 16) & 0xff;
+  timestamp_bytes[3] = (timestamp >> 24) & 0xff;
+
+  if (send(s, timestamp_bytes, sizeof(timestamp_bytes), 0) <= 0) {
     printf_error("send() failed: %s\n", strerror(errno));
     exit(1);
   }
