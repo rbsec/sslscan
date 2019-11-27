@@ -4040,7 +4040,7 @@ int runSSLv2Test(struct sslCheckOptions *options) {
     goto done; /* Returns false. */
 
   /* If the Handshake Message Type is Server Hello (0x04) and the Version is SSL 2.0
-   * (0x00, 0x02), we confirm that this is SSL v2.*/
+   * (0x00, 0x02), we confirm that this is SSL v2. */
   if ((response[2] == 0x04) && (response[5] == 0x00) && (response[6] == 0x02))
     ret = true;
 
@@ -4191,8 +4191,7 @@ int runSSLv3Test(struct sslCheckOptions *options) {
   if (recv(s, response, sizeof(response), 0) != sizeof(response))
     goto done; /* Returns false. */
 
-  /* If the Handshake Message Type is Server Hello (0x04) and the Version is SSL 3.0
-   * (0x00, 0x02), we confirm that this is SSL v2.*/
+  /* Examine response. */
   if ((response[0] == 0x16) && /* Content Type is Handshake (22) */
       (response[1] == 0x03) && (response[2] == 0x00) && /* Version is SSL 3.0 */
       (response[5] == 0x02) && /* Handshake Type is Server Hello (2) */
