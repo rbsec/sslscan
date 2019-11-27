@@ -72,6 +72,14 @@ LDFLAGS   += -L/usr/local/lib -L/usr/local/ssl/lib -L/usr/local/opt/openssl/lib 
 CFLAGS    += -I/usr/local/include -I/usr/local/ssl/include -I/usr/local/ssl/include/openssl -I/usr/local/opt/openssl/include -I/opt/local/include -I/opt/local/include/openssl
 endif
 
+# Find the number of processors on the system (used in -j option in building OpenSSL).
+# Uses /usr/bin/nproc if available, otherwise defaults to 1.
+NUM_PROCS = 1
+ifneq (,$(wildcard /usr/bin/nproc))
+	NUM_PROCS = `/usr/bin/nproc --all`
+endif
+
+
 .PHONY: all sslscan clean install uninstall static opensslpull
 
 all: sslscan
@@ -127,12 +135,12 @@ openssl/Makefile: .openssl.is.fresh
 endif
 
 openssl/libcrypto.a: openssl/Makefile
-	$(MAKE) -C openssl depend
-	$(MAKE) -C openssl all
-#	$(MAKE) -C openssl test # Disabled because this takes 45+ minutes for OpenSSL v1.1.1.
+	$(MAKE) -j $(NUM_PROCS) -C openssl depend
+	$(MAKE) -j $(NUM_PROCS) -C openssl all
+#	$(MAKE) -j $(NUM_PROCS) -C openssl test # Disabled because this takes 45+ minutes for OpenSSL v1.1.1.
 
 static: openssl/libcrypto.a
-	$(MAKE) sslscan STATIC_BUILD=TRUE
+	$(MAKE) -j $(NUM_PROCS) sslscan STATIC_BUILD=TRUE
 
 clean:
 	if [ -d openssl ]; then ( rm -rf openssl ); fi;
