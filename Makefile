@@ -29,7 +29,7 @@ MANDIR    = $(PREFIX)/share/man
 MAN1DIR   = $(MANDIR)/man1
 
 WARNINGS  = -Wall -Wformat=2 -Wformat-security -Wno-deprecated-declarations
-DEFINES   = -DVERSION=\"$(GIT_VERSION)\" -DOPENSSL_NO_SSL2 -DOPENSSL_NO_SSL3
+DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
 
 # for dynamic linking
 LIBS      = -lssl -lcrypto
@@ -119,17 +119,17 @@ opensslpull:
 # Need to build OpenSSL differently on OSX
 ifeq ($(OS), Darwin)
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./Configure -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC enable-ssl2 enable-weak-ssl-ciphers zlib darwin64-x86_64-cc
+	cd ./openssl; ./Configure -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC enable-weak-ssl-ciphers zlib darwin64-x86_64-cc
 # Any other *NIX platform
 else
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./config -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC no-shared enable-weak-ssl-ciphers enable-ssl2 zlib
+	cd ./openssl; ./config -v -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC no-shared enable-weak-ssl-ciphers zlib
 endif
 
 openssl/libcrypto.a: openssl/Makefile
 	$(MAKE) -C openssl depend
 	$(MAKE) -C openssl all
-	$(MAKE) -C openssl test
+#	$(MAKE) -C openssl test # Disabled because this takes 45+ minutes for OpenSSL v1.1.1.
 
 static: openssl/libcrypto.a
 	$(MAKE) sslscan STATIC_BUILD=TRUE

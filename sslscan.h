@@ -105,7 +105,7 @@ struct sslCipher
 {
     // Cipher Properties...
     const char *name;
-    char *version;
+    const char *version;
     int bits;
     char description[512];
     const SSL_METHOD *sslMethod;

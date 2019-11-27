@@ -1299,10 +1299,6 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
 const char* printableSslMethod(const SSL_METHOD *sslMethod)
 {
-#ifndef OPENSSL_NO_SSL2
-    if (sslMethod == SSLv2_client_method())
-        return "SSLv2";
-#endif
 #ifndef OPENSSL_NO_SSL3
     if (sslMethod == SSLv3_client_method())
         return "SSLv3";
@@ -1522,6 +1518,7 @@ int setCipherSuite(struct sslCheckOptions *options, const SSL_METHOD *sslMethod,
       return(SSL_CTX_set_cipher_list(options->ctx,str));
     }
   }
+  return 0;
 }
 
 char *cipherRemove(char *str, const char *sub) {
@@ -1562,7 +1559,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     uint32_t cipherid;
     const SSL_CIPHER *sslCipherPointer;
     const char *cleanSslMethod = printableSslMethod(sslMethod);
-    char *ciphername;
+    const char *ciphername;
     struct timeval tval_start, tval_end, tval_elapsed;
     if (options->showTimes)
     {
@@ -1779,7 +1776,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 // Disconnect SSL over socket
                 if (cipherStatus == 1)
                 {
-                    char *usedcipher = SSL_get_cipher_name(ssl);
+                    const char *usedcipher = SSL_get_cipher_name(ssl);
                     if(sslMethod==TLSv1_3_client_method())
                     { // Remove cipher from TLSv1.3 list
                       cipherRemove(options->cipherstring, usedcipher);
@@ -2633,7 +2630,7 @@ int showCertificate(struct sslCheckOptions *options)
                                     if (options->xmlOutput)
                                     {
                                         printf_xml("   <signature-algorithm>");
-                                        i2a_ASN1_OBJECT(fileBIO, X509_get0_tbs_sigalg(x509Cert));
+                                        X509_signature_print(fileBIO, X509_get0_tbs_sigalg(x509Cert), NULL);
                                         printf_xml("</signature-algorithm>\n");
                                     }
                                 }
@@ -2680,7 +2677,7 @@ int showCertificate(struct sslCheckOptions *options)
                                 if (!(X509_FLAG_COMPAT & X509_FLAG_NO_PUBKEY))
                                 {
                                     printf("    Public Key Algorithm: ");
-			            ASN1_OBJECT *xpoid;
+                                   ASN1_OBJECT *xpoid = NULL;
                                     i2a_ASN1_OBJECT(stdoutBIO, xpoid);
                                     printf("\n");
                                     if (options->xmlOutput)
@@ -3194,9 +3191,6 @@ int testHost(struct sslCheckOptions *options)
 #ifndef OPENSSL_NO_SSL3
                 populateCipherList(options, SSLv3_client_method());
 #endif
-#ifndef OPENSSL_NO_SSL2
-                populateCipherList(options, SSLv2_client_method());
-#endif
                 break;
             case tls_all:
                 populateCipherList(options, TLSv1_3_client_method());
@@ -3223,11 +3217,6 @@ int testHost(struct sslCheckOptions *options)
 #ifndef OPENSSL_NO_SSL3
             case ssl_v3:
                 populateCipherList(options, SSLv3_client_method());
-                break;
-#endif
-#ifndef OPENSSL_NO_SSL2
-            case ssl_v2:
-                populateCipherList(options, SSLv2_client_method());
                 break;
 #endif
         }
@@ -3327,16 +3316,7 @@ int testHost(struct sslCheckOptions *options)
                 if (status != false)
                     status = testProtocolCiphers(options, SSLv3_client_method());
 #endif
-#ifndef OPENSSL_NO_SSL2
-                if (status != false)
-                    status = testProtocolCiphers(options, SSLv2_client_method());
-#endif
                 break;
-#ifndef OPENSSL_NO_SSL2
-            case ssl_v2:
-                status = testProtocolCiphers(options, SSLv2_client_method());
-                break;
-#endif
 #ifndef OPENSSL_NO_SSL3
             case ssl_v3:
                 status = testProtocolCiphers(options, SSLv3_client_method());
@@ -3393,10 +3373,6 @@ int testHost(struct sslCheckOptions *options)
 #ifndef OPENSSL_NO_SSL3
         if (status != false)
             status = checkCertificateProtocol(options, SSLv3_client_method());
-#endif
-#ifndef OPENSSL_NO_SSL2
-        if (status != false)
-            status = checkCertificateProtocol(options, SSLv2_client_method());
 #endif
     }
 
