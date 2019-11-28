@@ -3369,14 +3369,12 @@ int testHost(struct sslCheckOptions *options)
     // Show weak certificate signing algorithm or key strength
     if (status == true && options->checkCertificate == true)
     {
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         if (status != false)
-            {
+            status = checkCertificateProtocol(options, TLSv1_3_client_method());
+        if (status != false)
             status = checkCertificateProtocol(options, TLSv1_2_client_method());
-            }
         if (status != false)
             status = checkCertificateProtocol(options, TLSv1_1_client_method());
-#endif
         if (status != false)
             status = checkCertificateProtocol(options, TLSv1_client_method());
     }
