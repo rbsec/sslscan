@@ -1497,6 +1497,7 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
             printf(" Curve %s DHE %d", cname, EVP_PKEY_bits(key));
             printf_xml(" curve=\"%s\" ecdhebits=\"%d\"", cname, EVP_PKEY_bits(key));
         }
+	break;
     case EVP_PKEY_X25519:
       printf(" %sX25519%s", COL_GREEN, RESET);
       break;
