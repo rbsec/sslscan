@@ -1484,7 +1484,6 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
         }
         printf_xml(" dhebits=\"%d\"", EVP_PKEY_bits(key));
         break;
-#ifndef OPENSSL_NO_EC
     case EVP_PKEY_EC:
         {
             EC_KEY *ec = EVP_PKEY_get1_EC_KEY(key);
@@ -1498,7 +1497,14 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
             printf(" Curve %s DHE %d", cname, EVP_PKEY_bits(key));
             printf_xml(" curve=\"%s\" ecdhebits=\"%d\"", cname, EVP_PKEY_bits(key));
         }
-#endif
+    case EVP_PKEY_X25519:
+      printf(" %sX25519%s", COL_GREEN, RESET);
+      break;
+    case EVP_PKEY_X448:
+      printf(" %sX448%s", COL_GREEN, RESET);
+      break;
+    default:
+      printf(" %sUnknown ID (%d)%s", COL_YELLOW, EVP_PKEY_id(key), RESET);
     }
     EVP_PKEY_free(key);
     return 1;
