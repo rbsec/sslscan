@@ -1618,7 +1618,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 printf_xml("  <cipher status=\"");
                 if (cipherStatus == 1)
                 {
-                    if (strcmp(options->cipherstring, "ALL:eNULL") && strcmp(options->cipherstring, "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:TLS_AES_128_CCM_8_SHA256"))
+                    if (strcmp(options->cipherstring, "ALL:eNULL") && strcmp(options->cipherstring, TLSV13_CIPHERSUITES))
                     {
                         printf_xml("accepted\"");
                         printf("Accepted  ");
@@ -3115,11 +3115,10 @@ int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMe
     int status;
     status = true;
 
-      //strncpy(options->cipherstring, "", 1);
-    if(sslMethod==TLSv1_3_client_method())
-      strncpy(options->cipherstring, "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:TLS_AES_128_CCM_8_SHA256", 122);
+    if (sslMethod == TLSv1_3_client_method())
+      strncpy(options->cipherstring, TLSV13_CIPHERSUITES, sizeof(options->cipherstring));
     else
-    strncpy(options->cipherstring, "ALL:eNULL", 10);
+      strncpy(options->cipherstring, "ALL:eNULL", sizeof(options->cipherstring));
 
     // Loop until the server won't accept any more ciphers
     while (status == true)
@@ -3135,7 +3134,7 @@ int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMe
                 SSL_CTX_set_options(options->ctx, 0);
 
             // minimal protocol version 
-            if(sslMethod==TLSv1_3_client_method())
+            if (sslMethod == TLSv1_3_client_method())
                 SSL_CTX_set_min_proto_version(options->ctx, TLS1_3_VERSION);
 
             // Load Certs if required...
