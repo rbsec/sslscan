@@ -1013,7 +1013,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
 
                         // Connect SSL over socket
                         connStatus = SSL_connect(ssl);
-                        if (connStatus)
+                        if (connStatus > 0)
                         {
                             if (!downgraded)
                             {
@@ -1022,26 +1022,24 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                                 {
                                     secondMethod = TLSv1_2_client_method();
                                 }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                                if (sslversion == TLS1_2_VERSION)
+                                else if (sslversion == TLS1_2_VERSION)
                                 {
-                                    secondMethod = TLSv1_1_client_method();
-                                } else
-#endif
-                                if (sslversion == TLS1_VERSION)
-                                {
-                                    secondMethod = TLSv1_client_method();
+				  secondMethod = TLSv1_1_client_method();
                                 }
-                                else if (sslversion == TLS1_VERSION)
-                                {
-                                    printf("Server only supports TLSv1.0");
-                                    status = false;
-                                }
-                                else
-                                {
-                                    printf("Server doesn't support TLS - skipping TLS Fallback SCSV check\n\n");
-                                    status = false;
-                                }
+				else if (sslversion == TLS1_VERSION)
+				{
+				  secondMethod = TLSv1_client_method();
+				}
+				else if (sslversion == TLS1_VERSION)
+				{
+				  printf("Server only supports TLSv1.0");
+				  status = false;
+				}
+				else
+				{
+				  printf("Server doesn't support TLS - skipping TLS Fallback SCSV check\n\n");
+				  status = false;
+				}
                             }
                             else
                             {
