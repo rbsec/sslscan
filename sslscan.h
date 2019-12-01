@@ -60,6 +60,9 @@
 /* We must maintain our own list of TLSv1.3-specific ciphersuites here, because SSL_CTX_get_ciphers() will *always* return TLSv1.2 ciphersuites, even when SSL_CTX_set_min_proto_version() and SSL_CTX_set_max_proto_version() are used.  This is confirmed by an OpenSSL developer here: https://github.com/openssl/openssl/issues/7196#issuecomment-420575202 */
 #define TLSV13_CIPHERSUITES "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:TLS_AES_128_CCM_8_SHA256"
 
+/* Somehow, RC4-MD5 is silently excluded in the latest OpenSSL release unless its explicitly included. */
+#define CIPHERSUITE_LIST_ALL "ALL:COMPLEMENTOFALL:RC4-MD5:@SECLEVEL=0"
+
 // Macros for various outputs
 #define printf(format, ...)         if (!xml_to_stdout) fprintf(stdout, format, ##__VA_ARGS__)
 #define printf_error(format, ...)   fprintf(stderr, format, ##__VA_ARGS__)

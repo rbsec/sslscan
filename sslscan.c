@@ -166,7 +166,7 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
         printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
         return false;
     }
-    SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL");
+    SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL);
     ssl = SSL_new(options->ctx);
     if (ssl == NULL) {
         printf_error("%sERROR: Could not create SSL object.%s\n", COL_RED, RESET);
@@ -835,7 +835,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
         tls_reneg_init(options);
         if (options->ctx != NULL)
         {
-            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
             {
 
                 // Load Certs if required...
@@ -975,7 +975,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
             {
                 SSL_CTX_set_mode(options->ctx, SSL_MODE_SEND_FALLBACK_SCSV);
             }
-            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
             {
 
                 // Load Certs if required...
@@ -1140,7 +1140,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
         tls_reneg_init(options);
         if (options->ctx != NULL)
         {
-            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
             {
 
                 // Load Certs if required...
@@ -1623,7 +1623,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 printf_xml("  <cipher status=\"");
                 if (cipherStatus == 1)
                 {
-                    if (strcmp(options->cipherstring, "ALL:eNULL") && strcmp(options->cipherstring, TLSV13_CIPHERSUITES))
+                    if (strcmp(options->cipherstring, CIPHERSUITE_LIST_ALL) && strcmp(options->cipherstring, TLSV13_CIPHERSUITES))
                     {
                         printf_xml("accepted\"");
                         printf("Accepted  ");
@@ -1880,7 +1880,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
         if (options->ctx != NULL)
         {
 
-            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
             {
                 // Load Certs if required...
                 if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
@@ -2300,7 +2300,7 @@ int ocspRequest(struct sslCheckOptions *options)
         if (options->ctx != NULL)
         {
 
-            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
             {
                 // Load Certs if required...
                 if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
@@ -2478,7 +2478,7 @@ int showCertificate(struct sslCheckOptions *options)
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
         {
-            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
             {
                 // Load Certs if required...
                 if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
@@ -2929,7 +2929,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
         options->ctx = SSL_CTX_new(sslMethod);
         if (options->ctx != NULL)
         {
-            if (SSL_CTX_set_cipher_list(options->ctx, "ALL:COMPLEMENTOFALL") != 0)
+            if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
             {
                 // Load Certs if required...
                 if ((options->clientCertsFile != 0) || (options->privateKeyFile != 0))
@@ -3123,7 +3123,7 @@ int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMe
     if (sslMethod == TLSv1_3_client_method())
       strncpy(options->cipherstring, TLSV13_CIPHERSUITES, sizeof(options->cipherstring));
     else
-      strncpy(options->cipherstring, "ALL:eNULL", sizeof(options->cipherstring));
+      strncpy(options->cipherstring, CIPHERSUITE_LIST_ALL, sizeof(options->cipherstring));
 
     // Loop until the server won't accept any more ciphers
     while (status == true)
