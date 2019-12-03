@@ -3334,6 +3334,8 @@ int testHost(struct sslCheckOptions *options)
 #endif
                 if (status != false)
                     status = testProtocolCiphers(options, TLSv1_client_method());
+                if (status != false)
+                    printf("Ciphers cannot be enumerated through SSLv2 nor SSLv3.\n\n");
                 break;
             case tls_all:
                 if (status != false)
@@ -3381,6 +3383,8 @@ int testHost(struct sslCheckOptions *options)
             status = checkCertificateProtocol(options, TLSv1_1_client_method());
         if (status != false)
             status = checkCertificateProtocol(options, TLSv1_client_method());
+        if (status != false)
+            printf("Certificate information cannot be enumerated through SSLv2 nor SSLv3.\n\n");
     }
 
     // Print client auth trusted CAs
