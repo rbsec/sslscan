@@ -3334,8 +3334,6 @@ int testHost(struct sslCheckOptions *options)
 #endif
                 if (status != false)
                     status = testProtocolCiphers(options, TLSv1_client_method());
-                if (status != false)
-                    printf("Ciphers cannot be enumerated through SSLv2 nor SSLv3.\n\n");
                 break;
             case tls_all:
                 if (status != false)
