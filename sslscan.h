@@ -61,13 +61,15 @@
 #define TLSV13_CIPHERSUITES "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:TLS_AES_128_CCM_8_SHA256"
 
 /* Somehow, RC4-MD5 is silently excluded in the latest OpenSSL release unless its explicitly included. */
-#define CIPHERSUITE_LIST_ALL "ALL:COMPLEMENTOFALL:RC4-MD5:@SECLEVEL=0"
+#define CIPHERSUITE_LIST_ALL "ALL:COMPLEMENTOFALL"
 
 // Macros for various outputs
 #define printf(format, ...)         if (!xml_to_stdout) fprintf(stdout, format, ##__VA_ARGS__)
 #define printf_error(format, ...)   fprintf(stderr, format, ##__VA_ARGS__)
 #define printf_xml(format, ...)     if (options->xmlOutput) fprintf(options->xmlOutput, format, ##__VA_ARGS__)
 #define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
+
+#define CTX_FREE(ctx) { SSL_CTX_free((ctx)); (ctx) = NULL; }
 
 // Colour Console Output...
 // Always better to do "const char RESET[] = " because it saves relocation records.
@@ -195,6 +197,7 @@ struct renegotiationOutput
 #endif
 
 // Utilities
+SSL_CTX *CTX_new(const SSL_METHOD *method);
 int fileExists(char *);
 void readLine(FILE *, char *, int);
 ssize_t sendString(int, const char[]);
