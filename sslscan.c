@@ -2414,27 +2414,160 @@ int ocspRequest(struct sslCheckOptions *options)
     return status;
 }
 
-static int ocsp_resp_cb(SSL *s, void *arg)
-{
-	const unsigned char *p;
-	int len;
-	OCSP_RESPONSE *rsp;
-	len = SSL_get_tlsext_status_ocsp_resp(s, &p);
-    BIO_puts(arg, "OCSP response: ");
+static int ocsp_resp_cb(SSL *s, void *unused) {
+    const unsigned char *p = NULL;
+    int len = 0;
+    OCSP_RESPONSE *o = NULL;
+    BIO *bp = BIO_new_fp(stdout, BIO_NOCLOSE);
+    int i = 0;
+    long l = 0;
+    OCSP_CERTID *cid = NULL;
+    OCSP_BASICRESP *br = NULL;
+    OCSP_RESPID *rid = NULL;
+    OCSP_RESPDATA *rd = NULL;
+    OCSP_CERTSTATUS *cst = NULL;
+    OCSP_REVOKEDINFO *rev = NULL;
+    OCSP_SINGLERESP *single = NULL;
+    OCSP_RESPBYTES *rb = NULL;
+
+
+    len = SSL_get_tlsext_status_ocsp_resp(s, &p);
     if (p == NULL) {
-        BIO_puts(arg, "no response sent\n");
-		return 1;
+        BIO_puts(bp, "No OCSP response recieved.\n\n");
+        goto err;
+    }
+
+    o = d2i_OCSP_RESPONSE(NULL, &p, len);
+    if (o == NULL) {
+        BIO_puts(bp, "OCSP response parse error\n");
+        BIO_dump_indent(bp, (char *)p, len, 4);
+        goto err;
+    }
+
+    rb = o->responseBytes;
+    l = ASN1_ENUMERATED_get(o->responseStatus);
+    if (BIO_printf(bp, "OCSP Response Status: %s (0x%lx)\n",
+                   OCSP_response_status_str(l), l) <= 0)
+        goto err;
+    if (rb == NULL)
+        return 1;
+    if (BIO_puts(bp, "Response Type: ") <= 0)
+        goto err;
+    if (i2a_ASN1_OBJECT(bp, rb->responseType) <= 0)
+        goto err;
+    if (OBJ_obj2nid(rb->responseType) != NID_id_pkix_OCSP_basic) {
+        BIO_puts(bp, " (unknown response type)\n");
+        return 1;
+    }
+
+    if ((br = OCSP_response_get1_basic(o)) == NULL)
+        goto err;
+    rd = &br->tbsResponseData;
+    l = ASN1_INTEGER_get(rd->version);
+    if (BIO_printf(bp, "\nVersion: %lu (0x%lx)\n", l + 1, l) <= 0)
+        goto err;
+    if (BIO_puts(bp, "Responder Id: ") <= 0)
+        goto err;
+
+    rid = &rd->responderId;
+    switch (rid->type) {
+    case V_OCSP_RESPID_NAME:
+        X509_NAME_print_ex(bp, rid->value.byName, 0, XN_FLAG_ONELINE);
+        break;
+    case V_OCSP_RESPID_KEY:
+        i2a_ASN1_STRING(bp, rid->value.byKey, 0);
+        break;
+    }
+
+    if (BIO_printf(bp, "\nProduced At: ") <= 0)
+        goto err;
+    if (!ASN1_GENERALIZEDTIME_print(bp, rd->producedAt))
+        goto err;
+    if (BIO_printf(bp, "\nResponses:\n") <= 0)
+        goto err;
+    for (i = 0; i < sk_OCSP_SINGLERESP_num(rd->responses); i++) {
+        if (!sk_OCSP_SINGLERESP_value(rd->responses, i))
+            continue;
+        single = sk_OCSP_SINGLERESP_value(rd->responses, i);
+        cid = single->certId;
+        if (ocsp_certid_print(bp, cid, 4) <= 0)
+            goto err;
+        cst = single->certStatus;
+        if (BIO_puts(bp, "    Cert Status: ") <= 0)
+            goto err;
+        if (cst->type == V_OCSP_CERTSTATUS_GOOD) {
+          if (BIO_printf(bp, "%s%s%s", COL_GREEN, OCSP_cert_status_str(cst->type), RESET) <= 0)
+                goto err;
+	} else if (cst->type == V_OCSP_CERTSTATUS_REVOKED) {
+            if (BIO_printf(bp, "%s%s%s", COL_RED, OCSP_cert_status_str(cst->type), RESET) <= 0)
+                goto err;
+            rev = cst->value.revoked;
+            if (BIO_printf(bp, "\n    Revocation Time: ") <= 0)
+                goto err;
+            if (!ASN1_GENERALIZEDTIME_print(bp, rev->revocationTime))
+                goto err;
+            if (rev->revocationReason) {
+                l = ASN1_ENUMERATED_get(rev->revocationReason);
+                if (BIO_printf(bp,
+                               "\n    Revocation Reason: %s (0x%lx)",
+                               OCSP_crl_reason_str(l), l) <= 0)
+                    goto err;
+            }
+        } else {
+	  if (BIO_printf(bp, "%s%s%s", COL_YELLOW, OCSP_cert_status_str(cst->type), RESET) <= 0)
+	    goto err;
 	}
-	rsp = d2i_OCSP_RESPONSE(NULL, &p, len);
-    if (rsp == NULL) {
-        BIO_puts(arg, "response parse error\n");
-        BIO_dump_indent(arg, (char *)p, len, 4);
-		return 0;
-	}
-    BIO_puts(arg, "\n======================================\n");
-    OCSP_RESPONSE_print(arg, rsp, 0);
-    BIO_puts(arg, "======================================\n");
-		OCSP_RESPONSE_free(rsp);
+        if (BIO_printf(bp, "\n    This Update: ") <= 0)
+            goto err;
+        if (!ASN1_GENERALIZEDTIME_print(bp, single->thisUpdate))
+            goto err;
+        if (single->nextUpdate) {
+            if (BIO_printf(bp, "\n    Next Update: ") <= 0)
+                goto err;
+            if (!ASN1_GENERALIZEDTIME_print(bp, single->nextUpdate))
+                goto err;
+        }
+        if (BIO_write(bp, "\n", 1) <= 0)
+            goto err;
+
+        if (!X509V3_extensions_print(bp,
+                                     "Response Single Extensions",
+                                     single->singleExtensions, 0, 4))
+            goto err;
+        if (BIO_write(bp, "\n", 1) <= 0)
+            goto err;
+    }
+    /*
+    if (!X509V3_extensions_print(bp, "Response Extensions",
+                                 rd->responseExtensions, 0, 4))
+        goto err;
+    if (X509_signature_print(bp, &br->signatureAlgorithm, br->signature) <= 0)
+        goto err;
+
+    for (i = 0; i < sk_X509_num(br->certs); i++) {
+        X509_print(bp, sk_X509_value(br->certs, i));
+        PEM_write_bio_X509(bp, sk_X509_value(br->certs, i));
+    }
+    */
+ err:
+  if (o != NULL) { OCSP_RESPONSE_free(o); o = NULL; }
+  BIO_free(bp);
+  return 1;
+}
+
+int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent)
+{
+    BIO_printf(bp, "%*sCertificate ID:\n", indent, "");
+    indent += 2;
+    BIO_printf(bp, "%*sHash Algorithm: ", indent, "");
+    i2a_ASN1_OBJECT(bp, a->hashAlgorithm.algorithm);
+    BIO_printf(bp, "\n%*sIssuer Name Hash: ", indent, "");
+    i2a_ASN1_STRING(bp, &a->issuerNameHash, 0);
+    BIO_printf(bp, "\n%*sIssuer Key Hash: ", indent, "");
+    i2a_ASN1_STRING(bp, &a->issuerKeyHash, 0);
+    BIO_printf(bp, "\n%*sSerial Number: ", indent, "");
+    i2a_ASN1_INTEGER(bp, &a->serialNumber);
+    BIO_printf(bp, "\n");
     return 1;
 }
 

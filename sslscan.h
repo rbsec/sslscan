@@ -70,10 +70,10 @@
 #define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
 
 /* Frees an SSL pointer, and explicitly sets it to NULL to avoid use-after-free. */
-#define SSL_FREE(ssl) { SSL_free((ssl)); (ssl) = NULL; }
+#define SSL_FREE(ssl) { if (ssl != NULL) { SSL_free((ssl)); (ssl) = NULL; } }
 
 /* Frees a SSL_CTX pointer, and explicitly sets it to NULL to avoid use-after-free. */
-#define CTX_FREE(ctx) { SSL_CTX_free((ctx)); (ctx) = NULL; }
+#define CTX_FREE(ctx) { if (ctx != NULL) { SSL_CTX_free((ctx)); (ctx) = NULL; } }
 
 // Colour Console Output...
 // Always better to do "const char RESET[] = " because it saves relocation records.
@@ -187,6 +187,71 @@ struct renegotiationOutput
 {
     int supported;
     int secure;
+};
+
+/* For OCSP processing.  Taken from crypto/ocsp/ocsp_local.h in OpenSSL, which does not seem to be normally exposed externally. */
+struct ocsp_response_st {
+    ASN1_ENUMERATED *responseStatus;
+    OCSP_RESPBYTES *responseBytes;
+};
+
+struct ocsp_resp_bytes_st {
+    ASN1_OBJECT *responseType;
+    ASN1_OCTET_STRING *response;
+};
+
+struct ocsp_responder_id_st {
+    int type;
+    union {
+        X509_NAME *byName;
+        ASN1_OCTET_STRING *byKey;
+    } value;
+};
+typedef struct ocsp_responder_id_st OCSP_RESPID;
+
+struct ocsp_response_data_st {
+    ASN1_INTEGER *version;
+    OCSP_RESPID responderId;
+    ASN1_GENERALIZEDTIME *producedAt;
+    STACK_OF(OCSP_SINGLERESP) *responses;
+    STACK_OF(X509_EXTENSION) *responseExtensions;
+};
+typedef struct ocsp_response_data_st OCSP_RESPDATA;
+
+struct ocsp_basic_response_st {
+    OCSP_RESPDATA tbsResponseData;
+    X509_ALGOR signatureAlgorithm;
+    ASN1_BIT_STRING *signature;
+    STACK_OF(X509) *certs;
+};
+
+struct ocsp_single_response_st {
+    OCSP_CERTID *certId;
+    OCSP_CERTSTATUS *certStatus;
+    ASN1_GENERALIZEDTIME *thisUpdate;
+    ASN1_GENERALIZEDTIME *nextUpdate;
+    STACK_OF(X509_EXTENSION) *singleExtensions;
+};
+
+struct ocsp_cert_status_st {
+    int type;
+    union {
+        ASN1_NULL *good;
+        OCSP_REVOKEDINFO *revoked;
+        ASN1_NULL *unknown;
+    } value;
+};
+
+struct ocsp_revoked_info_st {
+    ASN1_GENERALIZEDTIME *revocationTime;
+    ASN1_ENUMERATED *revocationReason;
+};
+
+struct ocsp_cert_id_st {
+    X509_ALGOR hashAlgorithm;
+    ASN1_OCTET_STRING issuerNameHash;
+    ASN1_OCTET_STRING issuerKeyHash;
+    ASN1_INTEGER serialNumber;
 };
 
 /* We redefine these so that we can run correctly even if the vendor gives us
