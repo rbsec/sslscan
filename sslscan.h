@@ -60,7 +60,7 @@
 /* We must maintain our own list of TLSv1.3-specific ciphersuites here, because SSL_CTX_get_ciphers() will *always* return TLSv1.2 ciphersuites, even when SSL_CTX_set_min_proto_version() and SSL_CTX_set_max_proto_version() are used.  This is confirmed by an OpenSSL developer here: https://github.com/openssl/openssl/issues/7196#issuecomment-420575202 */
 #define TLSV13_CIPHERSUITES "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:TLS_AES_128_CCM_8_SHA256"
 
-/* Somehow, RC4-MD5 is silently excluded in the latest OpenSSL release unless its explicitly included. */
+/* Cipherlist for TLSv1.2 and below that corresponds to all available ciphersuites. */
 #define CIPHERSUITE_LIST_ALL "ALL:COMPLEMENTOFALL"
 
 // Macros for various outputs
@@ -69,6 +69,10 @@
 #define printf_xml(format, ...)     if (options->xmlOutput) fprintf(options->xmlOutput, format, ##__VA_ARGS__)
 #define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
 
+/* Frees an SSL pointer, and explicitly sets it to NULL to avoid use-after-free. */
+#define SSL_FREE(ssl) { SSL_free((ssl)); (ssl) = NULL; }
+
+/* Frees a SSL_CTX pointer, and explicitly sets it to NULL to avoid use-after-free. */
 #define CTX_FREE(ctx) { SSL_CTX_free((ctx)); (ctx) = NULL; }
 
 // Colour Console Output...
