@@ -3440,32 +3440,33 @@ int testHost(struct sslCheckOptions *options)
 #endif
 	}
 
-    printf("  %sSSL Protocols:%s\n", COL_BLUE, RESET);
-    // Check if SSLv2 is enabled.
-    if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v2)) {
-        if (runSSLv2Test(options)) {
-	  printf("SSLv2 is %senabled%s\n", COL_RED, RESET);
-	  printf_xml("  <ssl protocol_version=\"2\" enabled=\"1\" />\n");
-	} else {
-	  printf("SSLv2 is %snot enabled%s\n", COL_GREEN, RESET);
-	  printf_xml("  <ssl protocol_version=\"2\" enabled=\"0\" />\n");
-	}
-    }
-
-    // Check if SSLv3 is enabled.
-    if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v3)) {
-        if (runSSLv3Test(options)) {
-	  printf("SSLv3 is %senabled%s\n", COL_RED, RESET);
-	  printf_xml("  <ssl protocol_version=\"3\" enabled=\"1\" />\n");
-	} else {
-	  printf("SSLv3 is %snot enabled%s\n", COL_GREEN, RESET);
-	  printf_xml("  <ssl protocol_version=\"3\" enabled=\"0\" />\n");
-	}
-    }
-    printf("\n");
-
     if (options->ciphersuites)
     {
+        printf("  %sSSL Protocols:%s\n", COL_BLUE, RESET);
+
+        // Check if SSLv2 is enabled.
+        if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v2)) {
+            if (runSSLv2Test(options)) {
+                printf("SSLv2 is %senabled%s\n", COL_RED, RESET);
+                printf_xml("  <ssl protocol_version=\"2\" enabled=\"1\" />\n");
+            } else {
+                printf("SSLv2 is %snot enabled%s\n", COL_GREEN, RESET);
+                printf_xml("  <ssl protocol_version=\"2\" enabled=\"0\" />\n");
+            }
+        }
+
+        // Check if SSLv3 is enabled.
+        if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v3)) {
+            if (runSSLv3Test(options)) {
+                printf("SSLv3 is %senabled%s\n", COL_RED, RESET);
+                printf_xml("  <ssl protocol_version=\"3\" enabled=\"1\" />\n");
+            } else {
+                printf("SSLv3 is %snot enabled%s\n", COL_GREEN, RESET);
+                printf_xml("  <ssl protocol_version=\"3\" enabled=\"0\" />\n");
+            }
+        }
+        printf("\n");
+
         // Test supported ciphers...
         printf("  %sSupported Server Cipher(s):%s\n", COL_BLUE, RESET);
         switch (options->sslVersion)
