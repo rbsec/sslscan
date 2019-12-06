@@ -211,7 +211,7 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
         SSL_CIPHER_description(sk_SSL_CIPHER_value(cipherList, loop), sslCipherPointer->description, sizeof(sslCipherPointer->description) - 1);
         sslCipherPointer->bits = SSL_CIPHER_get_bits(sk_SSL_CIPHER_value(cipherList, loop), &tempInt);
     }
-    SSL_free(ssl);
+    SSL_FREE(ssl);
     CTX_FREE(options->ctx);
     return returnCode;
 }
@@ -915,7 +915,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         SSL_shutdown(ssl);
 
                         // Free SSL object
-                        SSL_free(ssl);
+                        SSL_FREE(ssl);
                     }
                     else
                     {
@@ -1084,7 +1084,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                         SSL_shutdown(ssl);
 
                         // Free SSL object
-                        SSL_free(ssl);
+                        SSL_FREE(ssl);
                     }
                     else
                     {
@@ -1268,7 +1268,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                         }
 
                         // Free SSL object
-                        SSL_free(ssl);
+                        SSL_FREE(ssl);
                     }
                     else
                     {
@@ -1812,7 +1812,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 }
 
                 // Free SSL object
-                SSL_free(ssl);
+                SSL_FREE(ssl);
             }
             else
             {
@@ -2234,7 +2234,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                             SSL_shutdown(ssl);
                         }
                         // Free SSL object
-                        SSL_free(ssl);
+                        SSL_FREE(ssl);
                     }
                     else
                     {
@@ -2378,7 +2378,7 @@ int ocspRequest(struct sslCheckOptions *options)
                             printf("Most likely cause is server not supporting %s, try manually specifying version\n", printableSslMethod(sslMethod));
                         }
                         // Free SSL object
-                        SSL_free(ssl);
+                        SSL_FREE(ssl);
                     }
                     else
                     {
@@ -2856,7 +2856,7 @@ int showCertificate(struct sslCheckOptions *options)
                         }
 
                         // Free SSL object
-                        SSL_free(ssl);
+                        SSL_FREE(ssl);
                     }
                     else
                     {
@@ -3025,7 +3025,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
                         }
 
                         // Free SSL object
-                        SSL_free(ssl);
+                        SSL_FREE(ssl);
                     }
                     else
                     {
