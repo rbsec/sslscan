@@ -1581,14 +1581,12 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     const char *cleanSslMethod = printableSslMethod(sslMethod);
     const char *ciphername;
     struct timeval tval_start, tval_end, tval_elapsed;
+
+
     if (options->showTimes)
     {
         gettimeofday(&tval_start, NULL);
     }
-
-    // Create request buffer...
-    memset(requestBuffer, 0, 200);
-    snprintf(requestBuffer, 199, "GET / HTTP/1.0\r\nUser-Agent: SSLScan\r\nHost: %s\r\n\r\n", options->host);
 
     // Connect to host
     socketDescriptor = tcpConnect(options);
@@ -1654,14 +1652,18 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
                         }
 
+                        // Create request buffer...
+                        memset(requestBuffer, 0, sizeof(requestBuffer));
+                        snprintf(requestBuffer, sizeof(requestBuffer) - 1, "GET / HTTP/1.0\r\nUser-Agent: SSLScan\r\nHost: %s\r\n\r\n", options->host);
+
                         // HTTP Get...
-                        SSL_write(ssl, requestBuffer, sizeof(requestBuffer));
-                        memset(buffer ,0 , 50);
-                        resultSize = SSL_read(ssl, buffer, 49);
+                        SSL_write(ssl, requestBuffer, strlen(requestBuffer));
+                        memset(buffer, 0, sizeof(buffer));
+                        resultSize = SSL_read(ssl, buffer, sizeof(buffer) - 1);
                         if (resultSize > 9)
                         {
                             int loop = 0;
-                            for (loop = 9; (loop < 49) && (buffer[loop] != 0) && (buffer[loop] != '\r') && (buffer[loop] != '\n'); loop++)
+                            for (loop = 9; (loop < sizeof(buffer) - 1) && (buffer[loop] != 0) && (buffer[loop] != '\r') && (buffer[loop] != '\n'); loop++)
                             { }
                             buffer[loop] = 0;
 
