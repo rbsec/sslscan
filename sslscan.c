@@ -1511,10 +1511,12 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
         }
 	break;
     case EVP_PKEY_X25519:
-      printf(" %sX25519%s", COL_GREEN, RESET);
+      printf(" Curve %s25519%s DHE %d", COL_GREEN, RESET, EVP_PKEY_bits(key));
+      printf_xml(" curve=\"25519\" ecdhebits=\"%d\"", EVP_PKEY_bits(key));
       break;
     case EVP_PKEY_X448:
-      printf(" %sX448%s", COL_GREEN, RESET);
+      printf(" Curve %s448%s DHE %d", COL_GREEN, RESET, EVP_PKEY_bits(key));
+      printf_xml(" curve=\"448\" ecdhebits=\"%d\"", EVP_PKEY_bits(key));
       break;
     default:
       printf(" %sUnknown ID (%d)%s", COL_YELLOW, EVP_PKEY_id(key), RESET);
