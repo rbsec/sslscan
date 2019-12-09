@@ -127,11 +127,11 @@ opensslpull:
 # Need to build OpenSSL differently on OSX
 ifeq ($(OS), Darwin)
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./Configure -fstack-protector-all -D_FORTIFY_SOURCE=2 -DOPENSSL_TLS_SECURITY_LEVEL=0 -fPIC enable-weak-ssl-ciphers zlib darwin64-x86_64-cc
+	cd ./openssl; ./Configure -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC enable-weak-ssl-ciphers zlib darwin64-x86_64-cc
 # Any other *NIX platform
 else
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./config -v -fstack-protector-all -D_FORTIFY_SOURCE=2 -DOPENSSL_TLS_SECURITY_LEVEL=0 -fPIC no-shared enable-weak-ssl-ciphers zlib
+	cd ./openssl; ./config -v -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC no-shared enable-weak-ssl-ciphers zlib
 endif
 
 openssl/libcrypto.a: openssl/Makefile

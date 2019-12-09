@@ -70,10 +70,10 @@
 #define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
 
 /* Frees an SSL pointer, and explicitly sets it to NULL to avoid use-after-free. */
-#define SSL_FREE(ssl) { if (ssl != NULL) { SSL_free((ssl)); (ssl) = NULL; } }
+#define FREE_SSL(ssl) { if ((ssl) != NULL) { SSL_free((ssl)); (ssl) = NULL; } }
 
 /* Frees a SSL_CTX pointer, and explicitly sets it to NULL to avoid use-after-free. */
-#define CTX_FREE(ctx) { if (ctx != NULL) { SSL_CTX_free((ctx)); (ctx) = NULL; } }
+#define FREE_CTX(ctx) { if ((ctx) != NULL) { SSL_CTX_free((ctx)); (ctx) = NULL; } }
 
 // Colour Console Output...
 // Always better to do "const char RESET[] = " because it saves relocation records.

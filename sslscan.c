@@ -156,10 +156,19 @@ static int security_callback_allow_all(const SSL *s, const SSL_CTX *ctx, int op,
   return 1;
 }
 
-/* Creates an SSL_CTX using CTX_new(), and sets the permissive security callback on it.  Free with CTX_FREE(). */
-SSL_CTX *CTX_new(const SSL_METHOD *method) {
+/* Creates an SSL_CTX using SSL_CTX_new(), sets the security level to 0, and sets the permissive security callback on it.  Free with FREE_CTX(). */
+SSL_CTX *new_CTX(const SSL_METHOD *method) {
   SSL_CTX *ret = SSL_CTX_new(method);
+  SSL_CTX_set_security_level(ret, 0);
   SSL_CTX_set_security_callback(ret, security_callback_allow_all);
+  return ret;
+}
+
+/* Creates an SSL object using SSL_new(), sets the security level to 0, and sets the permissive security callback on it.  Free with FREE_SSL(). */
+SSL *new_SSL(SSL_CTX *ctx) {
+  SSL *ret = SSL_new(ctx);
+  SSL_set_security_level(ret, 0);
+  SSL_set_security_callback(ret, security_callback_allow_all);
   return ret;
 }
 
@@ -173,16 +182,16 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
     // STACK_OF is a sign that you should be using C++ :)
     STACK_OF(SSL_CIPHER) *cipherList;
     SSL *ssl = NULL;
-    options->ctx = CTX_new(sslMethod);
+    options->ctx = new_CTX(sslMethod);
     if (options->ctx == NULL) {
         printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
         return false;
     }
     SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL);
-    ssl = SSL_new(options->ctx);
+    ssl = new_SSL(options->ctx);
     if (ssl == NULL) {
         printf_error("%sERROR: Could not create SSL object.%s\n", COL_RED, RESET);
-        CTX_FREE(options->ctx);
+        FREE_CTX(options->ctx);
         return false;
     }
     cipherList = SSL_get_ciphers(ssl);
@@ -211,8 +220,8 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
         SSL_CIPHER_description(sk_SSL_CIPHER_value(cipherList, loop), sslCipherPointer->description, sizeof(sslCipherPointer->description) - 1);
         sslCipherPointer->bits = SSL_CIPHER_get_bits(sk_SSL_CIPHER_value(cipherList, loop), &tempInt);
     }
-    SSL_FREE(ssl);
-    CTX_FREE(options->ctx);
+    FREE_SSL(ssl);
+    FREE_CTX(options->ctx);
     return returnCode;
 }
 
@@ -843,7 +852,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     if (socketDescriptor != 0)
     {
         // Setup Context Object...
-        options->ctx = CTX_new(sslMethod);
+        options->ctx = new_CTX(sslMethod);
         tls_reneg_init(options);
         if (options->ctx != NULL)
         {
@@ -857,7 +866,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                 if (status == true)
                 {
                     // Create SSL object...
-                    ssl = SSL_new(options->ctx);
+                    ssl = new_SSL(options->ctx);
 
 #if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                     // Make sure we can connect to insecure servers
@@ -915,7 +924,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         SSL_shutdown(ssl);
 
                         // Free SSL object
-                        SSL_FREE(ssl);
+                        FREE_SSL(ssl);
                     }
                     else
                     {
@@ -930,7 +939,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                 printf_error("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
             }
             // Free CTX Object
-            CTX_FREE(options->ctx);
+            FREE_CTX(options->ctx);
         }
         // Error Creating Context Object
         else
@@ -979,7 +988,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
     if (socketDescriptor != 0)
     {
         // Setup Context Object...
-        options->ctx = CTX_new(sslMethod);
+        options->ctx = new_CTX(sslMethod);
         tls_reneg_init(options);
         if (options->ctx != NULL)
         {
@@ -997,7 +1006,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                 if (status == true)
                 {
                     // Create SSL object...
-                    ssl = SSL_new(options->ctx);
+                    ssl = new_SSL(options->ctx);
 
 #if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                     // Make sure we can connect to insecure servers
@@ -1084,7 +1093,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                         SSL_shutdown(ssl);
 
                         // Free SSL object
-                        SSL_FREE(ssl);
+                        FREE_SSL(ssl);
                     }
                     else
                     {
@@ -1099,7 +1108,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                 printf_error("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
             }
             // Free CTX Object
-            CTX_FREE(options->ctx);
+            FREE_CTX(options->ctx);
         }
         // Error Creating Context Object
         else
@@ -1148,7 +1157,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
     {
 
         // Setup Context Object...
-        options->ctx = CTX_new(sslMethod);
+        options->ctx = new_CTX(sslMethod);
         tls_reneg_init(options);
         if (options->ctx != NULL)
         {
@@ -1162,7 +1171,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                 if (status == true)
                 {
                     // Create SSL object...
-                    ssl = SSL_new(options->ctx);
+                    ssl = new_SSL(options->ctx);
 
 #if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                     // Make sure we can connect to insecure servers
@@ -1268,7 +1277,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                         }
 
                         // Free SSL object
-                        SSL_FREE(ssl);
+                        FREE_SSL(ssl);
                     }
                     else
                     {
@@ -1285,7 +1294,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                 printf_error("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
             }
             // Free CTX Object
-            CTX_FREE(options->ctx);
+            FREE_CTX(options->ctx);
         }
         // Error Creating Context Object
         else
@@ -1597,7 +1606,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         if (setCipherSuite(options, sslMethod, options->cipherstring))
         {
             // Create SSL object...
-            ssl = SSL_new(options->ctx);
+            ssl = new_SSL(options->ctx);
 
             if (ssl != NULL)
             {
@@ -1814,7 +1823,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 }
 
                 // Free SSL object
-                SSL_FREE(ssl);
+                FREE_SSL(ssl);
             }
             else
             {
@@ -1843,7 +1852,7 @@ int checkCertificateProtocol(struct sslCheckOptions *options, const SSL_METHOD *
 {
     int status = true;
     // Setup Context Object...
-    options->ctx = CTX_new(sslMethod);
+    options->ctx = new_CTX(sslMethod);
     if (options->ctx != NULL)
     {
         // SSL implementation bugs/workaround
@@ -1892,7 +1901,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
     if (socketDescriptor != 0)
     {
         // Setup Context Object...
-        options->ctx = CTX_new(sslMethod);
+        options->ctx = new_CTX(sslMethod);
         if (options->ctx != NULL)
         {
 
@@ -1905,7 +1914,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                 if (status == true)
                 {
                     // Create SSL object...
-                    ssl = SSL_new(options->ctx);
+                    ssl = new_SSL(options->ctx);
                     if (ssl != NULL)
                     {
                         // Connect socket and BIO
@@ -2236,7 +2245,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                             SSL_shutdown(ssl);
                         }
                         // Free SSL object
-                        SSL_FREE(ssl);
+                        FREE_SSL(ssl);
                     }
                     else
                     {
@@ -2252,7 +2261,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
             }
 
             // Free CTX Object
-            CTX_FREE(options->ctx);
+            FREE_CTX(options->ctx);
         }
         // Error Creating Context Object
         else
@@ -2312,7 +2321,7 @@ int ocspRequest(struct sslCheckOptions *options)
             printf_verbose("If server doesn't support TLSv1.0, manually specify TLS version\n");
             sslMethod = TLSv1_method();
         }
-        options->ctx = CTX_new(sslMethod);
+        options->ctx = new_CTX(sslMethod);
         if (options->ctx != NULL)
         {
 
@@ -2325,7 +2334,7 @@ int ocspRequest(struct sslCheckOptions *options)
                 if (status == true)
                 {
                     // Create SSL object...
-                    ssl = SSL_new(options->ctx);
+                    ssl = new_SSL(options->ctx);
                     if (ssl != NULL)
                     {
                         // Connect socket and BIO
@@ -2380,7 +2389,7 @@ int ocspRequest(struct sslCheckOptions *options)
                             printf("Most likely cause is server not supporting %s, try manually specifying version\n", printableSslMethod(sslMethod));
                         }
                         // Free SSL object
-                        SSL_FREE(ssl);
+                        FREE_SSL(ssl);
                     }
                     else
                     {
@@ -2396,7 +2405,7 @@ int ocspRequest(struct sslCheckOptions *options)
             }
 
             // Free CTX Object
-            CTX_FREE(options->ctx);
+            FREE_CTX(options->ctx);
         }
         // Error Creating Context Object
         else
@@ -2624,7 +2633,7 @@ int showCertificate(struct sslCheckOptions *options)
             printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
             sslMethod = TLSv1_method();
         }
-        options->ctx = CTX_new(sslMethod);
+        options->ctx = new_CTX(sslMethod);
         if (options->ctx != NULL)
         {
             if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
@@ -2636,7 +2645,7 @@ int showCertificate(struct sslCheckOptions *options)
                 if (status == true)
                 {
                     // Create SSL object...
-                    ssl = SSL_new(options->ctx);
+                    ssl = new_SSL(options->ctx);
                     if (ssl != NULL)
                     {
                         // Connect socket and BIO
@@ -2991,7 +3000,7 @@ int showCertificate(struct sslCheckOptions *options)
                         }
 
                         // Free SSL object
-                        SSL_FREE(ssl);
+                        FREE_SSL(ssl);
                     }
                     else
                     {
@@ -3007,7 +3016,7 @@ int showCertificate(struct sslCheckOptions *options)
             }
 
             // Free CTX Object
-            CTX_FREE(options->ctx);
+            FREE_CTX(options->ctx);
         }
 
         // Error Creating Context Object
@@ -3075,7 +3084,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
             printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
             sslMethod = TLSv1_method();
         }
-        options->ctx = CTX_new(sslMethod);
+        options->ctx = new_CTX(sslMethod);
         if (options->ctx != NULL)
         {
             if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
@@ -3087,7 +3096,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
                 if (status == true)
                 {
                     // Create SSL object...
-                    ssl = SSL_new(options->ctx);
+                    ssl = new_SSL(options->ctx);
                     if (ssl != NULL)
                     {
                         // Connect socket and BIO
@@ -3160,7 +3169,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
                         }
 
                         // Free SSL object
-                        SSL_FREE(ssl);
+                        FREE_SSL(ssl);
                     }
                     else
                     {
@@ -3176,7 +3185,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
             }
 
             // Free CTX Object
-            CTX_FREE(options->ctx);
+            FREE_CTX(options->ctx);
         }
 
         // Error Creating Context Object
@@ -3278,7 +3287,7 @@ int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMe
     while (status == true)
     {
         // Setup Context Object...
-        options->ctx = CTX_new(sslMethod);
+        options->ctx = new_CTX(sslMethod);
         if (options->ctx != NULL)
         {
             // SSL implementation bugs/workaround
@@ -3300,7 +3309,7 @@ int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMe
                 status = testCipher(options, sslMethod);
 
             // Free CTX Object
-            CTX_FREE(options->ctx);
+            FREE_CTX(options->ctx);
         }
 
         // Error Creating Context Object
