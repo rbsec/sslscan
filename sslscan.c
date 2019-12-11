@@ -1640,6 +1640,10 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
       printf("%s%-29s%s", COL_RED, ciphername, RESET);
     } else if (strstr(ciphername, "RC4") || strstr(ciphername, "DES")) {
       printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+    } else if (strstr(ciphername, "_SM4_")) { /* Developed by Chinese government */
+      printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+    } else if (strstr(ciphername, "_GOSTR341112_")) { /* Developed by Russian government */
+      printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
     } else if ((strstr(ciphername, "CHACHA20") || (strstr(ciphername, "GCM"))) && strstr(ciphername, "DHE")) {
       printf("%s%-29s%s", COL_GREEN, ciphername, RESET);
     } else {
