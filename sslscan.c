@@ -4508,7 +4508,7 @@ void markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_vers
   }
 }
 
-/* Resolves an IANA cipher ID to its IANA name.  Sets the cipher_bits argument to the cipher strength (or to -1 if unknown).  Returns NULL if cipher ID is not found. */
+/* Resolves an IANA cipher ID to its IANA name.  Sets the cipher_bits argument to the cipher strength (or to -1 if unknown).  Returns "UNKNOWN_CIPHER if cipher ID is not found. */
 char *resolveCipherID(unsigned short cipher_id, int *cipher_bits) {
   for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
     if (missing_ciphersuites[i].id == cipher_id) {
@@ -4517,7 +4517,7 @@ char *resolveCipherID(unsigned short cipher_id, int *cipher_bits) {
     }
   }
   *cipher_bits = -1;
-  return NULL;
+  return "UNKNOWN_CIPHER";
 }
 
 /* Checks all ciphersuites that OpenSSL does not support.  When version is 0, TLSv1.0 is tested.  When set to 1, TLSv1.1 is tested.  When set to 2, TLSv1.2 is tested. */
