@@ -286,7 +286,7 @@ int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent);
 static int ocsp_resp_cb(SSL *s, void *arg);
 void readLine(FILE *, char *, int);
 int readOrLogAndClose(int, void *, size_t, const struct sslCheckOptions *);
-char *resolveCipherID(ushort cipher_id, int *cipher_bits);
+char *resolveCipherID(unsigned short cipher_id, int *cipher_bits);
 static int password_callback(char *, int, int, void *);
 const char *printableSslMethod(const SSL_METHOD *);
 ssize_t sendString(int, const char[]);

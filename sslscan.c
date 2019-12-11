@@ -118,6 +118,13 @@
 #include <netinet/in.h>
 #endif
 
+/* Format specifier for printing a size_t. */
+#ifdef _WIN32
+  #define SIZE_T_FMT PRIu64
+#else
+  #define SIZE_T_FMT "zu"
+#endif
+
 #include "sslscan.h"
 
 #if OPENSSL_VERSION_NUMBER < 0x1010100fL
@@ -4498,7 +4505,7 @@ void markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_vers
 }
 
 /* Resolves an IANA cipher ID to its IANA name.  Sets the cipher_bits argument to the cipher strength (or to -1 if unknown).  Returns NULL if cipher ID is not found. */
-char *resolveCipherID(ushort cipher_id, int *cipher_bits) {
+char *resolveCipherID(unsigned short cipher_id, int *cipher_bits) {
   for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
     if (missing_ciphersuites[i].id == cipher_id) {
       *cipher_bits = missing_ciphersuites[i].bits;
@@ -4702,7 +4709,7 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
 
     /* Ensure that our buffer can hold the entire record. */
     if (packet_len > sizeof(server_hello)) {
-      fprintf(stderr, "Error: size of server_hello (%zu) is not large enough for Server Hello (%u).\n", sizeof(server_hello), packet_len);
+      fprintf(stderr, "Error: size of server_hello (%"SIZE_T_FMT") is not large enough for Server Hello (%u).\n", sizeof(server_hello), packet_len);
       exit(-1);
     }
 
@@ -4737,7 +4744,7 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
 
     /* Check that the session ID length wouldn't put us past our buffer boundary. */
     if ((session_id_len + 43 + 2 + 1) > sizeof(server_hello)) {
-      fprintf(stderr, "Error: size of server_hello (%zu) is not large enough to reach cipher suite (%u).\n", sizeof(server_hello), session_id_len + 43 + 2);
+      fprintf(stderr, "Error: size of server_hello (%"SIZE_T_FMT") is not large enough to reach cipher suite (%u).\n", sizeof(server_hello), session_id_len + 43 + 2);
       exit(-1);
     }
 
