@@ -37,6 +37,8 @@
 #ifndef HAVE_SSLSCAN_H_
 #define HAVE_SSLSCAN_H_
 
+#include "missing_ciphersuites.h"
+
 // Defines...
 #define false 0
 #define true 1
@@ -68,6 +70,12 @@
 #define printf_error(format, ...)   fprintf(stderr, format, ##__VA_ARGS__)
 #define printf_xml(format, ...)     if (options->xmlOutput) fprintf(options->xmlOutput, format, ##__VA_ARGS__)
 #define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
+
+/* Calls close() on a file descriptor, then sets it to zero to prevent accidental re-use. */
+#define CLOSE(fd) { if ((fd) != 0) { close((fd)); (fd) = 0; } }
+
+/* Calls free() on a pointer, then explicitly sets it to NULL to avoid use-after-free. */
+#define FREE(ptr) { free((ptr)); (ptr) = NULL; }
 
 /* Frees an SSL pointer, and explicitly sets it to NULL to avoid use-after-free. */
 #define FREE_SSL(ssl) { if ((ssl) != NULL) { SSL_free((ssl)); (ssl) = NULL; } }
@@ -266,17 +274,23 @@ struct ocsp_cert_id_st {
 #endif
 
 // Utilities
+void buffer_append_bytes(unsigned char **buffer, size_t *buf_size, size_t *buf_len, unsigned char *bytes, size_t bytes_len);
+void buffer_append_ushort(unsigned char **buffer, size_t *buf_size, size_t *buf_len, unsigned short s);
+void buffer_append_uint32_t(unsigned char **buffer, size_t *buf_size, size_t *buf_len, uint32_t i);
 SSL_CTX *CTX_new(const SSL_METHOD *method);
 int fileExists(char *);
-void readLine(FILE *, char *, int);
-ssize_t sendString(int, const char[]);
-int readOrLogAndClose(int, void *, size_t, const struct sslCheckOptions *);
-const char *printableSslMethod(const SSL_METHOD *);
-static int password_callback(char *, int, int, void *);
-int ssl_print_tmp_key(struct sslCheckOptions *, SSL *s);
-static int ocsp_resp_cb(SSL *s, void *arg);
+void findMissingCiphers();
+void makeMissingCiphersuiteList(unsigned char **ciphersuite_list, size_t *ciphersuite_list_len, unsigned int tls_version);
+void markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_version);
 int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent);
-
+static int ocsp_resp_cb(SSL *s, void *arg);
+void readLine(FILE *, char *, int);
+int readOrLogAndClose(int, void *, size_t, const struct sslCheckOptions *);
+char *resolveCipherID(ushort cipher_id, int *cipher_bits);
+static int password_callback(char *, int, int, void *);
+const char *printableSslMethod(const SSL_METHOD *);
+ssize_t sendString(int, const char[]);
+int ssl_print_tmp_key(struct sslCheckOptions *, SSL *s);
 int tcpConnect(struct sslCheckOptions *);
 
 // Tests
@@ -292,10 +306,10 @@ int testfallback(struct sslCheckOptions *, const SSL_METHOD *);
 #endif
 int testHeartbleed(struct sslCheckOptions *, const SSL_METHOD *);
 int testCipher(struct sslCheckOptions *, const SSL_METHOD *);
+int testMissingCiphers(struct sslCheckOptions *options, unsigned int version);
 int testProtocolCiphers(struct sslCheckOptions *, const SSL_METHOD *);
 int testConnection(struct sslCheckOptions *);
 int testHost(struct sslCheckOptions *);
-
 int loadCerts(struct sslCheckOptions *);
 int checkCertificateProtocols(struct sslCheckOptions *, const SSL_METHOD *);
 int checkCertificate(struct sslCheckOptions *, const SSL_METHOD *);

@@ -1571,28 +1571,114 @@ char *cipherRemove(char *str, const char *sub) {
     return str;
 }
 
+/* Outputs an accepted cipher to the console and XML file. */
+void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSslMethod, uint32_t cipherid, const char *ciphername, int cipherbits, int cipher_accepted, unsigned int milliseconds_elapsed, char *http_code) {
+  char hexCipherId[8] = {0};
+  unsigned int tempInt = 0;
+
+
+  printf_xml("  <cipher status=\"");
+  if (cipher_accepted) {
+    if (strcmp(options->cipherstring, CIPHERSUITE_LIST_ALL) && strcmp(options->cipherstring, TLSV13_CIPHERSUITES)) {
+      printf_xml("accepted\"");
+      printf("Accepted  ");
+    }
+    else {
+      printf_xml("preferred\"");
+      printf("%sPreferred%s ", COL_GREEN, RESET);
+    }
+
+    if (options->http == true) {
+      printf("%s", http_code);
+      printf_xml(" http=\"%s\"", http_code);
+    }
+
+    printf_xml(" sslversion=\"%s\"", cleanSslMethod);
+    if (strcmp(cleanSslMethod, "TLSv1.0") == 0) {
+      printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
+    } else
+      printf("%s  ", cleanSslMethod);
+
+    if (cipherbits < 10)
+      tempInt = 2;
+    else if (cipherbits < 100)
+      tempInt = 1;
+
+    if (cipherbits == -1) { /* When missing ciphers are tested, and we don't have a reasonable guess. */
+      printf("%s??%s bits  ", COL_YELLOW, RESET);
+    } else if (cipherbits == 0) {
+      printf("%s%d%s bits  ", COL_RED_BG, cipherbits, RESET);
+    } else if (cipherbits >= 112) {
+      printf("%s%d%s bits  ", COL_GREEN, cipherbits, RESET);
+    } else if (cipherbits > 56) {
+      printf("%s%d%s bits  ", COL_YELLOW, cipherbits, RESET);
+    } else
+      printf("%s%d%s bits  ", COL_RED, cipherbits, RESET);
+
+    while (tempInt != 0) {
+      tempInt--;
+      printf(" ");
+    }
+
+    snprintf(hexCipherId, sizeof(hexCipherId) - 1, "0x%04X", cipherid);
+    if (options->showCipherIds == true)
+      printf("%8s ", hexCipherId);
+
+    printf_xml(" bits=\"%d\" cipher=\"%s\" id=\"%s\"", cipherbits, ciphername, hexCipherId);
+    if (strstr(ciphername, "NULL")) {
+      printf("%s%-29s%s", COL_RED_BG, ciphername, RESET);
+    } else if (strstr(ciphername, "ADH") || strstr(ciphername, "AECDH") || strstr(ciphername, "_anon_")) {
+      printf("%s%-29s%s", COL_PURPLE, ciphername, RESET);
+    } else if (strstr(ciphername, "EXP")) {
+      printf("%s%-29s%s", COL_RED, ciphername, RESET);
+    } else if (strstr(ciphername, "RC4") || strstr(ciphername, "DES")) {
+      printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+    } else if ((strstr(ciphername, "CHACHA20") || (strstr(ciphername, "GCM"))) && strstr(ciphername, "DHE")) {
+      printf("%s%-29s%s", COL_GREEN, ciphername, RESET);
+    } else {
+      printf("%-29s", ciphername);
+    }
+
+    if ((options->cipher_details == true) && (ssl != NULL))
+      ssl_print_tmp_key(options, ssl);
+
+    // Timing
+    if (options->showTimes) {
+      printf(" %s%ums%s", COL_GREY, milliseconds_elapsed, RESET);
+      printf_xml(" time=\"%u\"", milliseconds_elapsed);
+    }
+
+    printf("\n");
+  }
+
+  printf_xml(" />\n");
+}
+
 // Test a cipher...
 int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
     // Variables...
-    int cipherStatus;
+    int cipherStatus = 0;
     int status = true;
     int socketDescriptor = 0;
     SSL *ssl = NULL;
-    BIO *cipherConnectionBio;
-    BIO *stdoutBIO = NULL;
-    int tempInt;
-    char requestBuffer[200];
-    char buffer[50];
-    char hexCipherId[10];
+    BIO *cipherConnectionBio = NULL;
+    char requestBuffer[256];
+    char buffer[64];
+    char http_code[64];
     int resultSize = 0;
-    int cipherbits;
-    uint32_t cipherid;
-    const SSL_CIPHER *sslCipherPointer;
+    int cipherbits = -1;
+    uint32_t cipherid = 0;
+    const SSL_CIPHER *sslCipherPointer = NULL;
     const char *cleanSslMethod = printableSslMethod(sslMethod);
-    const char *ciphername;
-    struct timeval tval_start, tval_end, tval_elapsed;
+    const char *ciphername = NULL;
+    struct timeval tval_start = {0};
+    unsigned int milliseconds_elapsed = 0;
 
+
+    memset(requestBuffer, 0, sizeof(requestBuffer));
+    memset(buffer, 0, sizeof(buffer));
+    memset(http_code, 0, sizeof(http_code));
 
     if (options->showTimes)
     {
@@ -1607,7 +1693,6 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         {
             // Create SSL object...
             ssl = new_SSL(options->ctx);
-
             if (ssl != NULL)
             {
                 // Connect socket and BIO
@@ -1616,10 +1701,8 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 // Connect SSL and BIO
                 SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                 // This enables TLS SNI
                 SSL_set_tlsext_host_name (ssl, options->sniname);
-#endif
 
                 // Connect SSL over socket
                 cipherStatus = SSL_connect(ssl);
@@ -1640,31 +1723,11 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 cipherid = SSL_CIPHER_get_id(sslCipherPointer);
                 cipherid = cipherid & 0x00ffffff;  // remove first byte which is the version (0x03 for TLSv1/SSLv3)
 
-                // Show Cipher Status
-                printf_xml("  <cipher status=\"");
                 if (cipherStatus == 1)
                 {
-                    if (strcmp(options->cipherstring, CIPHERSUITE_LIST_ALL) && strcmp(options->cipherstring, TLSV13_CIPHERSUITES))
-                    {
-                        printf_xml("accepted\"");
-                        printf("Accepted  ");
-                    }
-                    else
-                    {
-                        printf_xml("preferred\"");
-                        printf("%sPreferred%s ", COL_GREEN, RESET);
-                    }
                     if (options->http == true)
                     {
-
-                        // Stdout BIO...
-                        if (!xml_to_stdout) {
-                            stdoutBIO = BIO_new(BIO_s_file());
-                            BIO_set_fp(stdoutBIO, stdout, BIO_NOCLOSE);
-                        }
-
                         // Create request buffer...
-                        memset(requestBuffer, 0, sizeof(requestBuffer));
                         snprintf(requestBuffer, sizeof(requestBuffer) - 1, "GET / HTTP/1.0\r\nUser-Agent: SSLScan\r\nHost: %s\r\n\r\n", options->host);
 
                         // HTTP Get...
@@ -1678,133 +1741,35 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                             { }
                             buffer[loop] = 0;
 
-                            // Output HTTP code...
-                            printf("%s", buffer + 9);
+                            strncpy(http_code, buffer + 9, sizeof(http_code) - 1);
                             loop = strlen(buffer + 9);
                             while (loop < 17)
                             {
                                 loop++;
-                                printf(" ");
+                                strncat(http_code, " ", sizeof(http_code) - 1);
                             }
-                            printf_xml(" http=\"%s\"", buffer + 9);
+
                         }
                         else
                         {
                             // Output HTTP code...
-                            printf("                 ");
+                            strncpy(http_code, "                 ", sizeof(http_code) - 1);
                         }
                     }
                 }
-                printf_xml(" sslversion=\"%s\"", cleanSslMethod);
-#ifndef OPENSSL_NO_SSL2
-                if (strcmp(cleanSslMethod, "SSLv2") == 0)
-                {
-                    printf("%sSSLv2%s    ", COL_RED, RESET);
-                }
-                else
-#endif
-#ifndef OPENSSL_NO_SSL3
-                    if (strcmp(cleanSslMethod, "SSLv3") == 0)
-                    {
-                        printf("%sSSLv3%s    ", COL_RED, RESET);
-                    }
-                    else
-#endif
-                        if (strcmp(cleanSslMethod, "TLSv1.0") == 0)
-                        {
-                            printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
-                        }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                        else 
-                        {
-                            printf("%s  ", cleanSslMethod);
-                        }
-#endif
-                if (cipherbits < 10)
-                    tempInt = 2;
-                else if (cipherbits < 100)
-                    tempInt = 1;
-                else
-                    tempInt = 0;
-                if (cipherbits == 0)
-                {
-                    printf("%s%d%s bits  ", COL_RED_BG, cipherbits, RESET);
-                }
-                else if (cipherbits >= 112)
-                {
-                    printf("%s%d%s bits  ", COL_GREEN, cipherbits, RESET);
-                }
-                else if (cipherbits > 56)
-                {
-                    printf("%s%d%s bits  ", COL_YELLOW, cipherbits, RESET);
-                }
-                else
-                {
-                    printf("%s%d%s bits  ", COL_RED, cipherbits, RESET);
-                }
-                while (tempInt != 0)
-                {
-                    tempInt--;
-                    printf(" ");
-                }
 
-                sprintf(hexCipherId, "0x%X", cipherid);
+                ciphername = SSL_CIPHER_get_name(sslCipherPointer);
 
-                if (options->showCipherIds == true)
-                {
-                    printf("%8s ", hexCipherId);
-                }
-                
-                ciphername=SSL_CIPHER_get_name(sslCipherPointer);
-                			
-                printf_xml(" bits=\"%d\" cipher=\"%s\" id=\"%s\"", cipherbits, ciphername, hexCipherId);
-                if (strstr(ciphername, "NULL"))
-                {
-                    printf("%s%-29s%s", COL_RED_BG, ciphername, RESET);
-                }
-                else if (strstr(ciphername, "ADH") || strstr(ciphername, "AECDH"))
-                {
-                    printf("%s%-29s%s", COL_PURPLE, ciphername, RESET);
-                }
-                else if (strstr(ciphername, "EXP")
-#ifndef OPENSSL_NO_SSL3
-                        || (strcmp(cleanSslMethod, "SSLv3") == 0 && !strstr(ciphername, "RC4"))
-#endif
-                        )
-                {
-                    printf("%s%-29s%s", COL_RED, ciphername, RESET);
-                }
-                else if (strstr(ciphername, "RC4") || strstr(ciphername, "DES"))
-                {
-                    printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
-                }
-                else if ((strstr(ciphername, "CHACHA20") || (strstr(ciphername, "GCM")))
-                        && strstr(ciphername, "DHE"))
-                {
-                    printf("%s%-29s%s", COL_GREEN, ciphername, RESET);
-                }
-                else
-                {
-                    printf("%-29s", ciphername);
-                }
+		// Timing
+		if (options->showTimes) {
+		  struct timeval tval_end = {0}, tval_elapsed = {0};
 
-                if (options->cipher_details == true)
-                {
-                    ssl_print_tmp_key(options, ssl);
-                }
-                // Timing
-                if (options->showTimes)
-                {
-                    int msec;
-                    gettimeofday(&tval_end, NULL);
-                    timersub(&tval_end, &tval_start, &tval_elapsed);
-                    msec = tval_elapsed.tv_sec * 1000 + (int)tval_elapsed.tv_usec/1000;
-                    printf("%s %dms%s", COL_GREY, msec, RESET);
-                    printf_xml(" time=\"%d\"", msec);
-                }
+		  gettimeofday(&tval_end, NULL);
+		  timersub(&tval_end, &tval_start, &tval_elapsed);
+		  milliseconds_elapsed = tval_elapsed.tv_sec * 1000 + (int)tval_elapsed.tv_usec / 1000;
+		}
 
-                printf("\n");
-                printf_xml(" />\n");
+                outputCipher(options, ssl, cleanSslMethod, cipherid, ciphername, cipherbits, (cipherStatus == 1), milliseconds_elapsed, http_code);
 
                 // Disconnect SSL over socket
                 if (cipherStatus == 1)
@@ -1816,7 +1781,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     }
                     else
                     {
-                    strncat(options->cipherstring, ":!", 2);
+                      strncat(options->cipherstring, ":!", 2);
                       strncat(options->cipherstring, usedcipher, strlen(usedcipher));
                     }
                     SSL_shutdown(ssl);
@@ -1837,7 +1802,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         }
 
         // Disconnect from host
-        close(socketDescriptor);
+        CLOSE(socketDescriptor);
     }
 
     // Could not connect
@@ -3319,6 +3284,17 @@ int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMe
             return false;
         }
     }
+
+    /* Test the missing ciphersuites. */
+    if (sslMethod != TLSv1_3_client_method()) {
+      int version = 0;
+      if (sslMethod == TLSv1_1_client_method())
+	version = 1;
+      else if (sslMethod == TLSv1_2_client_method())
+	version = 2;
+
+      testMissingCiphers(options, version);
+    }
     return true;
 }
 
@@ -3377,14 +3353,19 @@ int testHost(struct sslCheckOptions *options)
                 populateCipherList(options, TLSv1_client_method());
                 break;
         }
-        printf("\n  %sSupported Client Cipher(s):%s\n", COL_BLUE, RESET);
+        printf("\n  %sOpenSSL-Supported Client Cipher(s):%s\n", COL_BLUE, RESET);
         sslCipherPointer = options->ciphers;
         while ((sslCipherPointer != 0) && (status == true))
         {
             printf("    %s\n",sslCipherPointer->name);
-            printf_xml("  <client-cipher cipher=\"%s\" />\n", sslCipherPointer->name);
+            printf_xml("  <client-cipher cipher=\"%s\" provider=\"openssl\" />\n", sslCipherPointer->name);
 
             sslCipherPointer = sslCipherPointer->next;
+        }
+        printf("\n  %sDirectly-Supported Client Cipher(s):%s\n", COL_BLUE, RESET);
+        for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
+            printf("    %s\n", missing_ciphersuites[i].protocol_name);
+            printf_xml("  <client-cipher cipher=\"%s\" provider=\"sslscan\" />\n", missing_ciphersuites[i].protocol_name);
         }
         printf("\n");
     }
@@ -3980,6 +3961,9 @@ int main(int argc, char *argv[])
         fprintf(options.xmlOutput, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<document title=\"SSLScan Results\" version=\"%s\" web=\"http://github.com/rbsec/sslscan\">\n", VERSION);
     }
 
+    // Build the list of ciphers missing from OpenSSL.
+    findMissingCiphers();
+
     switch (mode)
     {
         case mode_version:
@@ -4377,6 +4361,409 @@ int runSSLv3Test(struct sslCheckOptions *options) {
 
  done:
   close(s);
+  return ret;
+}
+
+/* Compares the list of supported ciphersuites by OpenSSL with the complete list of ciphersuites from IANA.  Marks the matches so they are not re-tested again later. */
+void findMissingCiphers() {
+  STACK_OF(SSL_CIPHER) *cipherList = NULL;
+  const SSL_CIPHER *cipher = NULL;
+  unsigned int tls_version = 0;
+  uint32_t id = 0;
+  const SSL_METHOD *sslMethods[] = { TLSv1_client_method(), TLSv1_1_client_method(), TLSv1_2_client_method() };
+  unsigned int tls_versions[] = { V1_0, V1_1, V1_2 };
+
+  /* For each TLS version (not including v1.3)... */
+  for (int m = 0; m < (sizeof(sslMethods) / sizeof(const SSL_METHOD *)); m++) {
+    tls_version = tls_versions[m];
+    SSL_CTX *ctx = new_CTX(sslMethods[m]);
+    SSL_CTX_set_cipher_list(ctx, CIPHERSUITE_LIST_ALL);
+    cipherList = SSL_CTX_get_ciphers(ctx);
+
+    /* Loop through all OpenSSL ciphers... */
+    for (int i = 0; i < sk_SSL_CIPHER_num(cipherList); i++) {
+      cipher = sk_SSL_CIPHER_value(cipherList, i);
+      id = SSL_CIPHER_get_protocol_id(cipher);
+
+      /* Using the cipher ID, find the match in the IANA list. */
+      for (int j = 0; j < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); j++) {
+	if ((missing_ciphersuites[j].id == id) && (missing_ciphersuites[j].check_tls_versions & tls_version)) {
+	  /* Turn off the flag for this version of TLS. */
+	  missing_ciphersuites[j].check_tls_versions &= ~tls_version;
+	}
+      }
+    }
+
+    FREE_CTX(ctx);
+  }
+}
+
+/* Appends an array of bytes (in 'bytes') of length 'bytes_len' to an array (in 'buffer').  The current size of 'buffer' is given in 'buf_size'.  The current number of bytes used in the buffer is given in 'buf_len'.  If the caller tries to append bytes that the current buffer cannot hold, the buffer will be automatically re-sized and the bytes are safely appended.  The extended buffer region is zeroed. */
+#define OVERFLOW_MESSAGE "Cannot lengthen buffer without overflowing length!\n"
+void buffer_append_bytes(unsigned char **buffer, size_t *buf_size, size_t *buf_len, unsigned char *bytes, size_t bytes_len) {
+  size_t new_len = *buf_len + bytes_len;
+
+  if (buffer == NULL)
+    return;
+
+  /* Ensure that the new length does not cause an integer overflow. */
+  if ((new_len < *buf_len) || (new_len < bytes_len)) {
+    fprintf(stderr, OVERFLOW_MESSAGE);
+    exit(-1);
+  }
+
+  /* If the buffer needs re-sizing... */
+  if (new_len > *buf_size) {
+
+    /* Double the size of the buffer until it is larger than what we need right now. */
+    while (new_len > *buf_size) {
+      /* Ensure we don't overflow the length. */
+      if ((size_t)(*buf_len * 2) < *buf_len) {
+        fprintf(stderr, OVERFLOW_MESSAGE);
+        exit(-1);
+      }
+      *buf_size = *buf_size * 2;
+    }
+
+    /* Extend the buffer's size. */
+    *buffer = realloc(*buffer, *buf_size);
+    if (*buffer == NULL) {
+      fprintf(stderr, "Failed to resize buffer.\n");
+      exit(-1);
+    }
+
+    /* Zero out the extended buffer region; leave the existing bytes intact. */
+    memset(*buffer + *buf_len, 0, *buf_size - *buf_len);
+  }
+
+  /* Copy the new bytes into the buffer right after the existing bytes. */
+  memcpy(*buffer + *buf_len, bytes, bytes_len);
+
+  /* Update the number of used bytes in the buffer. */
+  *buf_len = new_len;
+}
+
+/* Convert an unsigned short to network-order, then append it to the buffer.  See documentation for buffer_append_bytes() for description of other arguments. */
+void buffer_append_ushort(unsigned char **buffer, size_t *buf_size, size_t *buf_len, unsigned short s) {
+  unsigned short network_short = htons(s);
+  buffer_append_bytes(buffer, buf_size, buf_len, (unsigned char *)&network_short, sizeof(unsigned short));
+}
+
+/* Append a uint32_t to the buffer.  See documentation for buffer_append_bytes() for description of other arguments. */
+void buffer_append_uint32_t(unsigned char **buffer, size_t *buf_size, size_t *buf_len, uint32_t i) {
+  buffer_append_bytes(buffer, buf_size, buf_len, (unsigned char *)&i, sizeof(uint32_t));
+}
+
+/* Sets the 'ciphersuite_list' arg to a buffer (which must be free()'ed) of ciphersuites for a given TLS version, and sets the 'ciphersuite_list_len' arg to the number of bytes in 'ciphersuite_list'. */
+void makeMissingCiphersuiteList(unsigned char **ciphersuite_list, size_t *ciphersuite_list_len, unsigned int tls_version) {
+  size_t ciphersuite_list_size = 1024;
+
+  if (tls_version == 0)
+    tls_version = V1_0;
+  else if (tls_version == 1)
+    tls_version = V1_1;
+  else if (tls_version == 2)
+    tls_version = V1_2;
+
+  *ciphersuite_list_len = 0;
+  *ciphersuite_list = calloc(ciphersuite_list_size, sizeof(unsigned char));
+  if (*ciphersuite_list == NULL) {
+    fprintf(stderr, "Failed to create buffer for ciphersuite list.\n");
+    exit(-1);
+  }
+
+  for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
+    /* Append only those that OpenSSL does not cover, and those that were not already accepted through a previous run. */
+    if ((missing_ciphersuites[i].check_tls_versions & tls_version) && ((missing_ciphersuites[i].accepted_tls_versions & tls_version) == 0)) {
+      buffer_append_ushort(ciphersuite_list, &ciphersuite_list_size, ciphersuite_list_len, missing_ciphersuites[i].id);
+    }
+  }
+}
+
+/* Marks a ciphersuite as found so that it is not re-tested again. */
+void markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_version) {
+  if (tls_version == 0)
+    tls_version = V1_0;
+  else if (tls_version == 1)
+    tls_version = V1_1;
+  else if (tls_version == 2)
+    tls_version = V1_2;
+
+  for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
+    if (missing_ciphersuites[i].id == server_cipher_id) {
+      missing_ciphersuites[i].accepted_tls_versions |= tls_version;
+      break;
+    }
+  }
+}
+
+/* Resolves an IANA cipher ID to its IANA name.  Sets the cipher_bits argument to the cipher strength (or to -1 if unknown).  Returns NULL if cipher ID is not found. */
+char *resolveCipherID(ushort cipher_id, int *cipher_bits) {
+  for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
+    if (missing_ciphersuites[i].id == cipher_id) {
+      *cipher_bits = missing_ciphersuites[i].bits;
+      return missing_ciphersuites[i].protocol_name;
+    }
+  }
+  *cipher_bits = -1;
+  return NULL;
+}
+
+/* Checks all ciphersuites that OpenSSL does not support.  When version is 0, TLSv1.0 is tested.  When set to 1, TLSv1.1 is tested.  When set to 2, TLSv1.2 is tested. */
+int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
+  int ret = false, s = 0;
+  unsigned char *ciphersuite_list = NULL, *client_hello = NULL, *tls_extensions = NULL;
+  unsigned int tls_version_low_byte = 1;
+  char *tls_printable_name = "TLSv1.0";
+
+
+  tls_version_low_byte += version;
+
+  if (version == 1)
+    tls_printable_name = "TLSv1.1";
+  else if (version == 2)
+    tls_printable_name = "TLSv1.2";
+
+  while (1) {
+    unsigned short extension_length = 0, sni_list_length = 0, sni_length = 0;
+    unsigned long time_now = time(NULL);
+    unsigned char server_hello[128] = {0};
+    size_t client_hello_size = 1024, client_hello_len = 0, ciphersuite_list_len = 0;
+    size_t tls_extensions_size = 256, tls_extensions_len = 0;
+    struct timeval tval_start = {0}, tval_end = {0}, tval_elapsed = {0};
+    int cipher_bits = -1;
+    char *cipher_name = NULL;
+
+
+    gettimeofday(&tval_start, NULL);
+
+    /* Allocate buffers for the Client Hello and TLS extensions. */
+    client_hello = calloc(client_hello_size, sizeof(unsigned char));
+    tls_extensions = calloc(tls_extensions_size, sizeof(unsigned char));
+    if ((client_hello == NULL) || (tls_extensions == NULL)) {
+      fprintf(stderr, "Failed to allocate buffers for ClientHello.\n");
+      exit(-1);
+    }
+
+    /* Build the TLSv1 Record with the ClientHello message. */
+    buffer_append_bytes(&client_hello, &client_hello_size, &client_hello_len, (unsigned char []) {
+      0x16,       // Content Type: Handshake (22)
+      0x03, (unsigned char)tls_version_low_byte, // Version: TLS 1.x
+      0x00, 0x00, // Length (to be filled in later)
+      0x01,       // Handshake Type: Client Hello
+      0x00, 0x00, 0x00, // Length (to be filled in later)
+      0x03, (unsigned char)tls_version_low_byte, // Version: TLS 1.x
+    }, 11);
+
+    /* "Random" 32 bytes. */
+    uint32_t rand = htonl(time_now);
+    buffer_append_uint32_t(&client_hello, &client_hello_size, &client_hello_len, rand); /* The first 4 bytes is the timestamp. */
+
+    for (int i = 1; i < 8; i++) {
+      rand = rand + (time_now ^ (uint32_t)((~(i + 0) << 24) | (~(i + 1) << 16) | (~(i + 2) << 8) | (~(i + 3) << 0)));
+      buffer_append_uint32_t(&client_hello, &client_hello_size, &client_hello_len, rand);
+    }
+
+    /* Session ID Length: 0 */
+    buffer_append_bytes(&client_hello, &client_hello_size, &client_hello_len, 
+ (unsigned char []) { 0x00 }, 1);
+
+    /* Construct the list of ciphersuites. */
+    makeMissingCiphersuiteList(&ciphersuite_list, &ciphersuite_list_len, version);
+
+    /* Add the length (in bytes) of the ciphersuites list to the Client Hello. */
+    buffer_append_ushort(&client_hello, &client_hello_size, &client_hello_len, ciphersuite_list_len);
+
+    /* Append the list of ciphersuites to the Client Hello. */
+    buffer_append_bytes(&client_hello, &client_hello_size, &client_hello_len, ciphersuite_list, ciphersuite_list_len);
+
+    /* Free the ciphersuite list since we are done with it. */
+    FREE(ciphersuite_list);
+    ciphersuite_list_len = 0;
+
+    /* Add the compression options. */
+    buffer_append_bytes(&client_hello, &client_hello_size, &client_hello_len, (unsigned char []) {
+      0x01, // Compression Methods Length (1)
+      0x00  // Compression Method: null (0)
+    }, 2);
+
+    /* Add the length of the extensions (to be filled in later). */
+    buffer_append_ushort(&tls_extensions, &tls_extensions_size, &tls_extensions_len, 0);
+
+    /* Extension: server name */
+    sni_length = strlen(options->sniname);
+    sni_list_length = sni_length + 3;
+    extension_length = sni_list_length + 2;
+
+    buffer_append_ushort(&tls_extensions, &tls_extensions_size, &tls_extensions_len, 0x0000); /* Extension: server_name */
+    buffer_append_ushort(&tls_extensions, &tls_extensions_size, &tls_extensions_len, extension_length);
+    buffer_append_ushort(&tls_extensions, &tls_extensions_size, &tls_extensions_len, sni_list_length);
+    buffer_append_bytes(&tls_extensions, &tls_extensions_size, &tls_extensions_len, (unsigned char []) { 0x00 /* Server Name Type: host_name */ }, 1);
+    buffer_append_ushort(&tls_extensions, &tls_extensions_size, &tls_extensions_len, sni_length); /* The length of the hostname. */
+    buffer_append_bytes(&tls_extensions, &tls_extensions_size, &tls_extensions_len, (unsigned char *)options->sniname, sni_length); /* The hostname itself. */
+
+    /* Extension: ec_point_formats */
+    buffer_append_bytes(&tls_extensions, &tls_extensions_size, &tls_extensions_len, (unsigned char []) {
+      0x00, 0x0b, // Extension: ec_point_formats (11)
+      0x00, 0x04, // Extension Length (4)
+      0x03, // EC Point Formats Length (3)
+      0x00, // Uncompressed
+      0x01, // ansiX962_compressed_prime
+      0x02, // ansiX962_compressed_char2
+    }, 8);
+
+    /* Extension: supported_groups */
+    buffer_append_bytes(&tls_extensions, &tls_extensions_size, &tls_extensions_len, (unsigned char []) {
+      0x00, 0x0a, // Extension: supported_groups (10)
+      0x00, 0x1c, // Extension Length (28)
+      0x00, 0x1a, // Supported Groups List Length (26)
+      0x00, 0x17, // secp256r1
+      0x00, 0x19, // secp521r1
+      0x00, 0x1c, // brainpoolP512r1
+      0x00, 0x1b, // brainpoolP384r1
+      0x00, 0x18, // secp384r1
+      0x00, 0x1a, // brainpoolP256r1
+      0x00, 0x16, // secp256k1
+      0x00, 0x0e, // sect571r1
+      0x00, 0x0d, // sect571k1
+      0x00, 0x0b, // sect409k1
+      0x00, 0x0c, // sect409r1
+      0x00, 0x09, // sect283k1
+      0x00, 0x0a, // sect283r1
+    }, 32);
+
+    /* Extension: SessionTicket TLS */
+    buffer_append_bytes(&tls_extensions, &tls_extensions_size, &tls_extensions_len, (unsigned char []) {
+      0x00, 0x23, // Extension: SessionTicket TLS (35)
+      0x00, 0x00, // Extension Length (0)
+    }, 4);
+
+    /* Set the extension length. */
+    unsigned short us = htons(tls_extensions_len - 2);
+    memcpy(tls_extensions, &us, sizeof(us));
+
+    /* Add the extensions to the Client Hello. */
+    buffer_append_bytes(&client_hello, &client_hello_size, &client_hello_len, tls_extensions, tls_extensions_len);
+
+    /* Free the extensions since we are done with them. */
+    FREE(tls_extensions);
+    tls_extensions_len = 0;
+    tls_extensions_size = 0;
+
+    /* Set the length of the Client Hello. */
+    client_hello[6] = 0;
+    us = htons(client_hello_len - 9);
+    memcpy(client_hello + 7, &us, sizeof(us));
+
+    /* Set the length of the Record Layer. */
+    us = htons(client_hello_len - 5);
+    memcpy(client_hello + 3, &us, sizeof(us));
+
+    /* Now connect to the target server. */
+    s = tcpConnect(options);
+    if (s == 0)
+      goto done;
+
+    /* Send the Client Hello message. */
+    if (send(s, client_hello, client_hello_len, 0) <= 0) {
+      printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
+      goto done; /* Returns false. */
+    }
+    FREE(client_hello);
+    client_hello_size = 0;
+    client_hello_len = 0;
+
+    /* Read the first 5 bytes to get the Content Type, Version, and Length fields. */
+    int bytes_read = 0, n = 0;
+    while (bytes_read < 5) {
+      n = recv(s, server_hello + bytes_read, 5 - bytes_read, 0);
+      if (n <= 0) {
+	if ((errno != 0) && (errno != ECONNRESET))
+	  printf_error("recv() failed while reading Server Hello: %d (%s)\n", errno, strerror(errno));
+	goto done; /* Returns false. */
+      }
+      bytes_read += n;
+    }
+    size_t server_hello_len = bytes_read;
+
+    /* Check that the TLS version returned is what we sent earlier. */
+    if ((server_hello[1] != 0x03) || (server_hello[2] != (unsigned char)tls_version_low_byte))
+      goto done;
+
+    /* At this point, the test is considered a success, even if the server rejects our Client Hello. */
+    ret = true;
+
+    /* Ensure that the Content Type is Handshake (22). */
+    if (server_hello[0] != 0x16)
+      goto done;
+
+    /* Get the length of the Server Hello record. */
+    unsigned short packet_len = (server_hello[3] << 8) | server_hello[4];
+
+    /* Ensure that our buffer can hold the entire record. */
+    if (packet_len > sizeof(server_hello)) {
+      fprintf(stderr, "Error: size of server_hello (%zu) is not large enough for Server Hello (%u).\n", sizeof(server_hello), packet_len);
+      exit(-1);
+    }
+
+    /* Read in the Server Hello record. */
+    bytes_read = 0;
+    while (bytes_read < packet_len) {
+      n = recv(s, server_hello + server_hello_len + bytes_read, packet_len - bytes_read, 0);
+      if (n <= 0) {
+	if ((errno != 0) && (errno != ECONNRESET))
+	  printf_error("recv() failed while reading Server Hello: %d (%s)\n", errno, strerror(errno));
+	goto done;
+      }
+      bytes_read += n;
+    }
+    server_hello_len += bytes_read;
+
+    /* Close the socket, since we're done reading. */
+    CLOSE(s);
+
+    /* Ensure that the Handshake Type is Server Hello (2). */
+    if (server_hello[5] != 0x02)
+      goto done;
+
+    /* Get the length of the session ID.  We must jump over this to reach the ciphersuite selected by the server. */
+    unsigned int session_id_len = server_hello[43];
+
+    /* Its impossible for one byte to overflow an unsigned int (on any modern hardware), but still... */
+    if ((session_id_len + 43 + 2 + 1) < session_id_len) {
+      fprintf(stderr, "Error: potential integer overflow averted (%d).\n", session_id_len);
+      exit(-1);
+    }
+
+    /* Check that the session ID length wouldn't put us past our buffer boundary. */
+    if ((session_id_len + 43 + 2 + 1) > sizeof(server_hello)) {
+      fprintf(stderr, "Error: size of server_hello (%zu) is not large enough to reach cipher suite (%u).\n", sizeof(server_hello), session_id_len + 43 + 2);
+      exit(-1);
+    }
+
+    /* Extract the cipher ID. */
+    unsigned short cipher_id = (server_hello[session_id_len + 43 + 1] << 8) | server_hello[session_id_len + 43 + 2];
+
+    /* Mark this cipher ID as supported by the server, so when we loop again, the next ciphersuite list doesn't include it. */
+    markFoundCiphersuite(cipher_id, version);
+
+    /* Get the IANA name and cipher bit strength (maybe -1 when unknown). */
+    cipher_name = resolveCipherID(cipher_id, &cipher_bits);
+
+    /* Get the number of milliseconds that have elapsed. */
+    gettimeofday(&tval_end, NULL);
+    timersub(&tval_end, &tval_start, &tval_elapsed);
+    unsigned int milliseconds_elapsed = tval_elapsed.tv_sec * 1000 + (int)tval_elapsed.tv_usec / 1000;
+
+    /* Output the cipher information. */
+    outputCipher(options, NULL, tls_printable_name, cipher_id, cipher_name, cipher_bits, 1, milliseconds_elapsed, "");
+  }
+
+ done:
+  CLOSE(s);
+  FREE(ciphersuite_list);
+  FREE(tls_extensions);
+  FREE(client_hello);
   return ret;
 }
 
