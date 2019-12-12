@@ -142,6 +142,9 @@ openssl/libcrypto.a: openssl/Makefile
 static: openssl/libcrypto.a
 	$(MAKE) -j $(NUM_PROCS) sslscan STATIC_BUILD=TRUE
 
+test:	static
+	./docker_test.sh
+
 clean:
 	if [ -d openssl ]; then ( rm -rf openssl ); fi;
 	rm -f sslscan

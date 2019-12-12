@@ -1,0 +1,102 @@
+[0m
+[32mConnected to 127.0.0.1[0m
+
+Testing SSL server [32mlocalhost[0m on port [32m4443[0m using SNI name [32mlocalhost[0m
+
+  [1;34mTLS Fallback SCSV:[0m
+Server [32msupports[0m TLS Fallback SCSV
+
+  [1;34mTLS renegotiation:[0m
+[32mSecure[0m session renegotiation supported
+
+  [1;34mTLS Compression:[0m
+Compression [31menabled[0m (CRIME)
+
+  [1;34mHeartbleed:[0m
+TLS 1.3 [32mnot vulnerable[0m to heartbleed
+TLS 1.2 [32mnot vulnerable[0m to heartbleed
+TLS 1.1 [32mnot vulnerable[0m to heartbleed
+TLS 1.0 [32mnot vulnerable[0m to heartbleed
+
+  [1;34mSSL Protocols:[0m
+SSLv2 is [32mnot enabled[0m
+SSLv3 is [31menabled[0m
+
+  [1;34mSupported Server Cipher(s):[0m
+[32mPreferred[0m TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-AES256-GCM-SHA384  [0m Curve P-256 DHE 256
+Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-AES256-GCM-SHA384    [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  [32mECDHE-RSA-AES128-GCM-SHA256  [0m Curve P-256 DHE 256
+Accepted  TLSv1.2  [32m128[0m bits  [32mDHE-RSA-AES128-GCM-SHA256    [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  ECDHE-RSA-AES256-SHA384       Curve P-256 DHE 256
+Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-SHA256         DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  ECDHE-RSA-AES128-SHA256       Curve P-256 DHE 256
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA256         DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  ECDHE-RSA-AES256-SHA          Curve P-256 DHE 256
+Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-CAMELLIA256-SHA       DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve P-256 DHE 256
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-SEED-SHA              DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-CAMELLIA128-SHA       DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  [33mECDHE-RSA-RC4-SHA            [0m Curve P-256 DHE 256
+Accepted  TLSv1.2  [32m112[0m bits  [33mECDHE-RSA-DES-CBC3-SHA       [0m Curve P-256 DHE 256
+Accepted  TLSv1.2  [32m112[0m bits  [33mDHE-RSA-DES-CBC3-SHA         [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  AES256-GCM-SHA384            
+Accepted  TLSv1.2  [32m128[0m bits  AES128-GCM-SHA256            
+Accepted  TLSv1.2  [32m256[0m bits  AES256-SHA256                
+Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA256                
+Accepted  TLSv1.2  [32m256[0m bits  AES256-SHA                   
+Accepted  TLSv1.2  [32m256[0m bits  CAMELLIA256-SHA              
+Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA                   
+Accepted  TLSv1.2  [32m128[0m bits  SEED-SHA                     
+Accepted  TLSv1.2  [32m128[0m bits  CAMELLIA128-SHA              
+Accepted  TLSv1.2  [32m128[0m bits  [33mRC4-SHA                      [0m
+Accepted  TLSv1.2  [32m128[0m bits  [33mRC4-MD5                      [0m
+Accepted  TLSv1.2  [32m112[0m bits  [33mDES-CBC3-SHA                 [0m
+[32mPreferred[0m TLSv1.1  [32m256[0m bits  ECDHE-RSA-AES256-SHA          Curve P-256 DHE 256
+Accepted  TLSv1.1  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 2048 bits
+Accepted  TLSv1.1  [32m256[0m bits  DHE-RSA-CAMELLIA256-SHA       DHE 2048 bits
+Accepted  TLSv1.1  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve P-256 DHE 256
+Accepted  TLSv1.1  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 2048 bits
+Accepted  TLSv1.1  [32m128[0m bits  DHE-RSA-SEED-SHA              DHE 2048 bits
+Accepted  TLSv1.1  [32m128[0m bits  DHE-RSA-CAMELLIA128-SHA       DHE 2048 bits
+Accepted  TLSv1.1  [32m128[0m bits  [33mECDHE-RSA-RC4-SHA            [0m Curve P-256 DHE 256
+Accepted  TLSv1.1  [32m112[0m bits  [33mECDHE-RSA-DES-CBC3-SHA       [0m Curve P-256 DHE 256
+Accepted  TLSv1.1  [32m112[0m bits  [33mDHE-RSA-DES-CBC3-SHA         [0m DHE 2048 bits
+Accepted  TLSv1.1  [32m256[0m bits  AES256-SHA                   
+Accepted  TLSv1.1  [32m256[0m bits  CAMELLIA256-SHA              
+Accepted  TLSv1.1  [32m128[0m bits  AES128-SHA                   
+Accepted  TLSv1.1  [32m128[0m bits  SEED-SHA                     
+Accepted  TLSv1.1  [32m128[0m bits  CAMELLIA128-SHA              
+Accepted  TLSv1.1  [32m128[0m bits  IDEA-CBC-SHA                 
+Accepted  TLSv1.1  [32m128[0m bits  [33mRC4-SHA                      [0m
+Accepted  TLSv1.1  [32m128[0m bits  [33mRC4-MD5                      [0m
+Accepted  TLSv1.1  [32m112[0m bits  [33mDES-CBC3-SHA                 [0m
+[32mPreferred[0m [33mTLSv1.0[0m  [32m256[0m bits  ECDHE-RSA-AES256-SHA          Curve P-256 DHE 256
+Accepted  [33mTLSv1.0[0m  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 2048 bits
+Accepted  [33mTLSv1.0[0m  [32m256[0m bits  DHE-RSA-CAMELLIA256-SHA       DHE 2048 bits
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve P-256 DHE 256
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 2048 bits
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  DHE-RSA-SEED-SHA              DHE 2048 bits
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  DHE-RSA-CAMELLIA128-SHA       DHE 2048 bits
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mECDHE-RSA-RC4-SHA            [0m Curve P-256 DHE 256
+Accepted  [33mTLSv1.0[0m  [32m112[0m bits  [33mECDHE-RSA-DES-CBC3-SHA       [0m Curve P-256 DHE 256
+Accepted  [33mTLSv1.0[0m  [32m112[0m bits  [33mDHE-RSA-DES-CBC3-SHA         [0m DHE 2048 bits
+Accepted  [33mTLSv1.0[0m  [32m256[0m bits  AES256-SHA                   
+Accepted  [33mTLSv1.0[0m  [32m256[0m bits  CAMELLIA256-SHA              
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  AES128-SHA                   
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  SEED-SHA                     
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  CAMELLIA128-SHA              
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  IDEA-CBC-SHA                 
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mRC4-SHA                      [0m
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mRC4-MD5                      [0m
+Accepted  [33mTLSv1.0[0m  [32m112[0m bits  [33mDES-CBC3-SHA                 [0m
+
+  [1;34mSSL Certificate:[0m
+Signature Algorithm: [32msha256WithRSAEncryption[0m
+RSA Key Strength:    2048
+
+Subject:  whythefuckwasibreached.com
+Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere
+Not valid before: [32mDec  3 03:01:23 2019 GMT[0m
+Not valid after:  [32mDec  3 03:01:23 2029 GMT[0m

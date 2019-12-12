@@ -1,0 +1,21 @@
+server {
+	listen 443 ssl default_server;
+	listen [::]:443 ssl default_server;
+	gzip off;
+	root /var/www/html;
+	index index.html index.nginx-debian.html;
+	server_name _;
+	location / {
+		try_files $uri $uri/ =404;
+	}
+	# Only TLSv1.2 with one cipher is specified, so the test that runs against this
+	# finishes quicker (all that's needed is the HTTP response of one successful
+	# TLS connection).
+	ssl_protocols TLSv1.2;
+	ssl_ciphers ECDHE-RSA-CHACHA20-POLY1305;
+	ssl_prefer_server_ciphers on;
+	ssl_certificate /etc/ssl/cert_3072.crt;
+	ssl_certificate_key /etc/ssl/key_3072.pem;
+	ssl_client_certificate /etc/ssl/ca_cert.pem;
+	ssl_verify_client on;
+}
