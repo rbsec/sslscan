@@ -150,6 +150,7 @@ struct sslCheckOptions
     int fallback;
     int compression;
     int heartbleed;
+    int groups;
     int starttls_ftp;
     int starttls_imap;
     int starttls_irc;
@@ -305,6 +306,7 @@ int testRenegotiation(struct sslCheckOptions *, const SSL_METHOD *);
 int testfallback(struct sslCheckOptions *, const SSL_METHOD *);
 #endif
 int testHeartbleed(struct sslCheckOptions *, const SSL_METHOD *);
+int testSupportedGroups(struct sslCheckOptions *options);
 int testCipher(struct sslCheckOptions *, const SSL_METHOD *);
 int testMissingCiphers(struct sslCheckOptions *options, unsigned int version);
 int testProtocolCiphers(struct sslCheckOptions *, const SSL_METHOD *);

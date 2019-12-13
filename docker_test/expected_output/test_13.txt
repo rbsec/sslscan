@@ -26,45 +26,48 @@ SSLv3 is [32mnot enabled[0m
 [32mPreferred[0m TLSv1.3  [32m128[0m bits  TLS_AES_128_GCM_SHA256        Curve [32m25519[0m DHE 253
 Accepted  TLSv1.3  [32m256[0m bits  TLS_AES_256_GCM_SHA384        Curve [32m25519[0m DHE 253
 Accepted  TLSv1.3  [32m256[0m bits  TLS_CHACHA20_POLY1305_SHA256  Curve [32m25519[0m DHE 253
+Accepted  TLSv1.3  [32m128[0m bits  TLS_AES_128_CCM_SHA256        Curve [32m25519[0m DHE 253
 [32mPreferred[0m TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-AES256-GCM-SHA384  [0m Curve [32m25519[0m DHE 253
-Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-AES256-GCM-SHA384    [0m DHE 3072 bits
+Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-AES256-GCM-SHA384    [0m DHE 2048 bits
 Accepted  TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-CHACHA20-POLY1305  [0m Curve [32m25519[0m DHE 253
-Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-CHACHA20-POLY1305    [0m DHE 3072 bits
+Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-CHACHA20-POLY1305    [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-CCM            DHE 2048 bits
 Accepted  TLSv1.2  [32m128[0m bits  [32mECDHE-RSA-AES128-GCM-SHA256  [0m Curve [32m25519[0m DHE 253
-Accepted  TLSv1.2  [32m128[0m bits  [32mDHE-RSA-AES128-GCM-SHA256    [0m DHE 3072 bits
-Accepted  TLSv1.2  [32m256[0m bits  ECDHE-RSA-AES256-SHA384       Curve [32m25519[0m DHE 253
-Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-SHA256         DHE 3072 bits
-Accepted  TLSv1.2  [32m128[0m bits  ECDHE-RSA-AES128-SHA256       Curve [32m25519[0m DHE 253
-Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA256         DHE 3072 bits
+Accepted  TLSv1.2  [32m128[0m bits  [32mDHE-RSA-AES128-GCM-SHA256    [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-CCM            DHE 2048 bits
 Accepted  TLSv1.2  [32m256[0m bits  ECDHE-RSA-AES256-SHA          Curve [32m25519[0m DHE 253
-Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 3072 bits
+Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 2048 bits
 Accepted  TLSv1.2  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve [32m25519[0m DHE 253
-Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 3072 bits
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 2048 bits
 Accepted  TLSv1.2  [32m256[0m bits  AES256-GCM-SHA384            
+Accepted  TLSv1.2  [32m256[0m bits  AES256-CCM                   
 Accepted  TLSv1.2  [32m128[0m bits  AES128-GCM-SHA256            
-Accepted  TLSv1.2  [32m256[0m bits  AES256-SHA256                
-Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA256                
+Accepted  TLSv1.2  [32m128[0m bits  AES128-CCM                   
 Accepted  TLSv1.2  [32m256[0m bits  AES256-SHA                   
 Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA                   
 [32mPreferred[0m TLSv1.1  [32m256[0m bits  ECDHE-RSA-AES256-SHA          Curve [32m25519[0m DHE 253
-Accepted  TLSv1.1  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 3072 bits
+Accepted  TLSv1.1  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 2048 bits
 Accepted  TLSv1.1  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve [32m25519[0m DHE 253
-Accepted  TLSv1.1  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 3072 bits
+Accepted  TLSv1.1  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 2048 bits
 Accepted  TLSv1.1  [32m256[0m bits  AES256-SHA                   
 Accepted  TLSv1.1  [32m128[0m bits  AES128-SHA                   
 [32mPreferred[0m [33mTLSv1.0[0m  [32m256[0m bits  ECDHE-RSA-AES256-SHA          Curve [32m25519[0m DHE 253
-Accepted  [33mTLSv1.0[0m  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 3072 bits
+Accepted  [33mTLSv1.0[0m  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 2048 bits
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve [32m25519[0m DHE 253
-Accepted  [33mTLSv1.0[0m  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 3072 bits
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 2048 bits
 Accepted  [33mTLSv1.0[0m  [32m256[0m bits  AES256-SHA                   
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  AES128-SHA                   
 
   [1;34mServer Key Exchange Group(s):[0m
 [32mX25519[0m (128 bits)
-[32mX448[0m (224 bits)
 secp256r1 [P-256][0m (128 bits)
 secp384r1 [P-384][0m (192 bits)
 secp521r1 [P-521][0m (256 bits)
+ffdhe2048[0m (112 bits)
+ffdhe3072[0m (128 bits)
+ffdhe4096[0m (150 bits)
+ffdhe6144[0m (175 bits)
+ffdhe8192[0m (192 bits)
 
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m

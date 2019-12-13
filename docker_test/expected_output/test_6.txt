@@ -29,6 +29,13 @@ Accepted  TLSv1.3  [32m256[0m bits  TLS_CHACHA20_POLY1305_SHA256  Curve [32m2
 Accepted  TLSv1.3  [32m128[0m bits  TLS_AES_128_CCM_SHA256        Curve [32m25519[0m DHE 253
 Accepted  TLSv1.3  [32m128[0m bits  TLS_AES_128_CCM_8_SHA256      Curve [32m25519[0m DHE 253
 
+  [1;34mServer Key Exchange Group(s):[0m
+[32mX25519[0m (128 bits)
+[32mX448[0m (224 bits)
+secp256r1 [P-256][0m (128 bits)
+secp384r1 [P-384][0m (192 bits)
+secp521r1 [P-521][0m (256 bits)
+
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m
 RSA Key Strength:    3072

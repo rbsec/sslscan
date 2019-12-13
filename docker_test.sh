@@ -11,7 +11,7 @@
 #
 # For debugging purposes, here is a cheat sheet for manually running the docker image:
 #
-# docker run -p 4443:443 --security-opt seccomp:unconfined -it sslscan-test:1 /bin/bash
+# docker run -p 4443:443 --security-opt seccomp:unconfined -it sslscan-test:2 /bin/bash
 #
 
 #
@@ -26,7 +26,7 @@
 
 # This is the docker tag for the image.  If this tag doesn't exist, then we assume the
 # image is out of date, and generate a new one with this tag.
-IMAGE_VERSION=1
+IMAGE_VERSION=2
 
 # This is the name of our docker image.
 IMAGE_NAME=sslscan-test
@@ -51,6 +51,12 @@ fi
 # Returns 0 if current docker image exists.
 function check_if_docker_image_exists {
     images=`docker image ls | egrep "$IMAGE_NAME[[:space:]]+$IMAGE_VERSION"`
+}
+
+
+# Compile all version of GnuTLS.
+function compile_gnutls_all {
+    compile_gnutls '3.6.11.1'
 }
 
 
@@ -118,6 +124,107 @@ function compile_openssl {
 }
 
 
+# Compile a specific version of GnuTLS.
+function compile_gnutls {
+    gnutls_version=$1
+
+    gnutls_url=
+    nettle_url=
+    gnutls_expected_sha256=
+    nettle_expected_sha256=
+    gnutls_filename=
+    nettle_filename=
+    gnutls_source_dir=
+    nettle_source_dir=
+    nettle_version=
+    compile_num_procs=$NUM_PROCS
+    compile_nettle=0
+    if [[ $gnutls_version == '3.6.11.1' ]]; then
+	gnutls_url=https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.11.1.tar.xz
+	gnutls_expected_sha256=fbba12f3db9a55dbf027e14111755817ec44b57eabec3e8089aac8ac6f533cf8
+	gnutls_filename=gnutls-3.6.11.1.tar.xz
+	gnutls_source_dir=gnutls-3.6.11.1
+	nettle_version=3.5.1
+	nettle_url=https://ftp.gnu.org/gnu/nettle/nettle-3.5.1.tar.gz
+	nettle_expected_sha256=75cca1998761b02e16f2db56da52992aef622bf55a3b45ec538bc2eedadc9419
+	nettle_filename=nettle-3.5.1.tar.gz
+	nettle_source_dir=nettle-3.5.1
+	compile_nettle=1
+    else
+	echo -e "${REDB}Error: GnuTLS v${gnutls_version} is unknown!${CLR}"
+	exit 1
+    fi
+
+    # Download GnuTLS.
+    echo -e "\n${YELLOWB}Downloading GnuTLS v${gnutls_version}...${CLR}\n"
+    wget $gnutls_url
+
+    # Download nettle.
+    echo -e "\n${YELLOWB}Downloading nettle library v${nettle_version}...${CLR}\n"
+    wget $nettle_url
+
+    # Check the SHA256 hashes.
+    gnutls_actual_sha256=`sha256sum ${gnutls_filename} | cut -f1 -d" "`
+    nettle_actual_sha256=`sha256sum ${nettle_filename} | cut -f1 -d" "`
+
+    if [[ ($gnutls_actual_sha256 != $gnutls_expected_sha256) || ($nettle_actual_sha256 != $nettle_expected_sha256) ]]; then
+	echo -e "${REDB}GnuTLS/nettle actual hashes differ from expected hashes! ${CLR}\n"
+	echo -e "\tGnuTLS expected hash: ${gnutls_expected_sha256}\n"
+	echo -e "\tGnuTLS actual hash:   ${gnutls_actual_sha256}\n"
+	echo -e "\tnettle expected hash: ${nettle_expected_sha256}\n"
+	echo -e "\tnettle actual hash:   ${nettle_actual_sha256}\n\n"
+	exit 1
+    else
+	echo -e "${GREEN}Hashes verified.${CLR}\n"
+    fi
+
+    tar xJf $gnutls_filename
+
+    if [[ $compile_nettle == 1 ]]; then
+	tar xzf $nettle_filename
+	mv $nettle_source_dir nettle
+
+	# Configure and compile nettle.
+	echo -e "\n\n${YELLOWB}Compiling nettle v${nettle_version} with \"-j ${compile_num_procs}\"...${CLR}"
+	pushd nettle
+	./configure && make -j $compile_num_procs
+
+	if [[ ! -f libnettle.so || ! -f libhogweed.so ]]; then
+	    echo -e "${REDB}Error: compilation failed!  libnettle.so and/or libhogweed.so not found.${CLR}"
+	    exit 1
+	fi
+	popd
+    fi
+
+    # Configure and compile GnuTLS.
+    echo -e "\n\n${YELLOWB}Compiling GnuTLS v${gnutls_version} with \"-j ${compile_num_procs}\"...${CLR}"
+    pushd $gnutls_source_dir
+    nettle_source_dir_abs=`readlink -m ../nettle`
+    nettle_parent_dir=`readlink -m ..`
+    NETTLE_CFLAGS=-I${nettle_parent_dir} NETTLE_LIBS="-L${nettle_source_dir_abs} -lnettle" HOGWEED_CFLAGS=-I${nettle_parent_dir} HOGWEED_LIBS="-L${nettle_source_dir_abs} -lhogweed" ./configure --with-included-libtasn1 --with-included-unistring --without-p11-kit
+    make CFLAGS=-I${nettle_parent_dir} LDFLAGS="-L${nettle_source_dir_abs} -lhogweed -lnettle" -j $compile_num_procs
+
+    # Ensure that the gnutls-serv and gnutls-cli tools were built
+    if [[ (! -f "src/.libs/gnutls-cli") || (! -f "src/.libs/gnutls-serv") ]]; then
+	echo -e "${REDB}Error: compilation failed!  gnutls-cli and/or gnutls-serv not found.${CLR}\n"
+	exit 1
+    fi
+
+    # Copy the gnutls-cli and gnutls-serv apps to the top-level docker building dir as, e.g. 'gnutls-cli-v3.6.11.1'.  Then we can delete the source code directory and move on.
+    cp "lib/.libs/libgnutls.so" "../libgnutls.so.30"
+    cp "src/.libs/gnutls-cli" "../gnutls-cli-v${gnutls_version}"
+    cp "src/.libs/gnutls-serv" "../gnutls-serv-v${gnutls_version}"
+    cp "${nettle_source_dir_abs}/libhogweed.so" "../libhogweed.so.5"
+    cp "${nettle_source_dir_abs}/libnettle.so" "../libnettle.so.7"
+    popd
+
+
+    # Delete the source code directory now that we built the tools and moved them out.
+    rm -rf ${gnutls_source_dir}
+    echo -e "\n\n${YELLOWB}Compilation of GnuTLS v${gnutls_version} finished.${CLR}\n\n"
+}
+
+
 # Creates a new docker image.
 function create_docker_image {
     # Create a new temporary directory.
@@ -132,6 +239,9 @@ function create_docker_image {
 
     # Compile the versions of OpenSSL.
     compile_openssl_all
+
+    # Compile the versions of GnuTLS.
+    compile_gnutls_all
 
     # Now build the docker image!
     echo -e "${YELLOWB}Creating docker image...${CLR}"
@@ -156,6 +266,9 @@ function run_tests {
     run_test_9 "0"
     run_test_10 "0"
     run_test_11 "0"
+    run_test_12 "0"
+    run_test_13 "0"
+    run_test_14 "0"
 }
 
 
@@ -222,6 +335,24 @@ function run_test_10 {
 # Makes an OCSP request to www.amazon.com.  The horrible Perl command that comes after it will filter out the timestamps and other variable data from the response, otherwise the diff would fail.
 function run_test_11 {
     run_test_internet '11' "./sslscan --ocsp --no-ciphersuites --no-fallback --no-renegotiation --no-compression --no-heartbleed --no-check-certificate www.amazon.com | perl -pe 'BEGIN{undef $/;} s/Connected to .+?$/Connected to\033[0m/smg; s/Responder Id: .+?$/Responder Id:/smg; s/Produced At: .+?$/Produced At:/smg; s/Hash Algorithm: .+?$/Hash Algorithm:/smg; s/Issuer Name Hash: .+?$/Issuer Name Hash:/smg; s/Issuer Key Hash: .+?$/Issuer Key Hash:/smg; s/Serial Number: .+?$/Serial Number:/smg; s/This Update: .+?$/This Update:/smg; s/Next Update: .+?$/Next Update:/smg; s/Response Single Extensions:.+?\n\n/\n\n/smg;'"
+}
+
+
+# 512-bit DH, 512-bit RSA key with MD5 signature.
+function run_test_12 {
+    run_test $1 '12' "/openssl_v1.0.0/openssl s_server -accept 443 -dhparam /etc/ssl/dhparams_512.pem -key /etc/ssl/key_512.pem -cert /etc/ssl/cert_512.crt" ""
+}
+
+
+# Default GnuTLS.
+function run_test_13 {
+    run_test $1 '13' "/gnutls-3.6.11.1/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_3072.crt --x509keyfile=/etc/ssl/key_3072.pem" ""
+}
+
+
+# GnuTLS with only TLSv1.2 and TLSv1.3, and secp521r1 and ffdhe8192 groups.
+function run_test_14 {
+    run_test $1 '14' "/gnutls-3.6.11.1/gnutls-serv -p 443 --priority=NORMAL:-VERS-TLS1.1:-VERS-TLS1.0:-GROUP-X25519:-GROUP-SECP256R1:-GROUP-SECP384R1:-GROUP-FFDHE2048:-GROUP-FFDHE3072:-GROUP-FFDHE4096:-GROUP-FFDHE6144 --x509certfile=/etc/ssl/cert_3072.crt --x509keyfile=/etc/ssl/key_3072.pem" ""
 }
 
 
@@ -323,6 +454,13 @@ function run_test_internet {
 docker version > /dev/null
 if [[ $? != 0 ]]; then
     echo -e "${REDB}Error: 'docker version' command failed (error code: $?).  Is docker installed and functioning?${CLR}"
+    exit 1
+fi
+
+# Ensure that the libgmp-dev and m4 packages are installed.
+dpkg -l libgmp-dev m4 > /dev/null
+if [[ $? != 0 ]]; then
+    echo -e "${REDB}Error: libgmp-dev and/or m4 packages not installed.  Fix with: apt install libgmp-dev m4${CLR}"
     exit 1
 fi
 
