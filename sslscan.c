@@ -3573,6 +3573,7 @@ int main(int argc, char *argv[])
     int err;
     HANDLE hConsole;
     DWORD consoleMode;
+    unsigned int enable_colors;
 #endif
 
     // Init...
@@ -3618,8 +3619,28 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
     /* Attempt to enable console colors.  This succeeds in Windows 10.  For other
      * OSes, color is disabled. */
+    enable_colors = 1;
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    if ((hConsole == INVALID_HANDLE_VALUE) || (!GetConsoleMode(hConsole, &consoleMode)) || (!SetConsoleMode(hConsole, consoleMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING))) {
+
+    /* Cygwin's terminal is re-directed, so GetConsoleMode() fails on it.  So we'll try to get a direct handle in that case. */
+    if (!GetConsoleMode(hConsole, &consoleMode)) {
+      hConsole = CreateFile("CONIN$", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+      /* Also, Cygwin appears to do full buffering of output, so the program seems to hang until its fully complete, then the output gets dumped all at once.  To be more responsive, we'll force line buffering at 80 bytes (the default terminal width). */
+      setvbuf(stdout, NULL, _IOLBF, 80);
+
+      /* If we still can't get console information, then disable colors. */
+      if (!GetConsoleMode(hConsole, &consoleMode))
+	enable_colors = 0;
+    }
+
+    /* Some terminals already have colors enabled, and somehow don't like being set. */
+    if (enable_colors && ((consoleMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == 0)) {
+      if (!SetConsoleMode(hConsole, consoleMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING))
+	enable_colors = 0;
+    }
+
+    if (!enable_colors) {
         RESET = "";
         COL_RED = "";
         COL_YELLOW = "";
