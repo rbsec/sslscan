@@ -4577,7 +4577,7 @@ void bs_set_byte(bs *b, size_t offset, unsigned char byte) {
 }
 
 /* Sets a length field in a TLS packet at the specified offset. */
-void bs_set_ushort(bs *b, size_t offset, ushort length) {
+void bs_set_ushort(bs *b, size_t offset, unsigned short length) {
   uint16_t u = htons(length);
 
   bs_set_byte(b, offset, (unsigned char)u);

@@ -295,6 +295,7 @@ size_t bs_get_size(bs *);
 unsigned char *bs_get_bytes(bs *);
 unsigned char bs_get_byte(bs *, size_t);
 void bs_set_byte(bs *, size_t, unsigned char);
+void bs_set_ushort(bs *b, size_t offset, unsigned short length);
 int bs_read_socket(bs *b, int s, size_t num_bytes);
 SSL_CTX *CTX_new(const SSL_METHOD *method);
 int fileExists(char *);
