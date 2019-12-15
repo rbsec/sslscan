@@ -4419,79 +4419,220 @@ void findMissingCiphers() {
   }
 }
 
-/* Appends an array of bytes (in 'bytes') of length 'bytes_len' to an array (in 'buffer').  The current size of 'buffer' is given in 'buf_size'.  The current number of bytes used in the buffer is given in 'buf_len'.  If the caller tries to append bytes that the current buffer cannot hold, the buffer will be automatically re-sized and the bytes are safely appended.  The extended buffer region is zeroed. */
-#define OVERFLOW_MESSAGE "Cannot lengthen buffer without overflowing length!\n"
-void buffer_append_bytes(unsigned char **buffer, size_t *buf_size, size_t *buf_len, unsigned char *bytes, size_t bytes_len) {
-  size_t new_len = *buf_len + bytes_len;
+/* Creates a new byte string of size BS_DEFAULT_NEW_SIZE.  Caller must eventually free it with bs_free().  The caller MUST initialize the pointer to NULL, otherwise the heap will be corrupted. */
+void bs_new(bs **b) {
+  bs_new_size(b, BS_DEFAULT_NEW_SIZE);
+}
 
-  if (buffer == NULL)
+/* Creates a new byte string with the specified initial size (or BS_DEFAULT_NEW_SIZE if 0).  Caller must eventually free it with bs_free(). The caller MUST initialize the pointer to NULL, otherwise the heap will be corrupted. */
+void bs_new_size(bs **b, size_t new_size) {
+  if (b == NULL) {
+    fprintf(stderr, "Error: bs_new*() given NULL pointer!\n");
+    exit(-1);
+  }
+
+  /* If this byte string was already initialized, silently free it, then continue on. */
+  if (*b != NULL)
+    bs_free(b);
+
+  if (new_size == 0)
+    new_size = BS_DEFAULT_NEW_SIZE;
+
+  *b = calloc(1, sizeof(bs));
+  if (*b == NULL) {
+    fprintf(stderr, "bs_new_size(): failed to allocate new buffer.\n");
+    exit(-1);
+  }
+
+  (*b)->buf = calloc(new_size, sizeof(unsigned char));
+  if ((*b)->buf == NULL) {
+    fprintf(stderr, "bs_new_size(): failed to allocate new buffer.\n");
+    exit(-1);
+  }
+
+  (*b)->size = new_size;
+  (*b)->len = 0;
+}
+
+/* De-allocates a byte string.  May be safely called multiple times.  Furthermore, bs_free(NULL) does nothing. */
+void bs_free(bs **b) {
+  if ((b == NULL) || (*b == NULL))
     return;
 
+  free((*b)->buf);
+  (*b)->buf = NULL;
+
+  (*b)->size = 0;
+  (*b)->len = 0;
+  free(*b);
+  *b = NULL;
+}
+
+/* Appends an array of bytes to this byte string.  The byte string is automatically re-sized if necessary. */
+#define OVERFLOW_MESSAGE "Cannot lengthen buffer without overflowing length!\n"
+void bs_append_bytes(bs *b, unsigned char *bytes, size_t bytes_len) {
+  size_t new_len = 0, b_len = 0, b_size = 0;
+
+  if ((b == NULL) || (bytes == NULL) || (bytes_len == 0))
+    return;
+
+  b_len = b->len;
+  b_size = b->size;
+  new_len = b_len + bytes_len;
+
   /* Ensure that the new length does not cause an integer overflow. */
-  if ((new_len < *buf_len) || (new_len < bytes_len)) {
+  if ((new_len < b_len) || (new_len < bytes_len)) {
     fprintf(stderr, OVERFLOW_MESSAGE);
     exit(-1);
   }
 
   /* If the buffer needs re-sizing... */
-  if (new_len > *buf_size) {
-
+  if (new_len > b_size) {
     /* Double the size of the buffer until it is larger than what we need right now. */
-    while (new_len > *buf_size) {
+    while (new_len > b_size) {
       /* Ensure we don't overflow the length. */
-      if ((size_t)(*buf_len * 2) < *buf_len) {
+      if ((b_len * 2) < b_len) {
         fprintf(stderr, OVERFLOW_MESSAGE);
         exit(-1);
       }
-      *buf_size = *buf_size * 2;
+      b_size = b_size * 2;
     }
 
     /* Extend the buffer's size. */
-    *buffer = realloc(*buffer, *buf_size);
-    if (*buffer == NULL) {
+    b->buf = realloc(b->buf, b_size);
+    if (b->buf == NULL) {
       fprintf(stderr, "Failed to resize buffer.\n");
       exit(-1);
     }
+    b->size = b_size;
 
     /* Zero out the extended buffer region; leave the existing bytes intact. */
-    memset(*buffer + *buf_len, 0, *buf_size - *buf_len);
+    memset(b->buf + b_len, 0, b_size - b_len);
   }
 
   /* Copy the new bytes into the buffer right after the existing bytes. */
-  memcpy(*buffer + *buf_len, bytes, bytes_len);
+  memcpy(b->buf + b_len, bytes, bytes_len);
 
   /* Update the number of used bytes in the buffer. */
-  *buf_len = new_len;
+  b->len = new_len;
 }
 
-/* Convert an unsigned short to network-order, then append it to the buffer.  See documentation for buffer_append_bytes() for description of other arguments. */
-void buffer_append_ushort(unsigned char **buffer, size_t *buf_size, size_t *buf_len, unsigned short s) {
-  unsigned short network_short = htons(s);
-  buffer_append_bytes(buffer, buf_size, buf_len, (unsigned char *)&network_short, sizeof(unsigned short));
+/* Appends a uint32_t to the byte string. */
+void bs_append_uint32_t(bs *b, uint32_t u) {
+  bs_append_bytes(b, (unsigned char *)&u, sizeof(uint32_t));
 }
 
-/* Append a uint32_t to the buffer.  See documentation for buffer_append_bytes() for description of other arguments. */
-void buffer_append_uint32_t(unsigned char **buffer, size_t *buf_size, size_t *buf_len, uint32_t i) {
-  buffer_append_bytes(buffer, buf_size, buf_len, (unsigned char *)&i, sizeof(uint32_t));
+/* Converts an unsigned short to network-order, then appends it to the byte string. */
+void bs_append_ushort(bs *b, unsigned short us) {
+  uint16_t u16 = htons(us);
+  bs_append_bytes(b, (unsigned char *)&u16, sizeof(uint16_t));
 }
 
-/* Sets the 'ciphersuite_list' arg to a buffer (which must be free()'ed) of ciphersuites for a given TLS version, and sets the 'ciphersuite_list_len' arg to the number of bytes in 'ciphersuite_list'.  When 'type' is CIPHERSUITES_MISSING, then a list of all ciphersuites missing in OpenSSL is returned.  When set to CIPHERSUITES_TLSV1_3_ALL, all TLSv1.3 ciphersuites are returned only. */
+/* Appends one byte string (src) to another (dst). */
+void bs_append_bs(bs *dst, bs *src) {
+  if (src == NULL)
+    return;
+
+  bs_append_bytes(dst, src->buf, src->len);
+}
+
+/* Returns the number of bytes in this byte string. */
+size_t bs_get_len(bs *b) {
+  if (b == NULL)
+    return 0;
+
+  return b->len;
+}
+
+/* Returns the number of bytes allocated in the underlying byte string. */
+size_t bs_get_size(bs *b) {
+  if (b == NULL)
+    return 0;
+
+  return b->size;
+}
+
+/* Gets the bytes of this byte string.  The caller must _never_ free it directly themselves. */
+unsigned char *bs_get_bytes(bs *b) {
+  if (b == NULL)
+    return NULL;
+
+  return b->buf;
+}
+
+/* Gets a single byte from the offset position.  Performs safety checks that the read will not overflow.  Returns 0 if out of bounds.  */
+unsigned char bs_get_byte(bs *b, size_t offset) {
+  if ((b == NULL) || (offset >= b->len))
+    return 0;
+
+  return b->buf[offset];
+}
+
+/* Gets a single byte from the offset position.  Performs safety checks that the read will not overflow. */
+void bs_set_byte(bs *b, size_t offset, unsigned char byte) {
+  if ((b == NULL) || (offset >= b->len))
+    return;
+
+  b->buf[offset] = byte;
+}
+
+/* Sets a length field in a TLS packet at the specified offset. */
+void bs_set_ushort(bs *b, size_t offset, ushort length) {
+  uint16_t u = htons(length);
+
+  bs_set_byte(b, offset, (unsigned char)u);
+  bs_set_byte(b, offset + 1, (unsigned char)(u >> 8));
+}
+
+/* Reads the specified number of bytes from socket s into byte string b.  Returns 0 on success, or errno on error. */
+int bs_read_socket(bs *b, int s, size_t num_bytes) {
+  int ret = -1, n = 0;
+  unsigned int i = 0;
+  size_t old_len = 0, bytes_read = 0;
+
+  if (b == NULL)
+    return -1;
+
+  /* Append num_bytes to the byte string to ensure that the underlying buffer is resized appropriately.  Then reset the length. */
+  old_len = b->len;
+  for (; i < (num_bytes / sizeof(uint32_t)) + 1; i++)
+    bs_append_uint32_t(b, 0);
+
+  b->len = old_len;
+
+  /* Read in num_bytes from the socket and store it in the underlying buffer. */
+  bytes_read = 0;
+  while (bytes_read < num_bytes) {
+    n = recv(s, b->buf + b->len + bytes_read, num_bytes - bytes_read, 0);
+    if (n <= 0) {
+      if ((errno != 0) && (errno != ECONNRESET))
+        ret = errno;
+
+      b->len += bytes_read;
+      goto err;
+    }
+    bytes_read += n;
+  }
+  b->len += bytes_read;
+  ret = 0;
+
+err:
+  return ret;
+}
+
+/* Returns a byte string, ciphersuite_list, with a list of ciphersuites for a given TLS version.  When 'type' is CIPHERSUITES_MISSING, then a list of all ciphersuites missing in OpenSSL is returned.  When set to CIPHERSUITES_TLSV1_3_ALL, all TLSv1.3 ciphersuites are returned only. */
 #define CIPHERSUITES_MISSING 0
 #define CIPHERSUITES_TLSV1_3_ALL 1
-void makeCiphersuiteList(unsigned char **ciphersuite_list, size_t *ciphersuite_list_len, unsigned int tls_version, unsigned int type) {
+bs *makeCiphersuiteList(unsigned int tls_version, unsigned int type) {
   size_t ciphersuite_list_size = 1024;
+  bs *ciphersuite_list = NULL;
 
 
   // Make the buffer much smaller if we're just returning the list of 5 TLSv1.3 ciphers.
   if (type == CIPHERSUITES_TLSV1_3_ALL)
     ciphersuite_list_size = 16;
 
-  *ciphersuite_list = calloc(ciphersuite_list_size, sizeof(unsigned char));
-  if (*ciphersuite_list == NULL) {
-    fprintf(stderr, "Failed to create buffer for ciphersuite list.\n");
-    exit(-1);
-  }
-  *ciphersuite_list_len = 0;
+  bs_new_size(&ciphersuite_list, ciphersuite_list_size);
 
   if (type == CIPHERSUITES_MISSING) {
     if (tls_version == 0)
@@ -4504,11 +4645,11 @@ void makeCiphersuiteList(unsigned char **ciphersuite_list, size_t *ciphersuite_l
     for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
       /* Append only those that OpenSSL does not cover, and those that were not already accepted through a previous run. */
       if ((missing_ciphersuites[i].check_tls_versions & tls_version) && ((missing_ciphersuites[i].accepted_tls_versions & tls_version) == 0)) {
-	buffer_append_ushort(ciphersuite_list, &ciphersuite_list_size, ciphersuite_list_len, missing_ciphersuites[i].id);
+        bs_append_ushort(ciphersuite_list, missing_ciphersuites[i].id);
       }
     }
   } else if (type == CIPHERSUITES_TLSV1_3_ALL) {
-    buffer_append_bytes(ciphersuite_list, &ciphersuite_list_size, ciphersuite_list_len, (unsigned char []) {
+    bs_append_bytes(ciphersuite_list, (unsigned char []) {
       0x13, 0x01, // TLS_AES_128_GCM_SHA256
       0x13, 0x02, // TLS_AES_256_GCM_SHA384
       0x13, 0x03, // TLS_CHACHA20_POLY1305_SHA256
@@ -4516,6 +4657,8 @@ void makeCiphersuiteList(unsigned char **ciphersuite_list, size_t *ciphersuite_l
       0x13, 0x05, // TLS_AES_128_CCM_8_SHA256
     }, 10);
   }
+
+  return ciphersuite_list;
 }
 
 /* Marks a ciphersuite as found so that it is not re-tested again. */
@@ -4547,42 +4690,29 @@ char *resolveCipherID(unsigned short cipher_id, int *cipher_bits) {
   return "UNKNOWN_CIPHER";
 }
 
-/* Sets a length field in a TLS packet at the specified offset. */
-void setTLSLength(unsigned char *buf, unsigned int offset, unsigned int length) {
-  uint16_t u = htons(length);
-  memcpy(buf + offset, &u, sizeof(u));
-}
-
 /* Creates a basic set of TLS extensions, including SNI, ec_point_formats, Session Ticket TLS, and signature_algorithms. */
-unsigned char *makeTLSExtensions(size_t *tls_extensions_size, size_t *tls_extensions_len, struct sslCheckOptions *options) {
-  unsigned char *tls_extensions = NULL;
+bs *makeTLSExtensions(struct sslCheckOptions *options) {
+  bs *tls_extensions = NULL;
 
-
-  *tls_extensions_size = 64;
-  tls_extensions = calloc(*tls_extensions_size, sizeof(unsigned char));
-  if (tls_extensions == NULL) {
-    fprintf(stderr, "Failed to allocate buffers for TLS extensions.\n");
-    exit(-1);
-  }
-  *tls_extensions_len = 0;
+  bs_new_size(&tls_extensions, 64);
 
   /* Add the length of the extensions (to be filled in later). */
-  buffer_append_ushort(&tls_extensions, tls_extensions_size, tls_extensions_len, 0);
+  bs_append_ushort(tls_extensions, 0);
 
   /* Extension: server name */
   uint16_t sni_length = strlen(options->sniname);
   uint16_t sni_list_length = sni_length + 3;
   uint16_t extension_length = sni_list_length + 2;
 
-  buffer_append_ushort(&tls_extensions, tls_extensions_size, tls_extensions_len, 0x0000); /* Extension: server_name */
-  buffer_append_ushort(&tls_extensions, tls_extensions_size, tls_extensions_len, extension_length);
-  buffer_append_ushort(&tls_extensions, tls_extensions_size, tls_extensions_len, sni_list_length);
-  buffer_append_bytes(&tls_extensions, tls_extensions_size, tls_extensions_len, (unsigned char []) { 0x00 /* Server Name Type: host_name */ }, 1);
-  buffer_append_ushort(&tls_extensions, tls_extensions_size, tls_extensions_len, sni_length); /* The length of the hostname. */
-  buffer_append_bytes(&tls_extensions, tls_extensions_size, tls_extensions_len, (unsigned char *)options->sniname, sni_length); /* The hostname itself. */
+  bs_append_ushort(tls_extensions, 0x0000); /* Extension: server_name */
+  bs_append_ushort(tls_extensions, extension_length);
+  bs_append_ushort(tls_extensions, sni_list_length);
+  bs_append_bytes(tls_extensions, (unsigned char []) { 0x00 /* Server Name Type: host_name */ }, 1);
+  bs_append_ushort(tls_extensions, sni_length); /* The length of the hostname. */
+  bs_append_bytes(tls_extensions, (unsigned char *)options->sniname, sni_length); /* The hostname itself. */
 
   /* Extension: ec_point_formats */
-  buffer_append_bytes(&tls_extensions, tls_extensions_size, tls_extensions_len, (unsigned char []) {
+  bs_append_bytes(tls_extensions, (unsigned char []) {
     0x00, 0x0b, // Extension: ec_point_formats (11)
     0x00, 0x04, // Extension Length (4)
     0x03, // EC Point Formats Length (3)
@@ -4592,13 +4722,13 @@ unsigned char *makeTLSExtensions(size_t *tls_extensions_size, size_t *tls_extens
   }, 8);
 
   /* Extension: SessionTicket TLS */
-  buffer_append_bytes(&tls_extensions, tls_extensions_size, tls_extensions_len, (unsigned char []) {
+  bs_append_bytes(tls_extensions, (unsigned char []) {
     0x00, 0x23, // Extension: SessionTicket TLS (35)
     0x00, 0x00, // Extension Length (0)
   }, 4);
 
   /* Extension: signature_algorithms */
-  buffer_append_bytes(&tls_extensions, tls_extensions_size, tls_extensions_len, (unsigned char []) {
+  bs_append_bytes(tls_extensions, (unsigned char []) {
     0x00, 0x0d, // Extension: signature_algorithms (13)
     0x00, 0x1e, // Extension Length (30)
     0x00, 0x1c, // Signature Hash Algorithms Length (28)
@@ -4619,85 +4749,57 @@ unsigned char *makeTLSExtensions(size_t *tls_extensions_size, size_t *tls_extens
   }, 34);
 
   /* Set the extension length. */
-  setTLSLength(tls_extensions, 0, *tls_extensions_len - 2);
+  bs_set_ushort(tls_extensions, 0, bs_get_len(tls_extensions) - 2);
   return tls_extensions;
 }
 
 /* Adds the TLS supported_versions extension, set to TLSv1.3 only. */
-void tlsExtensionAddTLSv1_3(unsigned char **tls_extensions, size_t *tls_extensions_size, size_t *tls_extensions_len) {
-  buffer_append_bytes(tls_extensions, tls_extensions_size, tls_extensions_len, (unsigned char []) {
+void tlsExtensionAddTLSv1_3(bs *tls_extensions) {
+  bs_append_bytes(tls_extensions, (unsigned char []) {
       0x00, 0x2b, // supported_versions (43)
       0x00, 0x03, // Length
       0x02,       // Supported Versions Length
       0x03, 0x04, // Supported Version: TLS v1.3
   }, 7);
-  setTLSLength(*tls_extensions, 0, *tls_extensions_len - 2);
+  bs_set_ushort(tls_extensions, 0, bs_get_len(tls_extensions) - 2);
 }
 
 /* From socket s, reads a ServerHello from the network.  Returns an unsigned char array on success (which the caller must free()), or NULL on failure. */
-unsigned char *getServerHello(int s, size_t *server_hello_len) {
-  unsigned char *server_hello = NULL;
-  unsigned char initial5[8] = {0};  // The initial 5 bytes of the packet.
+bs *getServerHello(int s) {
+  bs *server_hello = NULL;
+  bs_new_size(&server_hello, 512);
 
-
-  /* Read the first 5 bytes to get the Content Type, Version, and Length fields. */
-  int bytes_read = 0, n = 0;
-  while (bytes_read < 5) {
-    n = recv(s, initial5 + bytes_read, 5 - bytes_read, 0);
-    if (n <= 0) {
-      if ((errno != 0) && (errno != ECONNRESET))
-	printf_error("recv() failed while reading Server Hello: %d (%s)\n", errno, strerror(errno));
-      goto err;
-    }
-    bytes_read += n;
-  }
-  *server_hello_len = bytes_read;
+  /* Read in the first 5 bytes to get the length of the rest of the packet. */
+  int err = bs_read_socket(server_hello, s, 5);
+  if (err != 0)
+    goto err;
 
   /* Ensure that the Content Type is Handshake (22). */
-  if (initial5[0] != 0x16)
+  if (bs_get_byte(server_hello, 0) != 0x16)
     goto err;
 
   /* Get the length of the Server Hello record. */
-  unsigned short packet_len = (initial5[3] << 8) | initial5[4];
+  unsigned short packet_len = (bs_get_byte(server_hello, 3) << 8) | bs_get_byte(server_hello, 4);
 
-  server_hello = calloc(packet_len + sizeof(initial5), sizeof(unsigned char));
-  if (server_hello == NULL) {
-    fprintf(stderr, "Failed to create buffer for Server Hello.\n");
-    exit(-1);
-  }
-
-  /* Copy the initial 5 bytes into the beginning of the buffer. */
-  memcpy(server_hello, initial5, *server_hello_len);
-
-  /* Read in the Server Hello record. */
-  bytes_read = 0;
-  while (bytes_read < packet_len) {
-    n = recv(s, server_hello + *server_hello_len + bytes_read, packet_len - bytes_read, 0);
-    if (n <= 0) {
-      if ((errno != 0) && (errno != ECONNRESET))
-	printf_error("recv() failed while reading Server Hello: %d (%s)\n", errno, strerror(errno));
-      goto err;
-    }
-    bytes_read += n;
-  }
-  *server_hello_len += bytes_read;
+  /* Read in the rest of the Server Hello. */
+  err = bs_read_socket(server_hello, s, packet_len);
+  if (err != 0)
+    goto err;
 
   /* Ensure that the Handshake Type is Server Hello (2). */
-  if (server_hello[5] != 0x02)
+  if (bs_get_byte(server_hello, 5) != 0x02)
     goto err;
 
   return server_hello;
 
  err:
-  FREE(server_hello);
-  *server_hello_len = 0;
+  bs_free(&server_hello);
   return NULL;
 }
 
-/* Returns a buffer (which the caller must free()) containing a TLS Client Hello message.  The number of bytes is stored in 'client_hello_len'.  'version' is set to 0 for TLSv1.0, 1 for TLSv1.1, 2, for TLSv1.2, and 3 for TLSv1.3.  The specified ciphersuite list and TLS extensions will be included.  */
-unsigned char *makeClientHello(size_t *client_hello_len, struct sslCheckOptions *options, unsigned int version, unsigned char *ciphersuite_list, size_t ciphersuite_list_len, unsigned char *tls_extensions, size_t tls_extensions_len) {
-  unsigned char *client_hello = NULL;
-  size_t client_hello_size = 1024;
+/* Returns a byte string (which the caller must later free) containing a TLS Client Hello message.  The number of bytes is stored in 'client_hello_len'.  'version' is set to 0 for TLSv1.0, 1 for TLSv1.1, 2, for TLSv1.2, and 3 for TLSv1.3.  The specified ciphersuite list and TLS extensions will be included.  */
+bs *makeClientHello(struct sslCheckOptions *options, unsigned int version, bs *ciphersuite_list, bs *tls_extensions) {
+  bs *client_hello = NULL;
   unsigned int tls_record_version_low_byte = 1, tls_handshake_version_low_byte = 1;
   time_t time_now = time(NULL);
 
@@ -4711,16 +4813,11 @@ unsigned char *makeClientHello(size_t *client_hello_len, struct sslCheckOptions 
     tls_handshake_version_low_byte = 3;
   }
 
-  /* Allocate buffers for the Client Hello and TLS extensions. */
-  client_hello = calloc(client_hello_size, sizeof(unsigned char));
-  if (client_hello == NULL) {
-    fprintf(stderr, "Failed to allocate buffer for ClientHello.\n");
-    exit(-1);
-  }
-  *client_hello_len = 0;
+  /* Allocate byte string for the Client Hello and TLS extensions. */
+  bs_new_size(&client_hello, 1024);
 
   /* Build the TLSv1 Record with the ClientHello message. */
-  buffer_append_bytes(&client_hello, &client_hello_size, client_hello_len, (unsigned char []) {
+  bs_append_bytes(client_hello, (unsigned char []) {
     0x16,       // Content Type: Handshake (22)
     0x03, (unsigned char)tls_record_version_low_byte, // Version: TLS 1.x
     0x00, 0x00, // Length (to be filled in later)
@@ -4731,46 +4828,46 @@ unsigned char *makeClientHello(size_t *client_hello_len, struct sslCheckOptions 
 
   /* "Random" 32 bytes. */
   uint32_t rand = htonl(time_now);
-  buffer_append_uint32_t(&client_hello, &client_hello_size, client_hello_len, rand); /* The first 4 bytes is the timestamp. */
+  bs_append_uint32_t(client_hello, rand); /* The first 4 bytes is the timestamp. */
 
   for (int i = 1; i < 8; i++) {
     rand = rand + (time_now ^ (uint32_t)((~(i + 0) << 24) | (~(i + 1) << 16) | (~(i + 2) << 8) | (~(i + 3) << 0)));
-    buffer_append_uint32_t(&client_hello, &client_hello_size, client_hello_len, rand);
+    bs_append_uint32_t(client_hello, rand);
   }
 
   /* Session ID Length: 0 */
-  buffer_append_bytes(&client_hello, &client_hello_size, client_hello_len, (unsigned char []) { 0x00 }, 1);
+  bs_append_bytes(client_hello, (unsigned char []) { 0x00 }, 1);
 
   /* Add the length (in bytes) of the ciphersuites list to the Client Hello. */
-  buffer_append_ushort(&client_hello, &client_hello_size, client_hello_len, ciphersuite_list_len);
+  bs_append_ushort(client_hello, bs_get_len(ciphersuite_list));
 
   /* Add the ciphersuite list. */
-  buffer_append_bytes(&client_hello, &client_hello_size, client_hello_len, ciphersuite_list, ciphersuite_list_len);
+  bs_append_bs(client_hello, ciphersuite_list);
 
   /* Add the compression options. */
-  buffer_append_bytes(&client_hello, &client_hello_size, client_hello_len, (unsigned char []) {
+  bs_append_bytes(client_hello, (unsigned char []) {
     0x01, // Compression Methods Length (1)
     0x00  // Compression Method: null (0)
   }, 2);
 
   /* Add the extensions to the Client Hello. */
-  buffer_append_bytes(&client_hello, &client_hello_size, client_hello_len, tls_extensions, tls_extensions_len);
+  bs_append_bs(client_hello, tls_extensions);
 
   /* Set the length of the Client Hello. */
-  client_hello[6] = 0;
-  setTLSLength(client_hello, 7, *client_hello_len - 9);
+  bs_set_byte(client_hello, 6, 0);
+  bs_set_ushort(client_hello, 7, bs_get_len(client_hello) - 9);
 
   /* Set the length of the Record Layer. */
-  setTLSLength(client_hello, 3, *client_hello_len - 5);
+  bs_set_ushort(client_hello, 3, bs_get_len(client_hello) - 5);
   return client_hello;
 }
 
 /* Checks all ciphersuites that OpenSSL does not support.  When version is 0, TLSv1.0 is tested.  When set to 1, TLSv1.1 is tested.  When set to 2, TLSv1.2 is tested. */
 int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
   int ret = false, s = 0;
-  unsigned char *ciphersuite_list = NULL, *client_hello = NULL, *server_hello = NULL, *tls_extensions = NULL;
   unsigned int tls_version_low_byte = 1;
   char *tls_printable_name = "TLSv1.0";
+  bs *client_hello = NULL, *server_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL;
 
 
   tls_version_low_byte += version;
@@ -4783,18 +4880,16 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
   /* Continue until a Server Hello isn't received. */
   while (1) {
     int cipher_bits = -1;
-    size_t client_hello_len = 0, ciphersuite_list_len = 0, tls_extensions_size = 256, tls_extensions_len = 0;
-    unsigned char *client_hello = NULL, *tls_extensions = NULL;
     char *cipher_name = NULL;
     struct timeval tval_start = {0}, tval_end = {0}, tval_elapsed = {0};
 
 
     gettimeofday(&tval_start, NULL);
 
-    tls_extensions = makeTLSExtensions(&tls_extensions_size, &tls_extensions_len, options);
+    tls_extensions = makeTLSExtensions(options);
 
     /* Extension: supported_groups */
-    buffer_append_bytes(&tls_extensions, &tls_extensions_size, &tls_extensions_len, (unsigned char []) {
+    bs_append_bytes(tls_extensions, (unsigned char []) {
       0x00, 0x0a, // Extension: supported_groups (10)
       0x00, 0x1c, // Extension Length (28)
       0x00, 0x1a, // Supported Groups List Length (26)
@@ -4813,19 +4908,14 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
       0x00, 0x0a, // sect283r1
     }, 32);
 
-    setTLSLength(tls_extensions, 0, tls_extensions_len - 2);
+    bs_set_ushort(tls_extensions, 0, bs_get_len(tls_extensions) - 2);
 
     /* Construct the list of all ciphersuites not implemented by OpenSSL. */
-    makeCiphersuiteList(&ciphersuite_list, &ciphersuite_list_len, version, CIPHERSUITES_MISSING);
+    ciphersuite_list = makeCiphersuiteList(version, CIPHERSUITES_MISSING);
 
-    client_hello = makeClientHello(&client_hello_len, options, version, ciphersuite_list, ciphersuite_list_len, tls_extensions, tls_extensions_len);
-
-    FREE(ciphersuite_list);
-    ciphersuite_list_len = 0;
-
-    FREE(tls_extensions);
-    tls_extensions_size = 0;
-    tls_extensions_len = 0;
+    client_hello = makeClientHello(options, version, ciphersuite_list, tls_extensions);
+    bs_free(&ciphersuite_list);
+    bs_free(&tls_extensions);
 
     /* Now connect to the target server. */
     s = tcpConnect(options);
@@ -4833,32 +4923,30 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
       goto done;
 
     /* Send the Client Hello message. */
-    if (send(s, client_hello, client_hello_len, 0) <= 0) {
+    if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
       printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
       goto done; /* Returns false. */
     }
-    FREE(client_hello);
-    client_hello_len = 0;
+    bs_free(&client_hello);
 
-    size_t server_hello_len = 0;
-    server_hello = getServerHello(s, &server_hello_len);
+    server_hello = getServerHello(s);
 
     /* If we don't receive a proper Server Hello message, or its too short, abort.  We need to reach at least the session ID field (offset 44). */
-    if ((server_hello == NULL) || (server_hello_len < 44))
+    if ((server_hello == NULL) || (bs_get_len(server_hello) < 44))
       goto done;
 
     /* Close the socket, since we're done reading. */
     CLOSE(s);
 
     /* Check that the TLS version returned is what we sent earlier. */
-    if ((server_hello[1] != 0x03) || (server_hello[2] != (unsigned char)tls_version_low_byte))
+    if ((bs_get_byte(server_hello, 1) != 0x03) || (bs_get_byte(server_hello, 2) != (unsigned char)tls_version_low_byte))
       goto done;
 
     /* At this point, the test is considered a success, even if the server rejects our Client Hello. */
     ret = true;
 
     /* Get the length of the session ID.  We must jump over this to reach the ciphersuite selected by the server. */
-    unsigned int session_id_len = server_hello[43];
+    unsigned int session_id_len = bs_get_byte(server_hello, 43);
 
     /* Its impossible for one byte to overflow an unsigned int (on any modern hardware), but still... */
     if ((session_id_len + 43 + 2 + 1) < session_id_len) {
@@ -4867,16 +4955,15 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
     }
 
     /* Check that the session ID length wouldn't put us past our buffer boundary. */
-    if ((session_id_len + 43 + 2 + 1) > server_hello_len) {
+    if ((session_id_len + 43 + 2 + 1) > bs_get_len(server_hello)) {
       fprintf(stderr, "Error: size of server_hello (%"SIZE_T_FMT") is not large enough to reach cipher suite (%u).\n", sizeof(server_hello), session_id_len + 43 + 2);
       exit(-1);
     }
 
     /* Extract the cipher ID. */
-    unsigned short cipher_id = (server_hello[session_id_len + 43 + 1] << 8) | server_hello[session_id_len + 43 + 2];
+    unsigned short cipher_id = (bs_get_byte(server_hello, session_id_len + 43 + 1) << 8) | bs_get_byte(server_hello, session_id_len + 43 + 2);
 
-    FREE(server_hello);
-    server_hello_len = 0;
+    bs_free(&server_hello);
 
     /* Mark this cipher ID as supported by the server, so when we loop again, the next ciphersuite list doesn't include it. */
     markFoundCiphersuite(cipher_id, version);
@@ -4895,10 +4982,10 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
 
  done:
   CLOSE(s);
-  FREE(ciphersuite_list);
-  FREE(tls_extensions);
-  FREE(client_hello);
-  FREE(server_hello);
+  bs_free(&ciphersuite_list);
+  bs_free(&tls_extensions);
+  bs_free(&client_hello);
+  bs_free(&server_hello);
   return ret;
 }
 
@@ -4938,12 +5025,11 @@ int testSupportedGroups(struct sslCheckOptions *options) {
 
   unsigned int printed_header = 0;
   int s = 0;
-  unsigned char *client_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL, *server_hello = NULL, *key_exchange = NULL;
-  size_t client_hello_len = 0, tls_extensions_size = 0, tls_extensions_len = 0, ciphersuite_list_len = 0, server_hello_len = 0, key_exchange_len = 0;
+  bs *client_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL, *server_hello = NULL, *key_exchange = NULL;
 
 
   /* Get all TLSv1.3 ciphersuites. */
-  makeCiphersuiteList(&ciphersuite_list, &ciphersuite_list_len, 3, CIPHERSUITES_TLSV1_3_ALL);
+  ciphersuite_list = makeCiphersuiteList(3, CIPHERSUITES_TLSV1_3_ALL);
 
   /* For each key exchange group... */
   for (int i = 0; i < (sizeof(group_key_exchanges) / sizeof(struct group_key_exchange)); i++) {
@@ -4953,31 +5039,27 @@ int testSupportedGroups(struct sslCheckOptions *options) {
     unsigned int group_bit_strength = group_key_exchanges[i].group_bit_strength;
     int nid = group_key_exchanges[i].nid;
     unsigned nid_type = group_key_exchanges[i].nid_type;
-    key_exchange_len = group_key_exchanges[i].key_exchange_len;
+    uint16_t key_exchange_len = group_key_exchanges[i].key_exchange_len;
 
     /* This will hold the key exchange data that we send to the server. */
-    key_exchange = calloc(key_exchange_len, sizeof(unsigned char));
-    if (key_exchange == NULL) {
-      fprintf(stderr, "Failed to create buffer for key exchange.\n");
-      exit(-1);
-    }
+    bs_new_size(&key_exchange, key_exchange_len);
 
     /* Generate the right type of key exchange data. */
     if (nid_type == NID_TYPE_NA) {
 
       /* Generate "random" data.  X25519 and X448 public keys have no discernible structure. */
       srand(time(NULL) ^ 0xdeadbeef);
-      for (int j = 0; j < key_exchange_len; j++)
-	key_exchange[j] = rand();
+      for (int j = 0; j < key_exchange_len; j++) {
+        unsigned char c = (unsigned char)rand();
+        bs_append_bytes(key_exchange, &c, 1);
+      }
 
     } else if (nid_type == NID_TYPE_ECDHE) {
-      /* Free the buffer, since we will dynamically get the size we need and create a new one. */
-      FREE(key_exchange); key_exchange_len = 0;
 
       /* Generate the ECDHE key. */
       EC_KEY *key = EC_KEY_new_by_curve_name(nid);
       if ((key == NULL) || (EC_KEY_generate_key(key) != 1)) {
-	EC_KEY_free(key); key = NULL;
+        EC_KEY_free(key); key = NULL;
         fprintf(stderr, "Failed to generate ECDHE key for nid %d\n", nid);
         continue;
       }
@@ -4986,18 +5068,12 @@ int testSupportedGroups(struct sslCheckOptions *options) {
       unsigned char *kex_buf = NULL;
       key_exchange_len = EC_KEY_key2buf(key, POINT_CONVERSION_UNCOMPRESSED, &kex_buf, NULL);
       if (kex_buf == NULL) {
-	EC_KEY_free(key); key = NULL;
-	fprintf(stderr, "Failed to obtain ECDHE public key bytes.\n");
-	continue;
+        EC_KEY_free(key); key = NULL;
+        fprintf(stderr, "Failed to obtain ECDHE public key bytes.\n");
+        continue;
       }
 
-      /* The byte array created above needs to be freed with OPENSSL_free(), not free().  To simplify the code, we will copy the bytes to our own array and call OPENSSL_free() immediately. */
-      key_exchange = calloc(key_exchange_len, sizeof(unsigned char));
-      if (key_exchange == NULL) {
-	fprintf(stderr, "Failed to create buffer for key exchange.\n");
-	exit(-1);
-      }
-      memcpy(key_exchange, kex_buf, key_exchange_len);
+      bs_append_bytes(key_exchange, kex_buf, key_exchange_len);
       OPENSSL_free(kex_buf); kex_buf = NULL;
       EC_KEY_free(key); key = NULL;
 
@@ -5006,60 +5082,70 @@ int testSupportedGroups(struct sslCheckOptions *options) {
       /* The value (Y) for FFDHE group must be 1 < Y < p - 1 (see RFC7919).  Furthermore, GnuTLS checks that Y ^ q mod p == 1 (see GnuTLS v3.6.11.1, lib/nettle/pk.c:291).  The easiest way to do this seems to be to actually generate real DH public keys. */
       DH *dh = DH_new_by_nid(nid);
       if (!DH_generate_key(dh)) {
-	FREE(key_exchange);
-	fprintf(stderr, "Failed to generate DH key for nid %d\n", nid);
-	continue;
+        bs_free(&key_exchange);
+        fprintf(stderr, "Failed to generate DH key for nid %d\n", nid);
+        continue;
       }
 
-      /* Export the public key to our byte array. */
+      /* Make array to read in DH public key. */
+      unsigned int bytes_len = key_exchange_len;
+      unsigned char *bytes = calloc(bytes_len, sizeof(unsigned char));
+      if (bytes == NULL) {
+	fprintf(stderr, "Failed to allocate buffer for key.\n");
+	exit(-1);
+      }
+
+      /* Export the public key to our array. */
       const BIGNUM *pub_key = NULL;
       DH_get0_key(dh, &pub_key, NULL);
-      if (!BN_bn2binpad(pub_key, key_exchange, key_exchange_len)) {
-	FREE(key_exchange);
-	fprintf(stderr, "Failed to get DH key for nid %d\n", nid);
-	continue;
+      if (!BN_bn2binpad(pub_key, bytes, bytes_len)) {
+        bs_free(&key_exchange);
+        fprintf(stderr, "Failed to get DH key for nid %d\n", nid);
+        continue;
       }
+
+      /* Add the bytes to our byte string. */
+      bs_append_bytes(key_exchange, bytes, bytes_len);
+      FREE(bytes);  bytes_len = 0;
 
     } else {
       /* Use the provided value, since it must be a specific format. */
-      //memcpy(key_exchange, group_key_exchanges[i].key_exchange, key_exchange_len);
       fprintf(stderr, "Error: unknown NID_TYPE in struct: %d\n", nid_type);
       exit(-1);
     }
 
     /* Make generic TLS extensions (with SNI, accepted EC point formats, etc). */
-    tls_extensions = makeTLSExtensions(&tls_extensions_size, &tls_extensions_len, options);
+    tls_extensions = makeTLSExtensions(options);
 
     /* Add the supported_versions extension to signify we are using TLS v1.3. */
-    tlsExtensionAddTLSv1_3(&tls_extensions, &tls_extensions_size, &tls_extensions_len);
+    tlsExtensionAddTLSv1_3(tls_extensions);
 
     /* Add the supported_groups extension.  Only add the one group we are testing for. */
-    buffer_append_bytes(&tls_extensions, &tls_extensions_size, &tls_extensions_len, (unsigned char []) {
+    bs_append_bytes(tls_extensions, (unsigned char []) {
       0x00, 0x0a, // Extension Type: supported_groups (10)
       0x00, 0x04, // Extension Length (4)
       0x00, 0x02, // Supported Groups List Length (2)
     }, 6);
-    buffer_append_ushort(&tls_extensions, &tls_extensions_size, &tls_extensions_len, group_id);
+    bs_append_ushort(tls_extensions, group_id);
 
     /* Add the key_share extension for the current group type. */
-    buffer_append_bytes(&tls_extensions, &tls_extensions_size, &tls_extensions_len, (unsigned char []) { 0x00, 0x33 }, 2); // Extension Type: key_share (51)
-    buffer_append_ushort(&tls_extensions, &tls_extensions_size, &tls_extensions_len, key_exchange_len + 6); // Extension Length
-    buffer_append_ushort(&tls_extensions, &tls_extensions_size, &tls_extensions_len, key_exchange_len + 4); // Client Key Share Length
-    buffer_append_ushort(&tls_extensions, &tls_extensions_size, &tls_extensions_len, group_id); // Group ID.
-    buffer_append_ushort(&tls_extensions, &tls_extensions_size, &tls_extensions_len, key_exchange_len); // Key Exchange Length
-    buffer_append_bytes(&tls_extensions, &tls_extensions_size, &tls_extensions_len, key_exchange, key_exchange_len); // Key Exchange
+    bs_append_bytes(tls_extensions, (unsigned char []) { 0x00, 0x33 }, 2); // Extension Type: key_share (51)
+    bs_append_ushort(tls_extensions, bs_get_len(key_exchange) + 6); // Extension Length
+    bs_append_ushort(tls_extensions, bs_get_len(key_exchange) + 4); // Client Key Share Length
+    bs_append_ushort(tls_extensions, group_id); // Group ID.
+    bs_append_ushort(tls_extensions, bs_get_len(key_exchange)); // Key Exchange Length
+    bs_append_bs(tls_extensions, key_exchange); // Key Exchange
 
-    FREE(key_exchange);
-    key_exchange_len = 0;
+    bs_free(&key_exchange);
 
     /* Update the TLS extensions length since we manually added to it. */
-    setTLSLength(tls_extensions, 0, tls_extensions_len - 2);
+    bs_set_ushort(tls_extensions, 0, bs_get_len(tls_extensions) - 2);
 
-    client_hello = makeClientHello(&client_hello_len, options, 3, ciphersuite_list, ciphersuite_list_len, tls_extensions, tls_extensions_len);
+    /* Create the Client Hello buffer using the ciphersuite list and TLS extensions. */
+    client_hello = makeClientHello(options, 3, ciphersuite_list, tls_extensions);
 
-    FREE(tls_extensions);
-    tls_extensions_size = 0;
-    tls_extensions_len = 0;
+    /* Free the TLS extensions since we're done with them.  Note: we don't free the ciphersuite_list because we'll need them on the next loop. */
+    bs_free(&tls_extensions);
 
     /* Now connect to the target server. */
     s = tcpConnect(options);
@@ -5069,23 +5155,21 @@ int testSupportedGroups(struct sslCheckOptions *options) {
     }
 
     /* Send the Client Hello message. */
-    if (send(s, client_hello, client_hello_len, 0) <= 0) {
+    if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
       printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
       ret = false;
       goto done;
     }
-    FREE(client_hello);
-    client_hello_len = 0;
+    bs_free(&client_hello);
 
-    server_hello = getServerHello(s, &server_hello_len);
+    server_hello = getServerHello(s);
     CLOSE(s);
 
     /* This group is not supported. */
     if (server_hello == NULL)
       continue;
 
-    FREE(server_hello);
-    server_hello_len = 0;
+    bs_free(&server_hello);
 
     if (!printed_header) {
       printf("\n  %sServer Key Exchange Group(s):%s\n", COL_BLUE, RESET);
@@ -5097,18 +5181,10 @@ int testSupportedGroups(struct sslCheckOptions *options) {
 
  done:
   CLOSE(s);
-  FREE(ciphersuite_list);
-  ciphersuite_list_len = 0;
-
-  FREE(tls_extensions);
-  tls_extensions_size = 0;
-  tls_extensions_len = 0;
-
-  FREE(client_hello);
-  client_hello_len = 0;
-
-  FREE(server_hello);
-  server_hello_len = 0;
+  bs_free(&ciphersuite_list);
+  bs_free(&tls_extensions);
+  bs_free(&client_hello);
+  bs_free(&server_hello);
   return ret;
 }
 

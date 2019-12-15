@@ -263,6 +263,14 @@ struct ocsp_cert_id_st {
     ASN1_INTEGER serialNumber;
 };
 
+#define BS_DEFAULT_NEW_SIZE 256 /* The starting size of the buffer when bs_new() is used. */
+struct _bs {
+  unsigned char *buf;
+  size_t size;  /* The size of the allocated buffer. */
+  size_t len;   /* The number of bytes currently in the buffer. */
+};
+typedef struct _bs bs; /* Stands for 'byte string'. */
+
 /* We redefine these so that we can run correctly even if the vendor gives us
  * a version of OpenSSL that does not match its header files.  (Apple: I am
  * looking at you.)
@@ -275,9 +283,19 @@ struct ocsp_cert_id_st {
 #endif
 
 // Utilities
-void buffer_append_bytes(unsigned char **buffer, size_t *buf_size, size_t *buf_len, unsigned char *bytes, size_t bytes_len);
-void buffer_append_ushort(unsigned char **buffer, size_t *buf_size, size_t *buf_len, unsigned short s);
-void buffer_append_uint32_t(unsigned char **buffer, size_t *buf_size, size_t *buf_len, uint32_t i);
+void bs_new(bs **);
+void bs_new_size(bs **, size_t);
+void bs_free(bs **);
+void bs_append_bytes(bs *, unsigned char *, size_t);
+void bs_append_uint32_t(bs *, uint32_t);
+void bs_append_ushort(bs *, unsigned short);
+void bs_append_bs(bs *, bs *);
+size_t bs_get_len(bs *);
+size_t bs_get_size(bs *);
+unsigned char *bs_get_bytes(bs *);
+unsigned char bs_get_byte(bs *, size_t);
+void bs_set_byte(bs *, size_t, unsigned char);
+int bs_read_socket(bs *b, int s, size_t num_bytes);
 SSL_CTX *CTX_new(const SSL_METHOD *method);
 int fileExists(char *);
 void findMissingCiphers();
