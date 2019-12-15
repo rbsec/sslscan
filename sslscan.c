@@ -5197,7 +5197,7 @@ int testSupportedGroups(struct sslCheckOptions *options) {
       printed_header = 1;
     }
     printf("%s%s%s (%d bits)\n", color, group_name, RESET, group_bit_strength);
-    printf_xml("  <group sslversion=\"TLSv1.3\" bits=\"%d\" name=\"%s\" />\n", group_bit_strength, group_name);
+    printf_xml("  <group sslversion=\"TLSv1.3\" bits=\"%d\" name=\"%s\" id=\"0x%04x\" />\n", group_bit_strength, group_name, group_id);
   }
 
  done:
