@@ -69,6 +69,11 @@ ffdhe4096[0m (150 bits)
 ffdhe6144[0m (175 bits)
 ffdhe8192[0m (192 bits)
 
+  [1;34mServer Signature Algorithm(s):[0m
+rsa_pss_rsae_sha256[0m
+rsa_pss_rsae_sha384[0m
+rsa_pss_rsae_sha512[0m
+
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m
 RSA Key Strength:    3072

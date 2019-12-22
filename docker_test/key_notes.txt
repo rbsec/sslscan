@@ -12,7 +12,10 @@ The 512, 1024, 2048, and 3072 refer to the RSA key size.
 
 To generate new keys, and sign them by the CA:
 
-1.) Generate the key: openssl genrsa -out key.pem 1024
+1.) Generate the key.
+
+  * For RSA keys:   openssl genrsa -out key.pem 1024
+  * For ECDSA keys: openssl ecparam -name prime256v1 -genkey -noout -out key.pem
 
 2.) Make CSR: openssl req -new -key key.pem -out new.csr
 

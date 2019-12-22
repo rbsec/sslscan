@@ -11,7 +11,7 @@
 #
 # For debugging purposes, here is a cheat sheet for manually running the docker image:
 #
-# docker run -p 4443:443 --security-opt seccomp:unconfined -it sslscan-test:2 /bin/bash
+# docker run -p 4443:443 --security-opt seccomp:unconfined -it sslscan-test:3 /bin/bash
 #
 
 #
@@ -26,7 +26,7 @@
 
 # This is the docker tag for the image.  If this tag doesn't exist, then we assume the
 # image is out of date, and generate a new one with this tag.
-IMAGE_VERSION=2
+IMAGE_VERSION=3
 
 # This is the name of our docker image.
 IMAGE_NAME=sslscan-test
@@ -269,6 +269,7 @@ function run_tests {
     run_test_12 "0"
     run_test_13 "0"
     run_test_14 "0"
+    run_test_15 "0"
 }
 
 
@@ -356,6 +357,12 @@ function run_test_14 {
 }
 
 
+# GnuTLS with an ECDSA certificate (secp256r1 / NIST P-256).
+function run_test_15 {
+    run_test $1 '15' "/gnutls-3.6.11.1/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem" ""
+}
+
+
 # Run a test.  Set the first argument to '1' to enable test debugging.
 # Second argument is the test number to run.  Third argument is the executable and
 # its args to be run inside the container..
@@ -380,6 +387,9 @@ function run_test {
 	echo -e "\nExecuted in container: ${server_exec}\n\nTerminate container with: docker container stop -t 0 ${cid}\n\nHint: run sslscan against localhost on port 4443, not 443.\n"
 	return
     fi
+
+    # Wait 250ms to ensure that the services in the container are fully initialized.
+    sleep 0.25
 
     # Run sslscan and cut out the first two lines.  Those contain the version number
     # and local version of OpenSSL, which can change over time (and when they do, this
