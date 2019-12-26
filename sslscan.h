@@ -50,6 +50,7 @@
 
 #define BUFFERSIZE 1024
 
+// For options.sslVersion field.
 #define ssl_all 0
 #define ssl_v2 1
 #define ssl_v3 2
@@ -58,6 +59,12 @@
 #define tls_v11 5
 #define tls_v12 6
 #define tls_v13 7
+
+// For functions that take a tls_version argument.
+#define TLSv1_0 0
+#define TLSv1_1 1
+#define TLSv1_2 2
+#define TLSv1_3 3
 
 /* We must maintain our own list of TLSv1.3-specific ciphersuites here, because SSL_CTX_get_ciphers() will *always* return TLSv1.2 ciphersuites, even when SSL_CTX_set_min_proto_version() and SSL_CTX_set_max_proto_version() are used.  This is confirmed by an OpenSSL developer here: https://github.com/openssl/openssl/issues/7196#issuecomment-420575202 */
 #define TLSV13_CIPHERSUITES "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:TLS_AES_128_CCM_8_SHA256"
@@ -72,7 +79,7 @@
 #define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
 
 /* Calls close() on a file descriptor, then sets it to zero to prevent accidental re-use. */
-#define CLOSE(fd) { if ((fd) != 0) { close((fd)); (fd) = 0; } }
+#define CLOSE(fd) { if ((fd) != -1) { close((fd)); (fd) = -1; } }
 
 /* Calls free() on a pointer, then explicitly sets it to NULL to avoid use-after-free. */
 #define FREE(ptr) { free((ptr)); (ptr) = NULL; }
@@ -190,6 +197,12 @@ struct sslCheckOptions
     char *clientCertsFile;
     char *privateKeyFile;
     char *privateKeyPassword;
+
+    // TLS versions supported by the server.
+    unsigned int tls10_supported;
+    unsigned int tls11_supported;
+    unsigned int tls12_supported;
+    unsigned int tls13_supported;
 };
 
 // store renegotiation test data
@@ -298,10 +311,17 @@ unsigned char bs_get_byte(bs *, size_t);
 void bs_set_byte(bs *, size_t, unsigned char);
 void bs_set_ushort(bs *b, size_t offset, unsigned short length);
 int bs_read_socket(bs *b, int s, size_t num_bytes);
+unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsigned int tls_version);
 SSL_CTX *CTX_new(const SSL_METHOD *method);
 int fileExists(char *);
 void findMissingCiphers();
-void makeMissingCiphersuiteList(unsigned char **ciphersuite_list, size_t *ciphersuite_list_len, unsigned int tls_version);
+char *getPrintableTLSName(unsigned int tls_version);
+bs *getServerHello(int s);
+bs *makeCiphersuiteListAll(unsigned int tls_version);
+bs *makeCiphersuiteListTLS13All();
+bs *makeCiphersuiteListMissing(unsigned int tls_version);
+bs *makeClientHello(struct sslCheckOptions *options, unsigned int version, bs *ciphersuite_list, bs *tls_extensions);
+bs *makeTLSExtensions(struct sslCheckOptions *options, unsigned int include_signature_algorithms);
 void markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_version);
 int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent);
 static int ocsp_resp_cb(SSL *s, void *arg);
@@ -312,6 +332,9 @@ static int password_callback(char *, int, int, void *);
 const char *printableSslMethod(const SSL_METHOD *);
 ssize_t sendString(int, const char[]);
 int ssl_print_tmp_key(struct sslCheckOptions *, SSL *s);
+void tlsExtensionAddDefaultKeyShare(bs *tls_extensions);
+void tlsExtensionAddTLSv1_3(bs *tls_extensions);
+void tlsExtensionUpdateLength(bs *tls_extensions);
 int tcpConnect(struct sslCheckOptions *);
 
 // Tests

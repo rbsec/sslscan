@@ -40,6 +40,9 @@ REDB="\033[1;31m"    # Red + bold
 YELLOWB="\033[1;33m" # Yellow + bold
 GREENB="\033[1;32m"  # Green + bold
 
+# Set to 0 if any test fails.
+all_passed=1
+
 
 # Number of processors on this system (used to compile parallel builds).
 NUM_PROCS=`/usr/bin/nproc --all 2> /dev/null`
@@ -270,6 +273,8 @@ function run_tests {
     run_test_13 "0"
     run_test_14 "0"
     run_test_15 "0"
+    run_test_16 "0"
+    run_test_17 "0"
 }
 
 
@@ -335,7 +340,7 @@ function run_test_10 {
 
 # Makes an OCSP request to www.amazon.com.  The horrible Perl command that comes after it will filter out the timestamps and other variable data from the response, otherwise the diff would fail.
 function run_test_11 {
-    run_test_internet '11' "./sslscan --ocsp --no-ciphersuites --no-fallback --no-renegotiation --no-compression --no-heartbleed --no-check-certificate www.amazon.com | perl -pe 'BEGIN{undef $/;} s/Connected to .+?$/Connected to\033[0m/smg; s/Responder Id: .+?$/Responder Id:/smg; s/Produced At: .+?$/Produced At:/smg; s/Hash Algorithm: .+?$/Hash Algorithm:/smg; s/Issuer Name Hash: .+?$/Issuer Name Hash:/smg; s/Issuer Key Hash: .+?$/Issuer Key Hash:/smg; s/Serial Number: .+?$/Serial Number:/smg; s/This Update: .+?$/This Update:/smg; s/Next Update: .+?$/Next Update:/smg; s/Response Single Extensions:.+?\n\n/\n\n/smg;'"
+    run_test_internet '11' "./sslscan --ocsp --no-ciphersuites --no-fallback --no-renegotiation --no-compression --no-heartbleed --no-check-certificate --no-groups --no-sigs www.amazon.com | perl -pe 'BEGIN{undef $/;} s/Connected to .+?$/Connected to\033[0m/smg; s/Responder Id: .+?$/Responder Id:/smg; s/Produced At: .+?$/Produced At:/smg; s/Hash Algorithm: .+?$/Hash Algorithm:/smg; s/Issuer Name Hash: .+?$/Issuer Name Hash:/smg; s/Issuer Key Hash: .+?$/Issuer Key Hash:/smg; s/Serial Number: .+?$/Serial Number:/smg; s/This Update: .+?$/This Update:/smg; s/Next Update: .+?$/Next Update:/smg; s/Response Single Extensions:.+?\n\n/\n\n/smg;'"
 }
 
 
@@ -360,6 +365,18 @@ function run_test_14 {
 # GnuTLS with an ECDSA certificate (secp256r1 / NIST P-256).
 function run_test_15 {
     run_test $1 '15' "/gnutls-3.6.11.1/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem" ""
+}
+
+
+# OpenSSL v1.0.2, TLSv1.2 with sect163k1 curve only.
+function run_test_16 {
+    run_test $1 '16' "/openssl_v1.0.2/openssl s_server -accept 443 -tls1_2 -named_curve sect163k1 -cert /etc/ssl/cert_1024.crt -key /etc/ssl/key_1024.pem" ""
+}
+
+
+# OpenSSL v1.1.1, TLSv1.2 with brainpoolP512r1 curve only.
+function run_test_17 {
+    run_test $1 '17' "/openssl_v1.1.1/openssl s_server -accept 443 -tls1_2 -named_curve brainpoolP512r1 -cert /etc/ssl/cert_1024.crt -key /etc/ssl/key_1024.pem" ""
 }
 
 
@@ -412,14 +429,16 @@ function run_test {
     if [[ ! -f ${expected_result_stdout} ]]; then
 	test_result_stdout_actual=`cat ${test_result_stdout}`
 	echo -e "\n${REDB}Error:${CLR} expected output file for test #${test_number} not found (${expected_result_stdout}).  Actual test result is below.  Manually verify that this output is correct; if so, then copy it to the expected test file path with:\n\n  $ cp ${test_result_stdout} ${expected_result_stdout}\n\n------\n${test_result_stdout_actual}\n"
-	exit 1
+	all_passed=0
+	return
     fi
 
     # Compare the actual output to the expected output.  Any discrepency results in test failure.
     diff=`diff -u ${expected_result_stdout} ${test_result_stdout}`
     if [[ $? != 0 ]]; then
 	echo -e "Test #${test_number} ${REDB}FAILED${CLR}.\n\n${diff}\n"
-	exit 1
+	all_passed=0
+	return
     fi
 
     echo -e "Test #${test_number} ${GREEN}passed${CLR}."
@@ -510,9 +529,11 @@ fi
 echo -e "\nRunning all tests..."
 run_tests
 
-# The test functions above will terminate the script on failure, so if we reached here,
-# all tests are successful.
-echo -e "\n${GREENB}ALL TESTS PASS!${CLR}\n"
-
-rm -rf $TEST_RESULT_DIR
-exit 0
+if [[ $all_passed == 1 ]]; then
+    echo -e "\n${GREENB}ALL TESTS PASS!${CLR}\n"
+    rm -rf $TEST_RESULT_DIR
+    exit 0
+else
+    echo -e "\n\n${YELLOWB}!! SOME TESTS FAILED !!${CLR}\n\n"
+    exit 1
+fi

@@ -3298,13 +3298,13 @@ int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMe
 
     /* Test the missing ciphersuites. */
     if (sslMethod != TLSv1_3_client_method()) {
-      int version = 0;
+      int tls_version = TLSv1_0;
       if (sslMethod == TLSv1_1_client_method())
-	version = 1;
+	tls_version = TLSv1_1;
       else if (sslMethod == TLSv1_2_client_method())
-	version = 2;
+	tls_version = TLSv1_2;
 
-      testMissingCiphers(options, version);
+      testMissingCiphers(options, tls_version);
     }
     return true;
 }
@@ -3327,6 +3327,72 @@ int testHost(struct sslCheckOptions *options)
 
     printf("Testing SSL server %s%s%s on port %s%d%s using SNI name %s%s%s\n\n", COL_GREEN, options->host, RESET,
             COL_GREEN, options->port, RESET, COL_GREEN, options->sniname, RESET);
+
+    printf("  %sSSL/TLS Protocols:%s\n", COL_BLUE, RESET);
+
+    // Check if SSLv2 is enabled.
+    if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v2)) {
+      if (runSSLv2Test(options)) {
+        printf("SSLv2 is %senabled%s\n", COL_RED, RESET);
+        printf_xml("  <protocol type=\"ssl\" version=\"2\" enabled=\"1\" />\n");
+      } else {
+        printf("SSLv2 is %snot enabled%s\n", COL_GREEN, RESET);
+        printf_xml("  <protocol type=\"ssl\" version=\"2\" enabled=\"0\" />\n");
+      }
+    }
+
+    // Check if SSLv3 is enabled.
+    if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v3)) {
+      if (runSSLv3Test(options)) {
+	printf("SSLv3 is %senabled%s\n", COL_RED, RESET);
+	printf_xml("  <protocol type=\"ssl\" version=\"3\" enabled=\"1\" />\n");
+      } else {
+	printf("SSLv3 is %snot enabled%s\n", COL_GREEN, RESET);
+	printf_xml("  <protocol type=\"ssl\" version=\"3\" enabled=\"0\" />\n");
+      }
+    }
+
+    /* Test if TLSv1.0 through TLSv1.3 is supported.  This allows us to skip unnecessary tests later.  Print status of each protocol when verbose flag is set. */
+    if ((options->sslVersion == ssl_all) || (options->sslVersion == tls_all) || (options->sslVersion == tls_v10)) {
+      if ((options->tls10_supported = checkIfTLSVersionIsSupported(options, TLSv1_0))) {
+	printf("TLSv1.0 is %senabled%s\n", COL_YELLOW, RESET);
+	printf_xml("  <protocol type=\"tls\" version=\"1.0\" enabled=\"1\" />\n");
+      } else {
+	printf("TLSv1.0 is %snot enabled%s\n", COL_GREEN, RESET);
+	printf_xml("  <protocol type=\"tls\" version=\"1.0\" enabled=\"0\" />\n");
+      }
+    }
+
+    if ((options->sslVersion == ssl_all) || (options->sslVersion == tls_all) || (options->sslVersion == tls_v11)) {
+      if ((options->tls11_supported = checkIfTLSVersionIsSupported(options, TLSv1_1))) {
+	printf("TLSv1.1 is enabled\n");
+	printf_xml("  <protocol type=\"tls\" version=\"1.1\" enabled=\"1\" />\n");
+      } else {
+	printf("TLSv1.1 is not enabled\n");
+	printf_xml("  <protocol type=\"tls\" version=\"1.1\" enabled=\"0\" />\n");
+      }
+    }
+
+    if ((options->sslVersion == ssl_all) || (options->sslVersion == tls_all) || (options->sslVersion == tls_v12)) {
+      if ((options->tls12_supported = checkIfTLSVersionIsSupported(options, TLSv1_2))) {
+	printf("TLSv1.2 is enabled\n");
+	printf_xml("  <protocol type=\"tls\" version=\"1.2\" enabled=\"1\" />\n");
+      } else {
+	printf("TLSv1.2 is not enabled\n");
+	printf_xml("  <protocol type=\"tls\" version=\"1.2\" enabled=\"0\" />\n");
+      }
+    }
+
+    if ((options->sslVersion == ssl_all) || (options->sslVersion == tls_all) || (options->sslVersion == tls_v13)) {
+      if ((options->tls13_supported = checkIfTLSVersionIsSupported(options, TLSv1_3))) {
+	printf("TLSv1.3 is enabled\n");
+	printf_xml("  <protocol type=\"tls\" version=\"1.3\" enabled=\"1\" />\n");
+      } else {
+	printf("TLSv1.3 is not enabled\n");
+	printf_xml("  <protocol type=\"tls\" version=\"1.3\" enabled=\"1\" />\n");
+      }
+    }
+    printf("\n");
 
     if (options->showClientCiphers == true)
     {
@@ -3406,23 +3472,23 @@ int testHost(struct sslCheckOptions *options)
     {
         printf("  %sHeartbleed:%s\n", COL_BLUE, RESET);
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
-        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v13)
+        if ((options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v13) && options->tls13_supported)
         {
             printf("TLS 1.3 ");
             status = testHeartbleed(options, TLSv1_3_client_method());
         }
-        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v12)
+        if ((options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v12) && options->tls12_supported)
         {
             printf("TLS 1.2 ");
             status = testHeartbleed(options, TLSv1_2_client_method());
         }
-        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v11)
+        if ((options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v11) && options->tls11_supported)
         {
             printf("TLS 1.1 ");
             status = testHeartbleed(options, TLSv1_1_client_method());
         }
 #endif
-        if( options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10)
+        if ((options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10) && options->tls10_supported)
         {
             printf("TLS 1.0 ");
             status = testHeartbleed(options, TLSv1_client_method());
@@ -3445,73 +3511,37 @@ int testHost(struct sslCheckOptions *options)
 
     if (options->ciphersuites)
     {
-        printf("  %sSSL Protocols:%s\n", COL_BLUE, RESET);
-
-        // Check if SSLv2 is enabled.
-        if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v2)) {
-            if (runSSLv2Test(options)) {
-                printf("SSLv2 is %senabled%s\n", COL_RED, RESET);
-                printf_xml("  <ssl protocol_version=\"2\" enabled=\"1\" />\n");
-            } else {
-                printf("SSLv2 is %snot enabled%s\n", COL_GREEN, RESET);
-                printf_xml("  <ssl protocol_version=\"2\" enabled=\"0\" />\n");
-            }
-        }
-
-        // Check if SSLv3 is enabled.
-        if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v3)) {
-            if (runSSLv3Test(options)) {
-                printf("SSLv3 is %senabled%s\n", COL_RED, RESET);
-                printf_xml("  <ssl protocol_version=\"3\" enabled=\"1\" />\n");
-            } else {
-                printf("SSLv3 is %snot enabled%s\n", COL_GREEN, RESET);
-                printf_xml("  <ssl protocol_version=\"3\" enabled=\"0\" />\n");
-            }
-        }
-        printf("\n");
-
         // Test supported ciphers...
         printf("  %sSupported Server Cipher(s):%s\n", COL_BLUE, RESET);
         switch (options->sslVersion)
         {
             case ssl_all:
-                if (status != false)
-                    status = testProtocolCiphers(options, TLSv1_3_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                if (status != false)
-                    status = testProtocolCiphers(options, TLSv1_2_client_method());
-                if (status != false)
-                    status = testProtocolCiphers(options, TLSv1_1_client_method());
-#endif
-                if (status != false)
-                    status = testProtocolCiphers(options, TLSv1_client_method());
-                break;
             case tls_all:
-                if (status != false)
+                if ((status != false) && options->tls13_supported)
                     status = testProtocolCiphers(options, TLSv1_3_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                if (status != false)
+                if ((status != false) && options->tls12_supported)
                     status = testProtocolCiphers(options, TLSv1_2_client_method());
-                if (status != false)
+                if ((status != false) && options->tls11_supported)
                     status = testProtocolCiphers(options, TLSv1_1_client_method());
-#endif
-                if (status != false)
+                if ((status != false) && options->tls10_supported)
                     status = testProtocolCiphers(options, TLSv1_client_method());
                 break;
             case tls_v10:
-                status = testProtocolCiphers(options, TLSv1_client_method());
+                if ((status != false) && options->tls10_supported)
+                    status = testProtocolCiphers(options, TLSv1_client_method());
                 break;
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
             case tls_v11:
-                status = testProtocolCiphers(options, TLSv1_1_client_method());
+                if ((status != false) && options->tls11_supported)
+                    status = testProtocolCiphers(options, TLSv1_1_client_method());
                 break;
             case tls_v12:
-                status = testProtocolCiphers(options, TLSv1_2_client_method());
+                if ((status != false) && options->tls12_supported)
+                    status = testProtocolCiphers(options, TLSv1_2_client_method());
                 break;
             case tls_v13:
-                status = testProtocolCiphers(options, TLSv1_3_client_method());
+                if ((status != false) && options->tls13_supported)
+                    status = testProtocolCiphers(options, TLSv1_3_client_method());
                 break;
-#endif
         }
     }
 
@@ -3520,7 +3550,7 @@ int testHost(struct sslCheckOptions *options)
         testSupportedGroups(options);
 
     // Enumerate signature algorithms.
-    if (options->signature_algorithms)
+    if (options->signature_algorithms && options->tls13_supported)
         testSignatureAlgorithms(options);
 
     // Print certificate
@@ -4206,7 +4236,7 @@ int main(int argc, char *argv[])
 }
 
 int runSSLv2Test(struct sslCheckOptions *options) {
-  int ret = false, s = 0;
+  int ret = false, s = -1;
   char sslv2_client_hello[] = {
     0x80,
     0x34, /* Length: 52 */
@@ -4256,7 +4286,7 @@ int runSSLv2Test(struct sslCheckOptions *options) {
 }
 
 int runSSLv3Test(struct sslCheckOptions *options) {
-  int ret = false, s = 0;
+  int ret = false, s = -1;
   uint32_t timestamp = 0;
   unsigned char timestamp_bytes[4] = {0};
   char sslv3_client_hello_1[] = {
@@ -4651,42 +4681,184 @@ err:
   return ret;
 }
 
-/* Returns a byte string, ciphersuite_list, with a list of ciphersuites for a given TLS version.  When 'type' is CIPHERSUITES_MISSING, then a list of all ciphersuites missing in OpenSSL is returned.  When set to CIPHERSUITES_TLSV1_3_ALL, all TLSv1.3 ciphersuites are returned only. */
-#define CIPHERSUITES_MISSING 0
-#define CIPHERSUITES_TLSV1_3_ALL 1
-bs *makeCiphersuiteList(unsigned int tls_version, unsigned int type) {
-  size_t ciphersuite_list_size = 1024;
+
+/* Returns true if a specific TLS version is supported by the server. */
+unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsigned int tls_version) {
+  bs *tls_extensions = NULL, *ciphersuite_list = NULL, *client_hello = NULL, *server_hello = NULL;
+  int ret = false, s = -1;
+  unsigned int include_server_signatures = 0;
+
+
+  if (tls_version == TLSv1_3)
+    include_server_signatures = 1;
+
+  tls_extensions = makeTLSExtensions(options, include_server_signatures);
+  if (tls_version == TLSv1_2) {
+    /* Extension: supported_groups */
+    bs_append_bytes(tls_extensions, (unsigned char []) {
+      0x00, 0x0a, // Extension: supported_groups (10)
+      0x00, 0x1c, // Extension Length (28)
+      0x00, 0x1a, // Supported Groups List Length (26)
+      0x00, 0x17, // secp256r1
+      0x00, 0x19, // secp521r1
+      0x00, 0x1c, // brainpoolP512r1
+      0x00, 0x1b, // brainpoolP384r1
+      0x00, 0x18, // secp384r1
+      0x00, 0x1a, // brainpoolP256r1
+      0x00, 0x16, // secp256k1
+      0x00, 0x0e, // sect571r1
+      0x00, 0x0d, // sect571k1
+      0x00, 0x0b, // sect409k1
+      0x00, 0x0c, // sect409r1
+      0x00, 0x09, // sect283k1
+      0x00, 0x0a, // sect283r1
+    }, 32);
+
+    /* Update the length of the extensions. */
+    tlsExtensionUpdateLength(tls_extensions);
+  } else if (tls_version == TLSv1_3) {
+    /* Extension: supported_groups */
+    bs_append_bytes(tls_extensions, (unsigned char []) {
+      0x00, 0x0a, // Extension: supported_groups (10)
+      0x00, 0x16, // Extension Length (22)
+      0x00, 0x14, // Supported Groups List Length (20)
+      0x00, 0x17, // secp256r1
+      0x00, 0x19, // secp521r1
+      0x00, 0x18, // secp384r1
+      0x00, 0x1d, // X25519
+      0x00, 0x1e, // X448
+      0x01, 0x00, // FFDHE2048
+      0x01, 0x01, // FFDHE3072
+      0x01, 0x02, // FFDHE4096
+      0x01, 0x03, // FFDHE6144
+      0x01, 0x04, // FFDHE8192
+    }, 26);
+
+    /* Add key share for X25519. */
+    tlsExtensionAddDefaultKeyShare(tls_extensions);
+
+    /* Explicitly mark that this is a TLSv1.3 Client Hello. */
+    tlsExtensionAddTLSv1_3(tls_extensions);
+
+    /* Update the length of the extensions. */
+    tlsExtensionUpdateLength(tls_extensions);
+  }
+
+  ciphersuite_list = makeCiphersuiteListAll(tls_version);
+  client_hello = makeClientHello(options, tls_version, ciphersuite_list, tls_extensions);
+  bs_free(&ciphersuite_list);
+  bs_free(&tls_extensions);
+
+  /* Now connect to the target server. */
+  s = tcpConnect(options);
+  if (s == 0)
+    goto done;
+
+  /* Send the Client Hello message. */
+  if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
+    printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
+    goto done; /* Returns false. */
+  }
+  bs_free(&client_hello);
+
+  server_hello = getServerHello(s);
+
+  /* If we don't receive a proper Server Hello message, then this TLS version is not supported. */
+  if (server_hello == NULL)
+    goto done;
+
+  unsigned int expected_tls_version_low = tls_version + 1;
+  if (tls_version == TLSv1_3)
+    expected_tls_version_low = 3;
+
+  /* Get the server's TLS version and compare it with what we sent. */
+  unsigned int server_tls_version_high = bs_get_byte(server_hello, 9);
+  unsigned int server_tls_version_low = bs_get_byte(server_hello, 10);
+  if ((server_tls_version_high != 3) || (server_tls_version_low != expected_tls_version_low))
+    goto done;
+
+  /* A valid Server Hello was returned, so this TLS version is supported. */
+  ret = true;
+
+ done:
+  CLOSE(s);
+  bs_free(&ciphersuite_list);
+  bs_free(&tls_extensions);
+  bs_free(&client_hello);
+  bs_free(&server_hello);
+  return ret;
+}
+
+/* Given a TLSv1_? constant, return its printable string representation. */
+char *getPrintableTLSName(unsigned int tls_version) {
+  switch (tls_version) {
+  case TLSv1_0:
+    return "TLSv1.0";
+  case TLSv1_1:
+    return "TLSv1.1";
+  case TLSv1_2:
+    return "TLSv1.2";
+  case TLSv1_3:
+    return "TLSv1.3";
+  default:
+    return "Unknown";
+  }
+}
+
+/* Returns a byte string of all TLSv1.3 cipher suites.  The caller must eventually call bs_free() on it. */
+bs *makeCiphersuiteListTLS13All() {
   bs *ciphersuite_list = NULL;
 
+  bs_new_size(&ciphersuite_list, 16);
+  bs_append_bytes(ciphersuite_list, (unsigned char []) {
+    0x13, 0x01, // TLS_AES_128_GCM_SHA256
+    0x13, 0x02, // TLS_AES_256_GCM_SHA384
+    0x13, 0x03, // TLS_CHACHA20_POLY1305_SHA256
+    0x13, 0x04, // TLS_AES_128_CCM_SHA256
+    0x13, 0x05, // TLS_AES_128_CCM_8_SHA256
+  }, 10);
 
-  // Make the buffer much smaller if we're just returning the list of 5 TLSv1.3 ciphers.
-  if (type == CIPHERSUITES_TLSV1_3_ALL)
-    ciphersuite_list_size = 16;
+  return ciphersuite_list;
+}
 
-  bs_new_size(&ciphersuite_list, ciphersuite_list_size);
 
-  if (type == CIPHERSUITES_MISSING) {
-    if (tls_version == 0)
-      tls_version = V1_0;
-    else if (tls_version == 1)
-      tls_version = V1_1;
-    else if (tls_version == 2)
-      tls_version = V1_2;
+/* Returns a byte string with a list of all ciphersuites registered by IANA. */
+bs *makeCiphersuiteListAll(unsigned int tls_version) {
+  bs *ciphersuite_list = NULL;
 
-    for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
-      /* Append only those that OpenSSL does not cover, and those that were not already accepted through a previous run. */
-      if ((missing_ciphersuites[i].check_tls_versions & tls_version) && ((missing_ciphersuites[i].accepted_tls_versions & tls_version) == 0)) {
-        bs_append_ushort(ciphersuite_list, missing_ciphersuites[i].id);
-      }
+  /* If its TLSv1.3, return the smaller v1.3-specific list. */
+  if (tls_version == TLSv1_3)
+    return makeCiphersuiteListTLS13All();
+
+  bs_new_size(&ciphersuite_list, 1024);
+
+  for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
+    if (!strstr(missing_ciphersuites[i].protocol_name, "PRIVATE_CIPHER_"))
+      bs_append_ushort(ciphersuite_list, missing_ciphersuites[i].id);
+  }
+
+  return ciphersuite_list;
+}
+
+
+/* Returns a byte string with a list of all missing ciphersuites for a given TLS version (TLSv1_? constant) .*/
+bs *makeCiphersuiteListMissing(unsigned int tls_version) {
+  bs *ciphersuite_list = NULL;
+
+  bs_new_size(&ciphersuite_list, 1024);
+
+  if (tls_version == TLSv1_0)
+    tls_version = V1_0;
+  else if (tls_version == TLSv1_1)
+    tls_version = V1_1;
+  else if (tls_version == TLSv1_2)
+    tls_version = V1_2;
+
+  for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
+    /* Append only those that OpenSSL does not cover, and those that were not already accepted through a previous run. */
+    if ((missing_ciphersuites[i].check_tls_versions & tls_version) && ((missing_ciphersuites[i].accepted_tls_versions & tls_version) == 0)) {
+      bs_append_ushort(ciphersuite_list, missing_ciphersuites[i].id);
     }
-  } else if (type == CIPHERSUITES_TLSV1_3_ALL) {
-    bs_append_bytes(ciphersuite_list, (unsigned char []) {
-      0x13, 0x01, // TLS_AES_128_GCM_SHA256
-      0x13, 0x02, // TLS_AES_256_GCM_SHA384
-      0x13, 0x03, // TLS_CHACHA20_POLY1305_SHA256
-      0x13, 0x04, // TLS_AES_128_CCM_SHA256
-      0x13, 0x05, // TLS_AES_128_CCM_8_SHA256
-    }, 10);
   }
 
   return ciphersuite_list;
@@ -4694,11 +4866,11 @@ bs *makeCiphersuiteList(unsigned int tls_version, unsigned int type) {
 
 /* Marks a ciphersuite as found so that it is not re-tested again. */
 void markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_version) {
-  if (tls_version == 0)
+  if (tls_version == TLSv1_0)
     tls_version = V1_0;
-  else if (tls_version == 1)
+  else if (tls_version == TLSv1_1)
     tls_version = V1_1;
-  else if (tls_version == 2)
+  else if (tls_version == TLSv1_2)
     tls_version = V1_2;
 
   for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
@@ -4762,27 +4934,36 @@ bs *makeTLSExtensions(struct sslCheckOptions *options, unsigned int include_sign
     /* Extension: signature_algorithms */
     bs_append_bytes(tls_extensions, (unsigned char []) {
       0x00, 0x0d, // Extension: signature_algorithms (13)
-      0x00, 0x1e, // Extension Length (30)
-      0x00, 0x1c, // Signature Hash Algorithms Length (28)
-      0x04, 0x03, // ecdsa_secp256r1_sha256
-      0x05, 0x03, // ecdsa_secp384r1_sha384
-      0x06, 0x03, // ecdsa_secp521r1_sha512
+      0x00, 0x30, // Extension Length (48)
+      0x00, 0x2e, // Signature Hash Algorithms Length (46)
+      0x08, 0x04, // rsa_pss_rsae_sha256
+      0x08, 0x05, // rsa_pss_rsae_sha384
+      0x08, 0x06, // rsa_pss_rsae_sha512
       0x08, 0x07, // ed25519
       0x08, 0x08, // ed448
       0x08, 0x09, // rsa_pss_pss_sha256
       0x08, 0x0a, // rsa_pss_pss_sha384
       0x08, 0x0b, // rsa_pss_pss_sha512
-      0x08, 0x04, // rsa_pss_rsae_sha256
-      0x08, 0x05, // rsa_pss_rsae_sha384
-      0x08, 0x06, // rsa_pss_rsae_sha512
-      0x04, 0x01, // rsa_pkcs1_sha256
-      0x05, 0x01, // rsa_pkcs1_sha384
       0x06, 0x01, // rsa_pkcs1_sha512
-    }, 34);
+      0x06, 0x02, // SHA512 DSA
+      0x06, 0x03, // ecdsa_secp521r1_sha512
+      0x05, 0x01, // rsa_pkcs1_sha384
+      0x05, 0x02, // SHA384 DSA
+      0x05, 0x03, // ecdsa_secp384r1_sha384
+      0x04, 0x01, // rsa_pkcs1_sha256"
+      0x04, 0x02, // SHA256 DSA
+      0x04, 0x03, // ecdsa_secp256r1_sha256
+      0x03, 0x01, // SHA224 ECDSA
+      0x03, 0x02, // SHA224 DSA
+      0x03, 0x03, // SHA224 ECDSA
+      0x02, 0x01, // rsa_pkcs1_sha1
+      0x02, 0x02, // SHA1 DSA
+      0x02, 0x03, // ecdsa_sha1
+    }, 52);
   }
 
   /* Set the extension length. */
-  bs_set_ushort(tls_extensions, 0, bs_get_len(tls_extensions) - 2);
+  tlsExtensionUpdateLength(tls_extensions);
   return tls_extensions;
 }
 
@@ -4794,29 +4975,70 @@ void tlsExtensionAddTLSv1_3(bs *tls_extensions) {
       0x02,       // Supported Versions Length
       0x03, 0x04, // Supported Version: TLS v1.3
   }, 7);
-  bs_set_ushort(tls_extensions, 0, bs_get_len(tls_extensions) - 2);
+  tlsExtensionUpdateLength(tls_extensions);
 }
 
-/* From socket s, reads a ServerHello from the network.  Returns an unsigned char array on success (which the caller must free()), or NULL on failure. */
-bs *getServerHello(int s) {
-  bs *server_hello = NULL;
-  bs_new_size(&server_hello, 512);
+/* Adds default key_share extension. */
+void tlsExtensionAddDefaultKeyShare(bs *tls_extensions) {
 
-  /* Read in the first 5 bytes to get the length of the rest of the packet. */
-  int err = bs_read_socket(server_hello, s, 5);
+  bs_append_bytes(tls_extensions, (unsigned char []) {
+    0x00, 0x33, // key_share (51)
+    0x00, 0x26, // Length (38)
+    0x00, 0x24, // Key Share List Length (36)
+    0x00, 0x1d, // Group ID (X25519)
+    0x00, 0x20, // Key Exchange Length (32)
+  }, 10);
+
+  /* Add 32 bytes of the (bogus) X25519 key share. */
+  srand(time(NULL) ^ 0xbeefdead);
+  for (int i = 0; i < 32; i++) {
+    unsigned char c = (unsigned char)rand();
+    bs_append_bytes(tls_extensions, &c, 1);
+  }
+
+  /* Update the length of the extensions. */
+  tlsExtensionUpdateLength(tls_extensions);
+}
+
+/* Retrieves a TLS Handshake record, or returns NULL on error. */
+bs *getTLSHandshakeRecord(int s) {
+  bs *tls_record = NULL;
+  bs_new_size(&tls_record, 512);
+
+  /* Read in the first 5 bytes to get the length of the rest of the record. */
+  int err = bs_read_socket(tls_record, s, 5);
   if (err != 0)
     goto err;
 
   /* Ensure that the Content Type is Handshake (22). */
-  if (bs_get_byte(server_hello, 0) != 0x16)
+  if (bs_get_byte(tls_record, 0) != 0x16)
     goto err;
 
-  /* Get the length of the Server Hello record. */
-  unsigned short packet_len = (bs_get_byte(server_hello, 3) << 8) | bs_get_byte(server_hello, 4);
+  /* Get the length of the record. */
+  unsigned short packet_len = (bs_get_byte(tls_record, 3) << 8) | bs_get_byte(tls_record, 4);
 
-  /* Read in the rest of the Server Hello. */
-  err = bs_read_socket(server_hello, s, packet_len);
+  /* Read in the rest of the record. */
+  err = bs_read_socket(tls_record, s, packet_len);
   if (err != 0)
+    goto err;
+
+  return tls_record;
+
+ err:
+  bs_free(&tls_record);
+  return NULL;
+}
+
+/* Update the length of the TLS extensions. */
+void tlsExtensionUpdateLength(bs *tls_extensions) {
+  bs_set_ushort(tls_extensions, 0, bs_get_len(tls_extensions) - 2);
+}
+
+/* From socket s, reads a ServerHello from the network.  Returns a byte string on success (which the caller must bs_free()), or NULL on failure. */
+bs *getServerHello(int s) {
+  bs *server_hello = getTLSHandshakeRecord(s);
+
+  if (server_hello == NULL)
     goto err;
 
   /* Ensure that the Handshake Type is Server Hello (2). */
@@ -4830,17 +5052,17 @@ bs *getServerHello(int s) {
   return NULL;
 }
 
-/* Returns a byte string (which the caller must later free) containing a TLS Client Hello message.  The number of bytes is stored in 'client_hello_len'.  'version' is set to 0 for TLSv1.0, 1 for TLSv1.1, 2, for TLSv1.2, and 3 for TLSv1.3.  The specified ciphersuite list and TLS extensions will be included.  */
-bs *makeClientHello(struct sslCheckOptions *options, unsigned int version, bs *ciphersuite_list, bs *tls_extensions) {
+/* Returns a byte string (which the caller must later bs_free()) containing a TLS Client Hello message.  The 'tls_version' must be one of the TLSv1_? constants.  The specified ciphersuite list and TLS extensions will be included.  */
+bs *makeClientHello(struct sslCheckOptions *options, unsigned int tls_version, bs *ciphersuite_list, bs *tls_extensions) {
   bs *client_hello = NULL;
   unsigned int tls_record_version_low_byte = 1, tls_handshake_version_low_byte = 1;
   time_t time_now = time(NULL);
 
 
   /* For TLSv1.0, 1.1, and 1.2, the TLS Record version and Handshake version are the same (and what they should be).  For TLSv1.3, the TLS Record claims to be TLSv1.0 and the Handshake claims to be TLSv1.2; this is for compatibility of buggy middleware that most implementations follow. */
-  if (version < 3) {
-    tls_record_version_low_byte += version;
-    tls_handshake_version_low_byte += version;
+  if (tls_version < TLSv1_3) {
+    tls_record_version_low_byte += tls_version;
+    tls_handshake_version_low_byte += tls_version;
   } else {
     tls_record_version_low_byte = 1;
     tls_handshake_version_low_byte = 3;
@@ -4896,19 +5118,14 @@ bs *makeClientHello(struct sslCheckOptions *options, unsigned int version, bs *c
 }
 
 /* Checks all ciphersuites that OpenSSL does not support.  When version is 0, TLSv1.0 is tested.  When set to 1, TLSv1.1 is tested.  When set to 2, TLSv1.2 is tested. */
-int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
-  int ret = false, s = 0;
+int testMissingCiphers(struct sslCheckOptions *options, unsigned int tls_version) {
+  int ret = false, s = -1;
   unsigned int tls_version_low_byte = 1;
-  char *tls_printable_name = "TLSv1.0";
+  char *tls_printable_name = getPrintableTLSName(tls_version);
   bs *client_hello = NULL, *server_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL;
 
 
-  tls_version_low_byte += version;
-
-  if (version == 1)
-    tls_printable_name = "TLSv1.1";
-  else if (version == 2)
-    tls_printable_name = "TLSv1.2";
+  tls_version_low_byte += tls_version;
 
   /* Continue until a Server Hello isn't received. */
   while (1) {
@@ -4941,12 +5158,12 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
       0x00, 0x0a, // sect283r1
     }, 32);
 
-    bs_set_ushort(tls_extensions, 0, bs_get_len(tls_extensions) - 2);
+    tlsExtensionUpdateLength(tls_extensions);
 
     /* Construct the list of all ciphersuites not implemented by OpenSSL. */
-    ciphersuite_list = makeCiphersuiteList(version, CIPHERSUITES_MISSING);
+    ciphersuite_list = makeCiphersuiteListMissing(tls_version);
 
-    client_hello = makeClientHello(options, version, ciphersuite_list, tls_extensions);
+    client_hello = makeClientHello(options, tls_version, ciphersuite_list, tls_extensions);
     bs_free(&ciphersuite_list);
     bs_free(&tls_extensions);
 
@@ -4999,7 +5216,7 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
     bs_free(&server_hello);
 
     /* Mark this cipher ID as supported by the server, so when we loop again, the next ciphersuite list doesn't include it. */
-    markFoundCiphersuite(cipher_id, version);
+    markFoundCiphersuite(cipher_id, tls_version);
 
     /* Get the IANA name and cipher bit strength (maybe -1 when unknown). */
     cipher_name = resolveCipherID(cipher_id, &cipher_bits);
@@ -5022,9 +5239,12 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int version) {
   return ret;
 }
 
-/* Enumerates all the group key exchanges for TLSv1.3.  This could potentially be adapted to support TLSv1.0 - v1.2. */
+/* Enumerates all the group key exchanges supported by the server.  Tests the highest supported protocol between TLSv1.0 and v1.2, along with TLSv1.3 (if enabled). */
 int testSupportedGroups(struct sslCheckOptions *options) {
-  int ret = true;
+  int ret = true, s = -1;
+  unsigned int printed_header = 0;
+  int test_versions[2] = {-1, -1};
+  bs *client_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL, *server_hello = NULL, *key_exchange = NULL;
 
   struct group_key_exchange {
     uint16_t group_id;
@@ -5036,19 +5256,44 @@ int testSupportedGroups(struct sslCheckOptions *options) {
     uint16_t key_exchange_len;
   };
 
-  /* Bit strength of DHE 2048 and 3072-bit moduli is taken directly from NIST SP 800-57 pt.1, rev4., pg. 53; DHE 4096, 6144, and 8192 are estimated using that document. */
+
+  /* Auto-generated by ./tools/iana_tls_supported_groups_parser.py on December 24, 2019. */
 #define COL_PLAIN ""
 #define NID_TYPE_NA 0    /* Not Applicable (i.e.: X25519/X448) */
-#define NID_TYPE_ECDHE 1 /* For P-256/384-521. */
+#define NID_TYPE_ECDHE 1 /* For ECDHE curves (sec*, P-256/384-521) */
 #define NID_TYPE_DHE 2   /* For ffdhe* */
+  /* Bit strength of DHE 2048 and 3072-bit moduli is taken directly from NIST SP 800-57 pt.1, rev4., pg. 53; DHE 4096, 6144, and 8192 are estimated using that document. */
   struct group_key_exchange group_key_exchanges[] = {
-    {0x001d, "X25519", 128, COL_GREEN, -1, NID_TYPE_NA, 32},
-    {0x001e, "X448", 224, COL_GREEN, -1, NID_TYPE_NA, 56},
-
-    {0x0017, "secp256r1 [P-256]", 128, COL_PLAIN, NID_X9_62_prime256v1, NID_TYPE_ECDHE, 0},
-    {0x0018, "secp384r1 [P-384]", 192, COL_PLAIN, NID_secp384r1, NID_TYPE_ECDHE, 0},
-    {0x0019, "secp521r1 [P-521]", 256, COL_PLAIN, NID_secp521r1, NID_TYPE_ECDHE, 0},
-
+    {0x0001, "sect163k1", 81, COL_RED, NID_sect163k1, NID_TYPE_ECDHE, 0},
+    {0x0002, "sect163r1", 81, COL_RED, NID_sect163r1, NID_TYPE_ECDHE, 0},
+    {0x0003, "sect163r2", 81, COL_RED, NID_sect163r2, NID_TYPE_ECDHE, 0},
+    {0x0004, "sect193r1", 96, COL_RED, NID_sect193r1, NID_TYPE_ECDHE, 0},
+    {0x0005, "sect193r2", 96, COL_RED, NID_sect193r2, NID_TYPE_ECDHE, 0},
+    {0x0006, "sect233k1", 116, COL_PLAIN, NID_sect233k1, NID_TYPE_ECDHE, 0},
+    {0x0007, "sect233r1", 116, COL_PLAIN, NID_sect233r1, NID_TYPE_ECDHE, 0},
+    {0x0008, "sect239k1", 119, COL_PLAIN, NID_sect239k1, NID_TYPE_ECDHE, 0},
+    {0x0009, "sect283k1", 141, COL_PLAIN, NID_sect283k1, NID_TYPE_ECDHE, 0},
+    {0x000a, "sect283r1", 141, COL_PLAIN, NID_sect283r1, NID_TYPE_ECDHE, 0},
+    {0x000b, "sect409k1", 204, COL_PLAIN, NID_sect409k1, NID_TYPE_ECDHE, 0},
+    {0x000c, "sect409r1", 204, COL_PLAIN, NID_sect409r1, NID_TYPE_ECDHE, 0},
+    {0x000d, "sect571k1", 285, COL_PLAIN, NID_sect571k1, NID_TYPE_ECDHE, 0},
+    {0x000e, "sect571r1", 285, COL_PLAIN, NID_sect571r1, NID_TYPE_ECDHE, 0},
+    {0x000f, "secp160k1", 80, COL_RED, NID_secp160k1, NID_TYPE_ECDHE, 0},
+    {0x0010, "secp160r1", 80, COL_RED, NID_secp160r1, NID_TYPE_ECDHE, 0},
+    {0x0011, "secp160r2", 80, COL_RED, NID_secp160r2, NID_TYPE_ECDHE, 0},
+    {0x0012, "secp192k1", 96, COL_RED, NID_secp192k1, NID_TYPE_ECDHE, 0},
+    {0x0013, "secp192r1", 96, COL_RED, NID_X9_62_prime192v1, NID_TYPE_ECDHE, 0},
+    {0x0014, "secp224k1", 112, COL_PLAIN, NID_secp224k1, NID_TYPE_ECDHE, 0},
+    {0x0015, "secp224r1", 112, COL_PLAIN, NID_secp224r1, NID_TYPE_ECDHE, 0},
+    {0x0016, "secp256k1", 128, COL_GREEN, NID_secp256k1, NID_TYPE_ECDHE, 0},
+    {0x0017, "secp256r1 (NIST P-256)", 128, COL_PLAIN, NID_X9_62_prime256v1, NID_TYPE_ECDHE, 0},
+    {0x0018, "secp384r1 (NIST P-384)", 192, COL_PLAIN, NID_secp384r1, NID_TYPE_ECDHE, 0},
+    {0x0019, "secp521r1 (NIST P-521)", 260, COL_PLAIN, NID_secp521r1, NID_TYPE_ECDHE, 0},
+    {0x001a, "brainpoolP256r1", 128, COL_PLAIN, NID_brainpoolP256r1, NID_TYPE_ECDHE, 0},
+    {0x001b, "brainpoolP384r1", 192, COL_PLAIN, NID_brainpoolP384r1, NID_TYPE_ECDHE, 0},
+    {0x001c, "brainpoolP512r1", 256, COL_PLAIN, NID_brainpoolP512r1, NID_TYPE_ECDHE, 0},
+    {0x001d, "x25519", 128, COL_GREEN, -1, NID_TYPE_NA, 32},
+    {0x001e, "x448", 224, COL_GREEN, -1, NID_TYPE_NA, 56},
     {0x0100, "ffdhe2048", 112, COL_PLAIN, NID_ffdhe2048, NID_TYPE_DHE, 256},
     {0x0101, "ffdhe3072", 128, COL_PLAIN, NID_ffdhe3072, NID_TYPE_DHE, 384},
     {0x0102, "ffdhe4096", 150, COL_PLAIN, NID_ffdhe4096, NID_TYPE_DHE, 512},
@@ -5056,160 +5301,247 @@ int testSupportedGroups(struct sslCheckOptions *options) {
     {0x0104, "ffdhe8192", 192, COL_PLAIN, NID_ffdhe8192, NID_TYPE_DHE, 1024},
   };
 
-  unsigned int printed_header = 0;
-  int s = 0;
-  bs *client_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL, *server_hello = NULL, *key_exchange = NULL;
 
+  /* If TLSv1.3 is supported, test it first. */
+  unsigned int index = 0;
+  if (options->tls13_supported) {
+    test_versions[index] = TLSv1_3;
+    index++;
+  }
 
-  /* Get all TLSv1.3 ciphersuites. */
-  ciphersuite_list = makeCiphersuiteList(3, CIPHERSUITES_TLSV1_3_ALL);
+  /* For TLSv1.2 and below, test the highest protocol version supported. */
+  if (options->tls12_supported)
+    test_versions[index] = TLSv1_2;
+  else if (options->tls11_supported)
+    test_versions[index] = TLSv1_1;
+  else if (options->tls10_supported)
+    test_versions[index] = TLSv1_0;
 
-  /* For each key exchange group... */
-  for (int i = 0; i < (sizeof(group_key_exchanges) / sizeof(struct group_key_exchange)); i++) {
-    uint16_t group_id = group_key_exchanges[i].group_id;
-    char *group_name = group_key_exchanges[i].group_name;
-    char *color = group_key_exchanges[i].color;
-    unsigned int group_bit_strength = group_key_exchanges[i].group_bit_strength;
-    int nid = group_key_exchanges[i].nid;
-    unsigned nid_type = group_key_exchanges[i].nid_type;
-    uint16_t key_exchange_len = group_key_exchanges[i].key_exchange_len;
+  /* Loop through the one or two TLS versions to test. */
+  for (index = 0; index < (sizeof(test_versions) / sizeof(int)); index++) {
+    int tls_version = test_versions[index];
 
-    /* This will hold the key exchange data that we send to the server. */
-    bs_new_size(&key_exchange, key_exchange_len);
+    /* If there's only one version to test... */
+    if (tls_version == -1)
+      break;
 
-    /* Generate the right type of key exchange data. */
-    if (nid_type == NID_TYPE_NA) {
+    if (tls_version == TLSv1_3)
+      ciphersuite_list = makeCiphersuiteListAll(tls_version);
+    else {
+      /* For some reason, with TLSv1.2 (and maybe below), passing all ciphersuites causes false negatives.  So we use a string of bytes sniffed from an OpenSSL client connection. */
+      bs_new(&ciphersuite_list);
+      bs_append_bytes(ciphersuite_list, (unsigned char []) { 0xc0, 0x30, 0xc0, 0x2c, 0xc0, 0x28, 0xc0, 0x24, 0xc0, 0x14, 0xc0, 0x0a, 0x00, 0xa5, 0x00, 0xa3, 0x00, 0xa1, 0x00, 0x9f, 0x00, 0x6b, 0x00, 0x6a, 0x00, 0x69, 0x00, 0x68, 0x00, 0x39, 0x00, 0x38, 0x00, 0x37, 0x00, 0x36, 0x00, 0x88, 0x00, 0x87, 0x00, 0x86, 0x00, 0x85, 0xc0, 0x32, 0xc0, 0x2e, 0xc0, 0x2a, 0xc0, 0x26, 0xc0, 0x0f, 0xc0, 0x05, 0x00, 0x9d, 0x00, 0x3d, 0x00, 0x35, 0x00, 0x84, 0xc0, 0x2f, 0xc0, 0x2b, 0xc0, 0x27, 0xc0, 0x23, 0xc0, 0x13, 0xc0, 0x09, 0x00, 0xa4, 0x00, 0xa2, 0x00, 0xa0, 0x00, 0x9e, 0x00, 0x67, 0x00, 0x40, 0x00, 0x3f, 0x00, 0x3e, 0x00, 0x33, 0x00, 0x32, 0x00, 0x31, 0x00, 0x30, 0x00, 0x9a, 0x00, 0x99, 0x00, 0x98, 0x00, 0x97, 0x00, 0x45, 0x00, 0x44, 0x00, 0x43, 0x00, 0x42, 0xc0, 0x31, 0xc0, 0x2d, 0xc0, 0x29, 0xc0, 0x25, 0xc0, 0x0e, 0xc0, 0x04, 0x00, 0x9c, 0x00, 0x3c, 0x00, 0x2f, 0x00, 0x96, 0x00, 0x41, 0xc0, 0x11, 0xc0, 0x07, 0xc0, 0x0c, 0xc0, 0x02, 0x00, 0x05, 0x00, 0x04, 0xc0, 0x12, 0xc0, 0x08, 0x00, 0x16, 0x00, 0x13, 0x00, 0x10, 0x00, 0x0d, 0xc0, 0x0d, 0xc0, 0x03, 0x00, 0x0a, 0x00, 0xff }, 170);
+    }
 
-      /* Generate "random" data.  X25519 and X448 public keys have no discernible structure. */
-      srand(time(NULL) ^ 0xdeadbeef);
-      for (int j = 0; j < key_exchange_len; j++) {
-        unsigned char c = (unsigned char)rand();
-        bs_append_bytes(key_exchange, &c, 1);
-      }
+    /* For each key exchange group... */
+    for (int i = 0; i < (sizeof(group_key_exchanges) / sizeof(struct group_key_exchange)); i++) {
+      uint16_t group_id = group_key_exchanges[i].group_id;
+      char *group_name = group_key_exchanges[i].group_name;
+      char *color = group_key_exchanges[i].color;
+      unsigned int group_bit_strength = group_key_exchanges[i].group_bit_strength;
+      int nid = group_key_exchanges[i].nid;
+      unsigned nid_type = group_key_exchanges[i].nid_type;
+      uint16_t key_exchange_len = group_key_exchanges[i].key_exchange_len;
 
-    } else if (nid_type == NID_TYPE_ECDHE) {
+      /* This will hold the key exchange data that we send to the server. */
+      bs_new_size(&key_exchange, key_exchange_len);
 
-      /* Generate the ECDHE key. */
-      EC_KEY *key = EC_KEY_new_by_curve_name(nid);
-      if ((key == NULL) || (EC_KEY_generate_key(key) != 1)) {
+      /* Generate the right type of key exchange data. */
+      if (nid_type == NID_TYPE_NA) {
+
+        /* Generate "random" data.  X25519 and X448 public keys have no discernible structure. */
+        srand(time(NULL) ^ 0xdeadbeef);
+        for (int j = 0; j < key_exchange_len; j++) {
+          unsigned char c = (unsigned char)rand();
+          bs_append_bytes(key_exchange, &c, 1);
+        }
+
+      } else if (nid_type == NID_TYPE_ECDHE) {
+
+        /* Generate the ECDHE key. */
+        EC_KEY *key = EC_KEY_new_by_curve_name(nid);
+        if ((key == NULL) || (EC_KEY_generate_key(key) != 1)) {
+          EC_KEY_free(key); key = NULL;
+          fprintf(stderr, "Failed to generate ECDHE key for nid %d\n", nid);
+          continue;
+        }
+
+        /* Allocate a *new* byte array and put the key into it. */
+        unsigned char *kex_buf = NULL;
+        key_exchange_len = EC_KEY_key2buf(key, POINT_CONVERSION_UNCOMPRESSED, &kex_buf, NULL);
+        if (kex_buf == NULL) {
+          EC_KEY_free(key); key = NULL;
+          fprintf(stderr, "Failed to obtain ECDHE public key bytes.\n");
+          continue;
+        }
+
+        bs_append_bytes(key_exchange, kex_buf, key_exchange_len);
+        OPENSSL_free(kex_buf); kex_buf = NULL;
         EC_KEY_free(key); key = NULL;
-        fprintf(stderr, "Failed to generate ECDHE key for nid %d\n", nid);
+
+      } else if (nid_type == NID_TYPE_DHE) {
+
+        /* The value (Y) for FFDHE group must be 1 < Y < p - 1 (see RFC7919).  Furthermore, GnuTLS checks that Y ^ q mod p == 1 (see GnuTLS v3.6.11.1, lib/nettle/pk.c:291).  The easiest way to do this seems to be to actually generate real DH public keys. */
+        DH *dh = DH_new_by_nid(nid);
+        if (!DH_generate_key(dh)) {
+          bs_free(&key_exchange);
+          fprintf(stderr, "Failed to generate DH key for nid %d\n", nid);
+          continue;
+        }
+
+        /* Make array to read in DH public key. */
+        unsigned int bytes_len = key_exchange_len;
+        unsigned char *bytes = calloc(bytes_len, sizeof(unsigned char));
+        if (bytes == NULL) {
+          fprintf(stderr, "Failed to allocate buffer for key.\n");
+          exit(-1);
+        }
+
+        /* Export the public key to our array. */
+        const BIGNUM *pub_key = NULL;
+        DH_get0_key(dh, &pub_key, NULL);
+        if (!BN_bn2binpad(pub_key, bytes, bytes_len)) {
+          bs_free(&key_exchange);
+          fprintf(stderr, "Failed to get DH key for nid %d\n", nid);
+          continue;
+        }
+
+        /* Add the bytes to our byte string. */
+        bs_append_bytes(key_exchange, bytes, bytes_len);
+        FREE(bytes);  bytes_len = 0;
+
+      } else {
+        /* Use the provided value, since it must be a specific format. */
+        fprintf(stderr, "Error: unknown NID_TYPE in struct: %d\n", nid_type);
+        exit(-1);
+      }
+
+      /* Make generic TLS extensions (with SNI, accepted EC point formats, etc). */
+      tls_extensions = makeTLSExtensions(options, 1);
+
+      /* Add the supported_versions extension to signify we are using TLS v1.3. */
+      if (tls_version == TLSv1_3)
+        tlsExtensionAddTLSv1_3(tls_extensions);
+
+      /* Add the supported_groups extension.  Only add the one group we are testing for. */
+      bs_append_bytes(tls_extensions, (unsigned char []) {
+        0x00, 0x0a, // Extension Type: supported_groups (10)
+        0x00, 0x04, // Extension Length (4)
+        0x00, 0x02, // Supported Groups List Length (2)
+      }, 6);
+      bs_append_ushort(tls_extensions, group_id);
+
+      /* Only add the key_share extension if we're using TLS v1.3. */
+      if (tls_version == TLSv1_3) {
+        /* Add the key_share extension for the current group type. */
+        bs_append_bytes(tls_extensions, (unsigned char []) { 0x00, 0x33 }, 2); // Extension Type: key_share (51)
+        bs_append_ushort(tls_extensions, bs_get_len(key_exchange) + 6); // Extension Length
+        bs_append_ushort(tls_extensions, bs_get_len(key_exchange) + 4); // Client Key Share Length
+        bs_append_ushort(tls_extensions, group_id); // Group ID.
+        bs_append_ushort(tls_extensions, bs_get_len(key_exchange)); // Key Exchange Length
+        bs_append_bs(tls_extensions, key_exchange); // Key Exchange
+      }
+      bs_free(&key_exchange);
+
+      /* Update the TLS extensions length since we manually added to it. */
+      tlsExtensionUpdateLength(tls_extensions);
+
+      /* Create the Client Hello buffer using the ciphersuite list and TLS extensions. */
+      client_hello = makeClientHello(options, tls_version, ciphersuite_list, tls_extensions);
+
+      /* Free the TLS extensions since we're done with them.  Note: we don't free the ciphersuite_list because we'll need them on the next loop. */
+      bs_free(&tls_extensions);
+
+      CLOSE(s); /* In case the last loop left the socket open. */
+
+      /* Now connect to the target server. */
+      s = tcpConnect(options);
+      if (s == 0) {
+        ret = false;
+        goto done;
+      }
+
+      /* Send the Client Hello message. */
+      if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
+        printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
+        ret = false;
+        goto done;
+      }
+      bs_free(&client_hello);
+
+      server_hello = getServerHello(s);
+
+      /* This group is definitely not supported. */
+      if (server_hello == NULL) {
+        CLOSE(s);
         continue;
       }
 
-      /* Allocate a *new* byte array and put the key into it. */
-      unsigned char *kex_buf = NULL;
-      key_exchange_len = EC_KEY_key2buf(key, POINT_CONVERSION_UNCOMPRESSED, &kex_buf, NULL);
-      if (kex_buf == NULL) {
-        EC_KEY_free(key); key = NULL;
-        fprintf(stderr, "Failed to obtain ECDHE public key bytes.\n");
-        continue;
+      bs_free(&server_hello);
+
+      /* For TLSv1.2 and below, we need to examine the Server Key Exchange record. */
+      if (tls_version < TLSv1_3) {
+        bs *tls_record = getTLSHandshakeRecord(s);
+        unsigned int handshake_type = bs_get_byte(tls_record, 5);
+        if (handshake_type == 14) { /* Server Hello Done */
+          bs_free(&tls_record);
+          CLOSE(s);
+          continue;
+        }
+
+        /* Skip all records that aren't Server Key Exchanges (type 12). */
+        while ((tls_record != NULL) && (bs_get_byte(tls_record, 5) != 12)) {
+          bs_free(&tls_record);
+          tls_record = getTLSHandshakeRecord(s);
+          handshake_type = bs_get_byte(tls_record, 5);
+          if (handshake_type == 14) { /* Server Hello Done */
+            bs_free(&tls_record);
+            CLOSE(s);
+            continue;
+          }
+        }
+
+        /* Error, so skip this group. */
+        if (tls_record == NULL) {
+          bs_free(&tls_record);
+          CLOSE(s);
+          continue;
+        }
+
+        /* If this Server Key Exchange does not have a named_curve (3) field, skip this group. */
+        if (bs_get_byte(tls_record, 9) != 3) {
+          bs_free(&tls_record);
+          CLOSE(s);
+          continue;
+        }
+
+        /* Check that the named_curve result is the group we requested. */
+        uint16_t server_group_id = bs_get_byte(tls_record, 10) << 8 | bs_get_byte(tls_record, 11);
+        if (server_group_id != group_id) {
+          bs_free(&tls_record);
+          CLOSE(s);
+          continue;
+        }
+
+        bs_free(&tls_record);
+      }
+      CLOSE(s);
+
+      if (!printed_header) {
+        printf("\n  %sServer Key Exchange Group(s):%s\n", COL_BLUE, RESET);
+        printed_header = 1;
       }
 
-      bs_append_bytes(key_exchange, kex_buf, key_exchange_len);
-      OPENSSL_free(kex_buf); kex_buf = NULL;
-      EC_KEY_free(key); key = NULL;
+      char *bits_color = RESET;
+      if (group_bit_strength < 112)
+        bits_color = COL_RED;
+      else
+        bits_color = COL_GREEN;
 
-    } else if (nid_type == NID_TYPE_DHE) {
-
-      /* The value (Y) for FFDHE group must be 1 < Y < p - 1 (see RFC7919).  Furthermore, GnuTLS checks that Y ^ q mod p == 1 (see GnuTLS v3.6.11.1, lib/nettle/pk.c:291).  The easiest way to do this seems to be to actually generate real DH public keys. */
-      DH *dh = DH_new_by_nid(nid);
-      if (!DH_generate_key(dh)) {
-        bs_free(&key_exchange);
-        fprintf(stderr, "Failed to generate DH key for nid %d\n", nid);
-        continue;
-      }
-
-      /* Make array to read in DH public key. */
-      unsigned int bytes_len = key_exchange_len;
-      unsigned char *bytes = calloc(bytes_len, sizeof(unsigned char));
-      if (bytes == NULL) {
-	fprintf(stderr, "Failed to allocate buffer for key.\n");
-	exit(-1);
-      }
-
-      /* Export the public key to our array. */
-      const BIGNUM *pub_key = NULL;
-      DH_get0_key(dh, &pub_key, NULL);
-      if (!BN_bn2binpad(pub_key, bytes, bytes_len)) {
-        bs_free(&key_exchange);
-        fprintf(stderr, "Failed to get DH key for nid %d\n", nid);
-        continue;
-      }
-
-      /* Add the bytes to our byte string. */
-      bs_append_bytes(key_exchange, bytes, bytes_len);
-      FREE(bytes);  bytes_len = 0;
-
-    } else {
-      /* Use the provided value, since it must be a specific format. */
-      fprintf(stderr, "Error: unknown NID_TYPE in struct: %d\n", nid_type);
-      exit(-1);
+      char *printable_TLS_name = getPrintableTLSName(tls_version);
+      printf("%s  %s%d%s bits  %s%s%s\n", printable_TLS_name, bits_color, group_bit_strength, RESET, color, group_name, RESET);
+      printf_xml("  <group sslversion=\"%s\" bits=\"%d\" name=\"%s\" id=\"0x%04x\" />\n", printable_TLS_name, group_bit_strength, group_name, group_id);
     }
-
-    /* Make generic TLS extensions (with SNI, accepted EC point formats, etc). */
-    tls_extensions = makeTLSExtensions(options, 1);
-
-    /* Add the supported_versions extension to signify we are using TLS v1.3. */
-    tlsExtensionAddTLSv1_3(tls_extensions);
-
-    /* Add the supported_groups extension.  Only add the one group we are testing for. */
-    bs_append_bytes(tls_extensions, (unsigned char []) {
-      0x00, 0x0a, // Extension Type: supported_groups (10)
-      0x00, 0x04, // Extension Length (4)
-      0x00, 0x02, // Supported Groups List Length (2)
-    }, 6);
-    bs_append_ushort(tls_extensions, group_id);
-
-    /* Add the key_share extension for the current group type. */
-    bs_append_bytes(tls_extensions, (unsigned char []) { 0x00, 0x33 }, 2); // Extension Type: key_share (51)
-    bs_append_ushort(tls_extensions, bs_get_len(key_exchange) + 6); // Extension Length
-    bs_append_ushort(tls_extensions, bs_get_len(key_exchange) + 4); // Client Key Share Length
-    bs_append_ushort(tls_extensions, group_id); // Group ID.
-    bs_append_ushort(tls_extensions, bs_get_len(key_exchange)); // Key Exchange Length
-    bs_append_bs(tls_extensions, key_exchange); // Key Exchange
-
-    bs_free(&key_exchange);
-
-    /* Update the TLS extensions length since we manually added to it. */
-    bs_set_ushort(tls_extensions, 0, bs_get_len(tls_extensions) - 2);
-
-    /* Create the Client Hello buffer using the ciphersuite list and TLS extensions. */
-    client_hello = makeClientHello(options, 3, ciphersuite_list, tls_extensions);
-
-    /* Free the TLS extensions since we're done with them.  Note: we don't free the ciphersuite_list because we'll need them on the next loop. */
-    bs_free(&tls_extensions);
-
-    /* Now connect to the target server. */
-    s = tcpConnect(options);
-    if (s == 0) {
-      ret = false;
-      goto done;
-    }
-
-    /* Send the Client Hello message. */
-    if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
-      printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
-      ret = false;
-      goto done;
-    }
-    bs_free(&client_hello);
-
-    server_hello = getServerHello(s);
-    CLOSE(s);
-
-    /* This group is not supported. */
-    if (server_hello == NULL)
-      continue;
-
-    bs_free(&server_hello);
-
-    if (!printed_header) {
-      printf("\n  %sServer Key Exchange Group(s):%s\n", COL_BLUE, RESET);
-      printed_header = 1;
-    }
-    printf("%s%s%s (%d bits)\n", color, group_name, RESET, group_bit_strength);
-    printf_xml("  <group sslversion=\"TLSv1.3\" bits=\"%d\" name=\"%s\" id=\"0x%04x\" />\n", group_bit_strength, group_name, group_id);
   }
 
  done:
@@ -5261,12 +5593,12 @@ int testSignatureAlgorithms(struct sslCheckOptions *options) {
   };
 
   unsigned int printed_header = 0;
-  int s = 0;
+  int s = -1;
   bs *client_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL, *server_hello = NULL;
 
 
   /* Get all TLSv1.3 ciphersuites. */
-  ciphersuite_list = makeCiphersuiteList(3, CIPHERSUITES_TLSV1_3_ALL);
+  ciphersuite_list = makeCiphersuiteListTLS13All();
 
   /* For each signature algorithm... */
   for (int i = 0; i < (sizeof(signature_algorithms) / sizeof(struct signature_algorithm)); i++) {
@@ -5295,18 +5627,8 @@ int testSignatureAlgorithms(struct sslCheckOptions *options) {
       0x01, 0x04, // FFDHE8192
     }, 26);
 
-    /* Extension: key_share */
-    bs_append_bytes(tls_extensions, (unsigned char []) {
-      0x00, 0x33, // Extension: key_share (51)
-      0x00, 0x26, // Extension Length (37)
-      0x00, 0x24, // Key Share List Length (36)
-      0x00, 0x1d, // Group ID (X25519)
-      0x00, 0x20, // Key Exchange Length (32)
-    }, 10);
-
-    /* Add 32 bytes of the (bogus) X25519 key share. */
-    for (unsigned int j = 0; j < (32 / sizeof(uint32_t)); j++)
-      bs_append_uint32_t(tls_extensions, 0x029a029a);
+    /* Add key shares for X25519. */
+    tlsExtensionAddDefaultKeyShare(tls_extensions);
 
     /* Add the supported_versions extension to signify we are using TLS v1.3. */
     tlsExtensionAddTLSv1_3(tls_extensions);
@@ -5320,7 +5642,7 @@ int testSignatureAlgorithms(struct sslCheckOptions *options) {
     bs_append_ushort(tls_extensions, sig_id);
 
     /* Update the TLS extensions length since we manually added to it. */
-    bs_set_ushort(tls_extensions, 0, bs_get_len(tls_extensions) - 2);
+    tlsExtensionUpdateLength(tls_extensions);
 
     /* Create the Client Hello buffer using the ciphersuite list and TLS extensions. */
     client_hello = makeClientHello(options, 3, ciphersuite_list, tls_extensions);

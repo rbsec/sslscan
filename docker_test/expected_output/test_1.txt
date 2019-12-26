@@ -3,6 +3,14 @@
 
 Testing SSL server [32mlocalhost[0m on port [32m4443[0m using SNI name [32mlocalhost[0m
 
+  [1;34mSSL/TLS Protocols:[0m
+SSLv2 is [32mnot enabled[0m
+SSLv3 is [31menabled[0m
+TLSv1.0 is [33menabled[0m
+TLSv1.1 is enabled
+TLSv1.2 is enabled
+TLSv1.3 is not enabled
+
   [1;34mTLS Fallback SCSV:[0m
 Server [32msupports[0m TLS Fallback SCSV
 
@@ -13,14 +21,9 @@ Server [32msupports[0m TLS Fallback SCSV
 Compression [31menabled[0m (CRIME)
 
   [1;34mHeartbleed:[0m
-TLS 1.3 [32mnot vulnerable[0m to heartbleed
 TLS 1.2 [32mnot vulnerable[0m to heartbleed
 TLS 1.1 [32mnot vulnerable[0m to heartbleed
 TLS 1.0 [32mnot vulnerable[0m to heartbleed
-
-  [1;34mSSL Protocols:[0m
-SSLv2 is [32mnot enabled[0m
-SSLv3 is [31menabled[0m
 
   [1;34mSupported Server Cipher(s):[0m
 [32mPreferred[0m TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-AES256-GCM-SHA384  [0m Curve P-256 DHE 256
@@ -91,6 +94,9 @@ Accepted  [33mTLSv1.0[0m  [32m128[0m bits  IDEA-CBC-SHA
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mRC4-SHA                      [0m
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mRC4-MD5                      [0m
 Accepted  [33mTLSv1.0[0m  [32m112[0m bits  [33mDES-CBC3-SHA                 [0m
+
+  [1;34mServer Key Exchange Group(s):[0m
+TLSv1.2  [32m128[0m bits  secp256r1 (NIST P-256)[0m
 
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m

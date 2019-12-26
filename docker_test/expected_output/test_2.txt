@@ -3,6 +3,14 @@
 
 Testing SSL server [32mlocalhost[0m on port [32m4443[0m using SNI name [32mlocalhost[0m
 
+  [1;34mSSL/TLS Protocols:[0m
+SSLv2 is [31menabled[0m
+SSLv3 is [32mnot enabled[0m
+TLSv1.0 is [32mnot enabled[0m
+TLSv1.1 is not enabled
+TLSv1.2 is not enabled
+TLSv1.3 is not enabled
+
   [1;34mTLS Fallback SCSV:[0m
 [33mConnection failed[0m - unable to determine TLS Fallback SCSV support
 
@@ -13,14 +21,6 @@ Session renegotiation [32mnot supported[0m
 Compression [32mdisabled[0m
 
   [1;34mHeartbleed:[0m
-TLS 1.3 [32mnot vulnerable[0m to heartbleed
-TLS 1.2 [32mnot vulnerable[0m to heartbleed
-TLS 1.1 [32mnot vulnerable[0m to heartbleed
-TLS 1.0 [32mnot vulnerable[0m to heartbleed
-
-  [1;34mSSL Protocols:[0m
-SSLv2 is [31menabled[0m
-SSLv3 is [32mnot enabled[0m
 
   [1;34mSupported Server Cipher(s):[0m
 Certificate information cannot be enumerated through SSLv2 nor SSLv3.
