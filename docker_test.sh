@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2019  Joe Testa <jtesta@positronsecurity.com>
+# Copyright (C) 2019-2020  Joe Testa <jtesta@positronsecurity.com>
 #
 # This script (adapted from the ssh-audit project) will set up a docker image with
 # multiple SSL/TLS servers.  They are each executed one at a time, and sslscan is run
@@ -102,7 +102,7 @@ function compile_openssl {
 
     # Download OpenSSL from github.
     echo -e "\n${YELLOWB}Downloading OpenSSL v${version}...${CLR}\n"
-    git clone -b $git_tag https://github.com/openssl/openssl/ $output_dir
+    git clone --depth 1 -b $git_tag https://github.com/openssl/openssl/ $output_dir
 
     # Configure and compile it.
     echo -e "\n\n${YELLOWB}Compiling OpenSSL v${version} with \"-j ${compile_num_procs}\"...${CLR}"
@@ -204,7 +204,7 @@ function compile_gnutls {
     pushd $gnutls_source_dir
     nettle_source_dir_abs=`readlink -m ../nettle`
     nettle_parent_dir=`readlink -m ..`
-    NETTLE_CFLAGS=-I${nettle_parent_dir} NETTLE_LIBS="-L${nettle_source_dir_abs} -lnettle" HOGWEED_CFLAGS=-I${nettle_parent_dir} HOGWEED_LIBS="-L${nettle_source_dir_abs} -lhogweed" ./configure --with-included-libtasn1 --with-included-unistring --without-p11-kit
+    NETTLE_CFLAGS=-I${nettle_parent_dir} NETTLE_LIBS="-L${nettle_source_dir_abs} -lnettle" HOGWEED_CFLAGS=-I${nettle_parent_dir} HOGWEED_LIBS="-L${nettle_source_dir_abs} -lhogweed" ./configure --with-included-libtasn1 --with-included-unistring --without-p11-kit --disable-guile
     make CFLAGS=-I${nettle_parent_dir} LDFLAGS="-L${nettle_source_dir_abs} -lhogweed -lnettle" -j $compile_num_procs
 
     # Ensure that the gnutls-serv and gnutls-cli tools were built
@@ -411,7 +411,7 @@ function run_test {
     # Run sslscan and cut out the first two lines.  Those contain the version number
     # and local version of OpenSSL, which can change over time (and when they do, this
     # would break the test if they were left in).
-    ./sslscan $sslscan_additional_args localhost:4443 | tail -n +3 > $test_result_stdout
+    ./sslscan $sslscan_additional_args 127.0.0.1:4443 | tail -n +3 > $test_result_stdout
     if [[ $? != 0 ]]; then
 	echo -e "${REDB}Failed to run sslscan! (exit code: $?)${CLR}"
 	docker container stop -t 0 $cid > /dev/null
@@ -486,11 +486,34 @@ if [[ $? != 0 ]]; then
     exit 1
 fi
 
-# Ensure that the libgmp-dev and m4 packages are installed.
-dpkg -l libgmp-dev m4 > /dev/null
-if [[ $? != 0 ]]; then
-    echo -e "${REDB}Error: libgmp-dev and/or m4 packages not installed.  Fix with: apt install libgmp-dev m4${CLR}"
-    exit 1
+is_debian=0
+is_arch=0
+
+# If dpkg exists, assume this is a Debian-based system.
+dpkg --version > /dev/null 2>&1
+if [[ $? == 0 ]]; then
+    is_debian=1
+fi
+
+# If pacman exists, assume this is an Arch system.
+pacman --version > /dev/null 2>&1
+if [[ ($is_debian == 0) && ($? == 0) ]]; then
+    is_arch=1
+fi
+
+# Ensure that the libgmp-dev, m4, and wget packages are installed.  Use dpkg on Debian, or pacman on Arch.
+if [[ $is_debian == 1 ]]; then
+    dpkg -l libgmp-dev m4 perl wget > /dev/null 2>&1
+    if [[ $? != 0 ]]; then
+        echo -e "${REDB}Error: libgmp-dev, m4, perl and/or wget packages not installed.  Fix with: apt install libgmp-dev m4 perl wget${CLR}"
+        exit 1
+    fi
+elif [[ $is_arch == 1 ]]; then
+    pacman -Qi gmp m4 perl wget > /dev/null 2>&1
+    if [[ $? != 0 ]]; then
+        echo -e "${REDB}Error: gmp, m4, perl and/or wget packages not installed.  Fix with: pacman -S gmp m4 perl wget${CLR}"
+        exit 1
+    fi
 fi
 
 # Make sure sslscan has been built.
