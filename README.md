@@ -1,3 +1,9 @@
+# Beta Branch
+
+This is a beta branch for the major rewrite by @jtesta to add in TLSv1.3 support (as well as other features).
+
+There may be bugs and other issues. Any feedback is greatly appreciated.
+
 # README
 
 [![Build Status](https://travis-ci.org/rbsec/sslscan.svg?branch=master)](https://travis-ci.org/rbsec/sslscan)
