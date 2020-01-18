@@ -1,0 +1,68 @@
+[0m
+[32mConnected to 127.0.0.1[0m
+
+Testing SSL server [32m127.0.0.1[0m on port [32m4443[0m using SNI name [32m127.0.0.1[0m
+
+  [1;34mSSL/TLS Protocols:[0m
+SSLv2 is [32mnot enabled[0m
+SSLv3 is [32mnot enabled[0m
+TLSv1.0 is [32mnot enabled[0m
+TLSv1.1 is not enabled
+TLSv1.2 is enabled
+TLSv1.3 is enabled
+
+  [1;34mTLS Fallback SCSV:[0m
+Server [32msupports[0m TLS Fallback SCSV
+
+  [1;34mTLS renegotiation:[0m
+Session renegotiation [32mnot supported[0m
+
+  [1;34mTLS Compression:[0m
+Compression [32mdisabled[0m
+
+  [1;34mHeartbleed:[0m
+TLS 1.3 [32mnot vulnerable[0m to heartbleed
+TLS 1.2 [32mnot vulnerable[0m to heartbleed
+
+  [1;34mSupported Server Cipher(s):[0m
+[32mPreferred[0m TLSv1.3  [32m128[0m bits  TLS_AES_128_GCM_SHA256        Curve P-521 DHE 521
+Accepted  TLSv1.3  [32m256[0m bits  TLS_AES_256_GCM_SHA384        Curve P-521 DHE 521
+Accepted  TLSv1.3  [32m256[0m bits  TLS_CHACHA20_POLY1305_SHA256  Curve P-521 DHE 521
+Accepted  TLSv1.3  [32m128[0m bits  TLS_AES_128_CCM_SHA256        Curve P-521 DHE 521
+[32mPreferred[0m TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-AES256-GCM-SHA384  [0m Curve P-521 DHE 521
+Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-AES256-GCM-SHA384    [0m DHE 8192 bits
+Accepted  TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-CHACHA20-POLY1305  [0m Curve P-521 DHE 521
+Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-CHACHA20-POLY1305    [0m DHE 8192 bits
+Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-CCM            DHE 8192 bits
+Accepted  TLSv1.2  [32m128[0m bits  [32mECDHE-RSA-AES128-GCM-SHA256  [0m Curve P-521 DHE 521
+Accepted  TLSv1.2  [32m128[0m bits  [32mDHE-RSA-AES128-GCM-SHA256    [0m DHE 8192 bits
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-CCM            DHE 8192 bits
+Accepted  TLSv1.2  [32m256[0m bits  ECDHE-RSA-AES256-SHA          Curve P-521 DHE 521
+Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 8192 bits
+Accepted  TLSv1.2  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve P-521 DHE 521
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 8192 bits
+Accepted  TLSv1.2  [32m256[0m bits  AES256-GCM-SHA384            
+Accepted  TLSv1.2  [32m256[0m bits  AES256-CCM                   
+Accepted  TLSv1.2  [32m128[0m bits  AES128-GCM-SHA256            
+Accepted  TLSv1.2  [32m128[0m bits  AES128-CCM                   
+Accepted  TLSv1.2  [32m256[0m bits  AES256-SHA                   
+Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA                   
+
+  [1;34mServer Key Exchange Group(s):[0m
+TLSv1.3  [32m260[0m bits  secp521r1 (NIST P-521)[0m
+TLSv1.3  [32m192[0m bits  ffdhe8192[0m
+TLSv1.2  [32m260[0m bits  secp521r1 (NIST P-521)[0m
+
+  [1;34mServer Signature Algorithm(s):[0m
+rsa_pss_rsae_sha256[0m
+rsa_pss_rsae_sha384[0m
+rsa_pss_rsae_sha512[0m
+
+  [1;34mSSL Certificate:[0m
+Signature Algorithm: [32msha256WithRSAEncryption[0m
+RSA Key Strength:    3072
+
+Subject:  lmgtfy.com
+Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere
+Not valid before: [32mDec  3 04:07:43 2019 GMT[0m
+Not valid after:  [32mDec  3 04:07:43 2029 GMT[0m
