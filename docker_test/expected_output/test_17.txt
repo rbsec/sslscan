@@ -41,6 +41,15 @@ Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA
   [1;34mServer Key Exchange Group(s):[0m
 TLSv1.2  [32m256[0m bits  brainpoolP512r1[0m
 
+  [1;34mServer Signature Algorithm(s):[0m
+TLSv1.2  [31mrsa_pkcs1_sha1[0m
+TLSv1.2  [33mrsa_pkcs1_sha224[0m
+TLSv1.2  rsa_pkcs1_sha256[0m
+TLSv1.2  rsa_pkcs1_sha384[0m
+TLSv1.2  rsa_pkcs1_sha512[0m
+TLSv1.2  rsa_pss_rsae_sha256[0m
+TLSv1.2  rsa_pss_rsae_sha384[0m
+
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m
 RSA Key Strength:    [31m1024[0m

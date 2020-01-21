@@ -78,9 +78,10 @@ TLSv1.2  [32m260[0m bits  secp521r1 (NIST P-521)[0m
 TLSv1.2  [32m128[0m bits  [32mx25519[0m
 
   [1;34mServer Signature Algorithm(s):[0m
-rsa_pss_rsae_sha256[0m
-rsa_pss_rsae_sha384[0m
-rsa_pss_rsae_sha512[0m
+TLSv1.3  rsa_pss_rsae_sha256[0m
+TLSv1.3  rsa_pss_rsae_sha384[0m
+TLSv1.3  rsa_pss_rsae_sha512[0m
+TLSv1.2[33m  Server accepts all signature algorithms.[0m
 
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m

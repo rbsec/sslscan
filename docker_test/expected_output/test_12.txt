@@ -49,6 +49,9 @@ Accepted  [33mTLSv1.0[0m  [31m56[0m bits   [33mTLS_DHE_RSA_WITH_DES_CBC_SHA
   [1;34mServer Key Exchange Group(s):[0m
 TLSv1.0  [32m128[0m bits  secp256r1 (NIST P-256)[0m
 
+  [1;34mServer Signature Algorithm(s):[0m
+TLSv1.0[33m  Server accepts all signature algorithms.[0m
+
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [31mmd5WithRSAEncryption[0m
 RSA Key Strength:    [31m512[0m

@@ -38,9 +38,9 @@ TLSv1.3  [32m128[0m bits  [32mx25519[0m
 TLSv1.3  [32m224[0m bits  [32mx448[0m
 
   [1;34mServer Signature Algorithm(s):[0m
-rsa_pss_rsae_sha256[0m
-rsa_pss_rsae_sha384[0m
-rsa_pss_rsae_sha512[0m
+TLSv1.3  rsa_pss_rsae_sha256[0m
+TLSv1.3  rsa_pss_rsae_sha384[0m
+TLSv1.3  rsa_pss_rsae_sha512[0m
 
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m
