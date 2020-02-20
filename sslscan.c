@@ -1601,7 +1601,10 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
     }
 
     printf_xml(" sslversion=\"%s\"", cleanSslMethod);
-    if (strcmp(cleanSslMethod, "TLSv1.0") == 0) {
+    if (strcmp(cleanSslMethod, "TLSv1.3") == 0) {
+      printf("%sTLSv1.3%s  ", COL_GREEN, RESET);
+    }
+    else if (strcmp(cleanSslMethod, "TLSv1.0") == 0) {
       printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
     } else
       printf("%s  ", cleanSslMethod);
