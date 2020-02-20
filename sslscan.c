@@ -3474,23 +3474,23 @@ int testHost(struct sslCheckOptions *options)
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
         if ((options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v13) && options->tls13_supported)
         {
-            printf("TLS 1.3 ");
+            printf("TLSv1.3 ");
             status = testHeartbleed(options, TLSv1_3_client_method());
         }
         if ((options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v12) && options->tls12_supported)
         {
-            printf("TLS 1.2 ");
+            printf("TLSv1.2 ");
             status = testHeartbleed(options, TLSv1_2_client_method());
         }
         if ((options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v11) && options->tls11_supported)
         {
-            printf("TLS 1.1 ");
+            printf("TLSv1.1 ");
             status = testHeartbleed(options, TLSv1_1_client_method());
         }
 #endif
         if ((options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10) && options->tls10_supported)
         {
-            printf("TLS 1.0 ");
+            printf("TLSv1.0 ");
             status = testHeartbleed(options, TLSv1_client_method());
         }
         if( options->sslVersion == ssl_v2 || options->sslVersion == ssl_v3)
