@@ -3333,10 +3333,10 @@ int testHost(struct sslCheckOptions *options)
     // Check if SSLv2 is enabled.
     if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v2)) {
       if (runSSLv2Test(options)) {
-        printf("SSLv2 is %senabled%s\n", COL_RED, RESET);
+        printf("SSLv2     %senabled%s\n", COL_RED, RESET);
         printf_xml("  <protocol type=\"ssl\" version=\"2\" enabled=\"1\" />\n");
       } else {
-        printf("SSLv2 is %snot enabled%s\n", COL_GREEN, RESET);
+        printf("SSLv2     %sdisabled%s\n", COL_GREEN, RESET);
         printf_xml("  <protocol type=\"ssl\" version=\"2\" enabled=\"0\" />\n");
       }
     }
@@ -3344,10 +3344,10 @@ int testHost(struct sslCheckOptions *options)
     // Check if SSLv3 is enabled.
     if ((options->sslVersion == ssl_all) || (options->sslVersion == ssl_v3)) {
       if (runSSLv3Test(options)) {
-	printf("SSLv3 is %senabled%s\n", COL_RED, RESET);
+	printf("SSLv3     %senabled%s\n", COL_RED, RESET);
 	printf_xml("  <protocol type=\"ssl\" version=\"3\" enabled=\"1\" />\n");
       } else {
-	printf("SSLv3 is %snot enabled%s\n", COL_GREEN, RESET);
+	printf("SSLv3     %sdisabled%s\n", COL_GREEN, RESET);
 	printf_xml("  <protocol type=\"ssl\" version=\"3\" enabled=\"0\" />\n");
       }
     }
@@ -3355,40 +3355,40 @@ int testHost(struct sslCheckOptions *options)
     /* Test if TLSv1.0 through TLSv1.3 is supported.  This allows us to skip unnecessary tests later.  Print status of each protocol when verbose flag is set. */
     if ((options->sslVersion == ssl_all) || (options->sslVersion == tls_all) || (options->sslVersion == tls_v10)) {
       if ((options->tls10_supported = checkIfTLSVersionIsSupported(options, TLSv1_0))) {
-	printf("TLSv1.0 is %senabled%s\n", COL_YELLOW, RESET);
+	printf("TLSv1.0   %senabled%s\n", COL_YELLOW, RESET);
 	printf_xml("  <protocol type=\"tls\" version=\"1.0\" enabled=\"1\" />\n");
       } else {
-	printf("TLSv1.0 is %snot enabled%s\n", COL_GREEN, RESET);
+	printf("TLSv1.0   %sdisabled%s\n", COL_GREEN, RESET);
 	printf_xml("  <protocol type=\"tls\" version=\"1.0\" enabled=\"0\" />\n");
       }
     }
 
     if ((options->sslVersion == ssl_all) || (options->sslVersion == tls_all) || (options->sslVersion == tls_v11)) {
       if ((options->tls11_supported = checkIfTLSVersionIsSupported(options, TLSv1_1))) {
-	printf("TLSv1.1 is enabled\n");
+	printf("TLSv1.1   enabled\n");
 	printf_xml("  <protocol type=\"tls\" version=\"1.1\" enabled=\"1\" />\n");
       } else {
-	printf("TLSv1.1 is not enabled\n");
+	printf("TLSv1.1   disabled\n");
 	printf_xml("  <protocol type=\"tls\" version=\"1.1\" enabled=\"0\" />\n");
       }
     }
 
     if ((options->sslVersion == ssl_all) || (options->sslVersion == tls_all) || (options->sslVersion == tls_v12)) {
       if ((options->tls12_supported = checkIfTLSVersionIsSupported(options, TLSv1_2))) {
-	printf("TLSv1.2 is enabled\n");
+	printf("TLSv1.2   enabled\n");
 	printf_xml("  <protocol type=\"tls\" version=\"1.2\" enabled=\"1\" />\n");
       } else {
-	printf("TLSv1.2 is not enabled\n");
+	printf("TLSv1.2   not enabled\n");
 	printf_xml("  <protocol type=\"tls\" version=\"1.2\" enabled=\"0\" />\n");
       }
     }
 
     if ((options->sslVersion == ssl_all) || (options->sslVersion == tls_all) || (options->sslVersion == tls_v13)) {
       if ((options->tls13_supported = checkIfTLSVersionIsSupported(options, TLSv1_3))) {
-	printf("TLSv1.3 is enabled\n");
+	printf("TLSv1.3   %senabled%s\n", COL_GREEN, RESET);
 	printf_xml("  <protocol type=\"tls\" version=\"1.3\" enabled=\"1\" />\n");
       } else {
-	printf("TLSv1.3 is not enabled\n");
+	printf("TLSv1.3   disabled\n");
 	printf_xml("  <protocol type=\"tls\" version=\"1.3\" enabled=\"1\" />\n");
       }
     }
