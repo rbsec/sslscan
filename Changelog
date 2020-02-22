@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Version: 2.0.0-alpha1
+Date   : 22/02/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Major rewrite of backend scanning code.
+         > Support for additional cipher suites.
+         > Support for TLSv1.3
+         > Support for SSLv2 and SSLv3 protocol detection regardless of
+		 OpenSSL.
+         > Checks for server key exchange groups.
+         > Checks for server signature algorithms.
+
 Version: 1.11.13
 Date   : 24/03/2019
 Author : rbsec <robin@rbsec.net>
