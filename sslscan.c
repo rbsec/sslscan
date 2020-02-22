@@ -3550,7 +3550,7 @@ int testHost(struct sslCheckOptions *options)
         testSupportedGroups(options);
 
     // Enumerate signature algorithms.
-    if (options->signature_algorithms && options->tls13_supported)
+    if (options->signature_algorithms)
         testSignatureAlgorithms(options);
 
     // Print certificate
@@ -4686,13 +4686,9 @@ err:
 unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsigned int tls_version) {
   bs *tls_extensions = NULL, *ciphersuite_list = NULL, *client_hello = NULL, *server_hello = NULL;
   int ret = false, s = -1;
-  unsigned int include_server_signatures = 0;
 
 
-  if (tls_version == TLSv1_3)
-    include_server_signatures = 1;
-
-  tls_extensions = makeTLSExtensions(options, include_server_signatures);
+  tls_extensions = makeTLSExtensions(options, 1);
   if (tls_version == TLSv1_2) {
     /* Extension: supported_groups */
     bs_append_bytes(tls_extensions, (unsigned char []) {
@@ -5555,7 +5551,6 @@ int testSupportedGroups(struct sslCheckOptions *options) {
 
 /* Enumerates all the signature algorithms supported by the server. */
 int testSignatureAlgorithms(struct sslCheckOptions *options) {
-  int ret = true;
 
   struct signature_algorithm {
     uint16_t sig_id;
@@ -5567,20 +5562,26 @@ int testSignatureAlgorithms(struct sslCheckOptions *options) {
 #define BOGUS_SIG_ALG_ID 0xfdff /* Last un-assigned ID. */
   struct signature_algorithm signature_algorithms[] = {
     {BOGUS_SIG_ALG_ID, "bogus", COL_RED}, /* Tests if the server is accepting all. */
+    {0x0001, "rsa_pkcs1_nohash", COL_RED},
+    {0x0002, "dsa_nohash", COL_RED},
+    {0x0003, "ecdsa_nohash", COL_RED},
+    {0x0101, "rsa_pkcs1_md5", COL_RED},
+    {0x0102, "dsa_md5", COL_RED},
+    {0x0103, "ecdsa_md5", COL_RED},
     {0x0201, "rsa_pkcs1_sha1", COL_RED},
-    {0x0202, "SHA1 DSA", COL_RED},
+    {0x0202, "dsa_sha1", COL_RED},
     {0x0203, "ecdsa_sha1", COL_RED},
-    {0x0301, "SHA224 ECDSA", COL_YELLOW},
-    {0x0302, "SHA224 DSA", COL_RED},
-    {0x0303, "SHA224 ECDSA", COL_YELLOW},
+    {0x0301, "rsa_pkcs1_sha224", COL_YELLOW},
+    {0x0302, "dsa_sha224", COL_RED},
+    {0x0303, "ecdsa_sha224", COL_YELLOW},
     {0x0401, "rsa_pkcs1_sha256", COL_PLAIN},
-    {0x0402, "SHA256 DSA", COL_RED},
+    {0x0402, "dsa_sha256", COL_RED},
     {0x0403, "ecdsa_secp256r1_sha256", COL_PLAIN},
     {0x0501, "rsa_pkcs1_sha384", COL_PLAIN},
-    {0x0502, "SHA384 DSA", COL_RED},
+    {0x0502, "dsa_sha384", COL_RED},
     {0x0503, "ecdsa_secp384r1_sha384", COL_PLAIN},
     {0x0601, "rsa_pkcs1_sha512", COL_PLAIN},
-    {0x0602, "SHA512 DSA", COL_RED},
+    {0x0602, "dsa_sha512", COL_RED},
     {0x0603, "ecdsa_secp521r1_sha512", COL_PLAIN},
     {0x0804, "rsa_pss_rsae_sha256", COL_PLAIN},
     {0x0805, "rsa_pss_rsae_sha384", COL_PLAIN},
@@ -5593,99 +5594,129 @@ int testSignatureAlgorithms(struct sslCheckOptions *options) {
   };
 
   unsigned int printed_header = 0;
-  int s = -1;
+  int ret = true, s = -1;
+  int test_versions[2] = {-1, -1};
   bs *client_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL, *server_hello = NULL;
 
+  /* If TLSv1.3 is supported, test it first. */
+  unsigned int index = 0;
+  if (options->tls13_supported) {
+    test_versions[index] = TLSv1_3;
+    index++;
+  }
 
-  /* Get all TLSv1.3 ciphersuites. */
-  ciphersuite_list = makeCiphersuiteListTLS13All();
+  /* For TLSv1.2 and below, test the highest protocol version supported. */
+  if (options->tls12_supported)
+    test_versions[index] = TLSv1_2;
+  else if (options->tls11_supported)
+    test_versions[index] = TLSv1_1;
+  else if (options->tls10_supported)
+    test_versions[index] = TLSv1_0;
 
-  /* For each signature algorithm... */
-  for (int i = 0; i < (sizeof(signature_algorithms) / sizeof(struct signature_algorithm)); i++) {
-    uint16_t sig_id = signature_algorithms[i].sig_id;
-    char *sig_name = signature_algorithms[i].sig_name;
-    char *color = signature_algorithms[i].color;
+  /* Loop through the one or two TLS versions to test. */
+  for (index = 0; index < (sizeof(test_versions) / sizeof(int)); index++) {
+    int tls_version = test_versions[index];
+
+    /* If there's only one version to test... */
+    if (tls_version == -1)
+      break;
+
+    if (tls_version == TLSv1_3) {
+      /* Get all TLSv1.3 ciphersuites. */
+      ciphersuite_list = makeCiphersuiteListTLS13All();
+    } else
+      ciphersuite_list = makeCiphersuiteListAll(tls_version);
 
 
-    /* Make generic TLS extensions (with SNI, accepted EC point formats, etc). */
-    tls_extensions = makeTLSExtensions(options, 0);
+    /* For each signature algorithm... */
+    for (int i = 0; i < (sizeof(signature_algorithms) / sizeof(struct signature_algorithm)); i++) {
+      uint16_t sig_id = signature_algorithms[i].sig_id;
+      char *sig_name = signature_algorithms[i].sig_name;
+      char *color = signature_algorithms[i].color;
 
-    /* Extension: supported_groups */
-    bs_append_bytes(tls_extensions, (unsigned char []) {
-      0x00, 0x0a, // Extension: supported_groups (10)
-      0x00, 0x16, // Extension Length (22)
-      0x00, 0x14, // Supported Groups List Length (20)
-      0x00, 0x17, // secp256r1
-      0x00, 0x19, // secp521r1
-      0x00, 0x18, // secp384r1
-      0x00, 0x1d, // X25519
-      0x00, 0x1e, // X448
-      0x01, 0x00, // FFDHE2048
-      0x01, 0x01, // FFDHE3072
-      0x01, 0x02, // FFDHE4096
-      0x01, 0x03, // FFDHE6144
-      0x01, 0x04, // FFDHE8192
-    }, 26);
 
-    /* Add key shares for X25519. */
-    tlsExtensionAddDefaultKeyShare(tls_extensions);
+      /* Make generic TLS extensions (with SNI, accepted EC point formats, etc). */
+      tls_extensions = makeTLSExtensions(options, 0);
 
-    /* Add the supported_versions extension to signify we are using TLS v1.3. */
-    tlsExtensionAddTLSv1_3(tls_extensions);
+      if (tls_version == TLSv1_3) {
+        /* Extension: supported_groups */
+        bs_append_bytes(tls_extensions, (unsigned char []) {
+          0x00, 0x0a, // Extension: supported_groups (10)
+          0x00, 0x16, // Extension Length (22)
+          0x00, 0x14, // Supported Groups List Length (20)
+          0x00, 0x17, // secp256r1
+          0x00, 0x19, // secp521r1
+          0x00, 0x18, // secp384r1
+          0x00, 0x1d, // X25519
+          0x00, 0x1e, // X448
+          0x01, 0x00, // FFDHE2048
+          0x01, 0x01, // FFDHE3072
+          0x01, 0x02, // FFDHE4096
+          0x01, 0x03, // FFDHE6144
+          0x01, 0x04, // FFDHE8192
+        }, 26);
 
-    /* Add the signature_algorithms extension.  Only add the one group we are testing for. */
-    bs_append_bytes(tls_extensions, (unsigned char []) {
-      0x00, 0x0d, // Extension Type: signature_algorithms (13)
-      0x00, 0x04, // Extension Length (4)
-      0x00, 0x02, // Signature Hash Algorithms List Length (2)
-    }, 6);
-    bs_append_ushort(tls_extensions, sig_id);
+        /* Add key shares for X25519. */
+        tlsExtensionAddDefaultKeyShare(tls_extensions);
 
-    /* Update the TLS extensions length since we manually added to it. */
-    tlsExtensionUpdateLength(tls_extensions);
+        /* Add the supported_versions extension to signify we are using TLS v1.3. */
+        tlsExtensionAddTLSv1_3(tls_extensions);
+      }
 
-    /* Create the Client Hello buffer using the ciphersuite list and TLS extensions. */
-    client_hello = makeClientHello(options, 3, ciphersuite_list, tls_extensions);
+      /* Add the signature_algorithms extension.  Only add the one group we are testing for. */
+      bs_append_bytes(tls_extensions, (unsigned char []) {
+        0x00, 0x0d, // Extension Type: signature_algorithms (13)
+        0x00, 0x04, // Extension Length (4)
+        0x00, 0x02, // Signature Hash Algorithms List Length (2)
+      }, 6);
+      bs_append_ushort(tls_extensions, sig_id);
 
-    /* Free the TLS extensions since we're done with them.  Note: we don't free the ciphersuite_list because we'll need them on the next loop. */
-    bs_free(&tls_extensions);
+      /* Update the TLS extensions length since we manually added to it. */
+      tlsExtensionUpdateLength(tls_extensions);
 
-    /* Now connect to the target server. */
-    s = tcpConnect(options);
-    if (s == 0) {
-      ret = false;
-      goto done;
-    }
+      /* Create the Client Hello buffer using the ciphersuite list and TLS extensions. */
+      client_hello = makeClientHello(options, tls_version, ciphersuite_list, tls_extensions);
 
-    /* Send the Client Hello message. */
-    if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
-      printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
-      ret = false;
-      goto done;
-    }
-    bs_free(&client_hello);
+      /* Free the TLS extensions since we're done with them.  Note: we don't free the ciphersuite_list because we'll need them on the next loop. */
+      bs_free(&tls_extensions);
 
-    server_hello = getServerHello(s);
-    CLOSE(s);
+      /* Now connect to the target server. */
+      s = tcpConnect(options);
+      if (s == 0) {
+        ret = false;
+        goto done;
+      }
 
-    /* This signature algorithm is not supported. */
-    if (server_hello == NULL)
-      continue;
+      /* Send the Client Hello message. */
+      if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
+        printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
+        ret = false;
+        goto done;
+      }
+      bs_free(&client_hello);
 
-    bs_free(&server_hello);
+      server_hello = getServerHello(s);
+      CLOSE(s);
 
-    if (!printed_header) {
-      printf("\n  %sServer Signature Algorithm(s):%s\n", COL_BLUE, RESET);
-      printed_header = 1;
-    }
+      /* This signature algorithm is not supported. */
+      if (server_hello == NULL)
+        continue;
 
-    /* If the server accepted our bogus signature ID, then we can conclude that it will accept all of them (and not test any further).  Some servers in the wild do this for some reason... */
-    if (sig_id == BOGUS_SIG_ALG_ID) {
-      printf("%sServer accepts all signature algorithms.%s\n", COL_YELLOW, RESET);
-      goto done;
-    } else {
-      printf("%s%s%s\n", color, sig_name, RESET);
-      printf_xml("  <connection-signature-algorithm sslversion=\"TLSv1.3\" name=\"%s\" id=\"0x%04x\" />\n", sig_name, sig_id);
+      bs_free(&server_hello);
+
+      if (!printed_header) {
+        printf("\n  %sServer Signature Algorithm(s):%s\n", COL_BLUE, RESET);
+        printed_header = 1;
+      }
+
+      /* If the server accepted our bogus signature ID, then we can conclude that it will accept all of them (and not test any further).  Some servers in the wild do this for some reason... */
+      if (sig_id == BOGUS_SIG_ALG_ID) {
+        printf("%s%s  Server accepts all signature algorithms.%s\n", getPrintableTLSName(tls_version), COL_YELLOW, RESET);
+        goto done;
+      } else {
+        printf("%s  %s%s%s\n", getPrintableTLSName(tls_version), color, sig_name, RESET);
+        printf_xml("  <connection-signature-algorithm sslversion=\"%s\" name=\"%s\" id=\"0x%04x\" />\n", getPrintableTLSName(tls_version), sig_name, sig_id);
+      }
     }
   }
 

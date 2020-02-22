@@ -275,6 +275,7 @@ function run_tests {
     run_test_15 "0"
     run_test_16 "0"
     run_test_17 "0"
+    run_test_18 "0"
 }
 
 
@@ -377,6 +378,12 @@ function run_test_16 {
 # OpenSSL v1.1.1, TLSv1.2 with brainpoolP512r1 curve only.
 function run_test_17 {
     run_test $1 '17' "/openssl_v1.1.1/openssl s_server -accept 443 -tls1_2 -named_curve brainpoolP512r1 -cert /etc/ssl/cert_1024.crt -key /etc/ssl/key_1024.pem" ""
+}
+
+
+# TLSv1.2 with ECDSA-SHA1 signature only.
+function run_test_18 {
+    run_test $1 '18' "/gnutls-3.6.11.1/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem --priority=NONE:-VERS-TLS1.0:-VERS-TLS1.1:+VERS-TLS1.2:-VERS-TLS1.3:+MAC-ALL:+GROUP-ALL:+SIGN-ECDSA-SHA1:+COMP-NULL:+CTYPE-SRV-ALL:+KX-ALL:+CHACHA20-POLY1305:+CAMELLIA-128-GCM:+AES-128-GCM" ""
 }
 
 
