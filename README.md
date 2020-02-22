@@ -1,7 +1,7 @@
 # sslscan2
 
 An alpha build of sslscan 2 has been merged into master. If you want the old code,
-the tag [1.11.11-rbsec](https://github.com/rbsec/sslscan/tree/1.11.11-rbsec) was the last release in that branch.
+the tag [1.11.13-rbsec](https://github.com/rbsec/sslscan/releases/tag/1.11.13-rbsec) was the last release in that branch.
 
 The main changes in sslscan2 is a major rewrite of the backend scanning code,
 which means that it is no longer reliant on the version of OpenSSL for many checks.
