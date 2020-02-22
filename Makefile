@@ -88,7 +88,7 @@ all: sslscan
 	@echo "| WARNING |"
 	@echo "==========="
 	@echo
-	@echo "Building against system OpenSSL. Legacy protocol checks may not be possible."
+	@echo "Building against system OpenSSL. Compression and other checks may not be possible."
 	@echo "It is recommended that you statically build sslscan with  \`make static\`."
 	@echo
 
