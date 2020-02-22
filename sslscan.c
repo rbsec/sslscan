@@ -2296,9 +2296,8 @@ int ocspRequest(struct sslCheckOptions *options)
             sslMethod = TLSv1_3_method();
         }
         else {
-            printf_verbose("sslMethod = TLSv1_method()\n");
-            printf_verbose("If server doesn't support TLSv1.0, manually specify TLS version\n");
-            sslMethod = TLSv1_method();
+            printf_verbose("sslMethod = TLS_method()\n");
+            sslMethod = TLS_method();
         }
         options->ctx = new_CTX(sslMethod);
         if (options->ctx != NULL)
@@ -2608,9 +2607,8 @@ int showCertificate(struct sslCheckOptions *options)
         }
 #endif
         else {
-            printf_verbose("sslMethod = TLSv1_method()\n");
-            printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
-            sslMethod = TLSv1_method();
+            printf_verbose("sslMethod = TLS_method()\n");
+            sslMethod = TLS_method();
         }
         options->ctx = new_CTX(sslMethod);
         if (options->ctx != NULL)
@@ -3059,9 +3057,8 @@ int showTrustedCAs(struct sslCheckOptions *options)
         }
 #endif
         else {
-            printf_verbose("sslMethod = TLSv1_method()\n");
-            printf_verbose("If server doesn't support TLSv1.0, manually specificy TLS version\n");
-            sslMethod = TLSv1_method();
+            printf_verbose("sslMethod = TLS_method()\n");
+            sslMethod = TLS_method();
         }
         options->ctx = new_CTX(sslMethod);
         if (options->ctx != NULL)
