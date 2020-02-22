@@ -1,0 +1,22 @@
+There is one Certificate Authority in this directory: ca_cert.pem / ca_key.pem.
+
+This CA directly signed these certificates (with their corresponding keys):
+  * cert_512.crt / key_512.pem
+  * cert_1024.crt / key_3072.pem
+  * cert_2048.crt / key_2048.pem
+  * cert_3072.crt / key_3072.pem
+
+The 512, 1024, 2048, and 3072 refer to the RSA key size.
+
+---
+
+To generate new keys, and sign them by the CA:
+
+1.) Generate the key.
+
+  * For RSA keys:   openssl genrsa -out key.pem 1024
+  * For ECDSA keys: openssl ecparam -name prime256v1 -genkey -noout -out key.pem
+
+2.) Make CSR: openssl req -new -key key.pem -out new.csr
+
+3.) Sign with CA: openssl x509 -req -days 3653 -in new.csr -CA path/to/ca_cert.pem -CAkey path/to/ca_key.pem -CAcreateserial -out new.crt [-md5|-sha1|-sha256]

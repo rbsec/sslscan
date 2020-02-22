@@ -1,0 +1,24 @@
+[0m
+[32mConnected to 127.0.0.1[0m
+
+Testing SSL server [32m127.0.0.1[0m on port [32m4443[0m using SNI name [32m127.0.0.1[0m
+
+  [1;34mSSL/TLS Protocols:[0m
+SSLv2 is [32mnot enabled[0m
+SSLv3 is [32mnot enabled[0m
+TLSv1.0 is [32mnot enabled[0m
+TLSv1.1 is not enabled
+TLSv1.2 is enabled
+TLSv1.3 is not enabled
+
+  [1;34mSupported Server Cipher(s):[0m
+[32mPreferred[0m 200 OK           TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-CHACHA20-POLY1305  [0m Curve [32m25519[0m DHE 253
+
+  [1;34mSSL Certificate:[0m
+Signature Algorithm: [32msha256WithRSAEncryption[0m
+RSA Key Strength:    3072
+
+Subject:  lmgtfy.com
+Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere
+Not valid before: [32mDec  3 04:07:43 2019 GMT[0m
+Not valid after:  [32mDec  3 04:07:43 2029 GMT[0m

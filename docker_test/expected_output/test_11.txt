@@ -1,0 +1,29 @@
+[0m
+[32mConnected to[0m
+
+Testing SSL server [32mwww.amazon.com[0m on port [32m443[0m using SNI name [32mwww.amazon.com[0m
+
+  [1;34mSSL/TLS Protocols:[0m
+SSLv2 is [32mnot enabled[0m
+SSLv3 is [32mnot enabled[0m
+TLSv1.0 is [33menabled[0m
+TLSv1.1 is enabled
+TLSv1.2 is enabled
+TLSv1.3 is not enabled
+
+  [1;34mOCSP Stapling Request:[0m
+OCSP Response Status: successful (0x0)
+Response Type: Basic OCSP Response
+Version: 1 (0x0)
+Responder Id:
+Produced At:
+Responses:
+    Certificate ID:
+      Hash Algorithm:
+      Issuer Name Hash:
+      Issuer Key Hash:
+      Serial Number:
+    Cert Status: [32mgood[0m
+    This Update:
+    Next Update:
+
