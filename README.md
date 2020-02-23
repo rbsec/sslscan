@@ -96,35 +96,6 @@ fork of OpenSSL, which backports the Chacha20 and Poly1305 ciphers to OpenSSL
 1.0.2, while keeping the dangerous legacy features (such as SSLv2 and EXPORT
 ciphers) enabled.
 
-### TLSv1.3 and the future of sslscan
-
-Since the OpenSSL made the (very sensible) choice to remove support for legacy
-and insecure protocols and ciphers, sslscan has relied on a fork of OpenSSL by
-[Peter Mossmans](https://github.com/PeterMosmans/openssl) which provided support
-for both these legacy ciphers and newly added ciphers (such as ChaCha). However,
-this fork of OpenSSL does not support TLSv1.3. To my knowledge there is no
-version of OpenSSL which supports both the legacy crypto (SSLv2, EXPORT ciphers,
-etc) and TLSv1.3 - which means that it is not possible to build sslscan with
-support for both.
-
-The primary goal of sslscan is to identify misconfigurations and security
-weaknesses in the SSL configuration of a target system, so support for the
-legacy ciphers and protocols is much more important than for the newer
-(secure) protocols like TLSv1.3 - however over time this will change as
-new vulnerabilities are found.
-
-Supporting both SSLv2 an TLSv1.3 in sslscan would either require a fork of
-OpenSSL with all the new code backported (which would be increasingly difficult
-to maintain over time), or a complete rewrite of sslscan to not rely on the
-OpenSSL library. This is not a project that I have the time available for
-at present, and if I did, it would probably be a better investment of time
-to work on one of the other SSL scanning tools, rather than starting from scratch.
-
-As such, sslscan should be considered  legacy. I will still maintain it as far
-as I have time, but it is unlikely to ever support TLSv1.3,  unless an OpenSSL
-fork is created by someone else that supports this while maintaining the insecure
-crypto that sslscan requires to be useful.
-
 #### Statically linking a custom OpenSSL build
 
 It is possible to ignore the OpenSSL system installation and ship your own
