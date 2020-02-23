@@ -53,6 +53,9 @@ ifneq ($(OS), SunOS)
 endif
 endif
 
+# Force C11 mode to fix the build on very old version of GCC
+CFLAGS += -std=gnu11
+
 # for static linking
 ifeq ($(STATIC_BUILD), TRUE)
 PWD          = $(shell pwd)/openssl
