@@ -3378,7 +3378,7 @@ int testHost(struct sslCheckOptions *options)
 	printf("TLSv1.2   enabled\n");
 	printf_xml("  <protocol type=\"tls\" version=\"1.2\" enabled=\"1\" />\n");
       } else {
-	printf("TLSv1.2   not enabled\n");
+	printf("TLSv1.2   disabled\n");
 	printf_xml("  <protocol type=\"tls\" version=\"1.2\" enabled=\"0\" />\n");
       }
     }
