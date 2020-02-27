@@ -4,12 +4,12 @@
 Testing SSL server [32m127.0.0.1[0m on port [32m4443[0m using SNI name [32m127.0.0.1[0m
 
   [1;34mSSL/TLS Protocols:[0m
-SSLv2 is [32mnot enabled[0m
-SSLv3 is [31menabled[0m
-TLSv1.0 is [33menabled[0m
-TLSv1.1 is enabled
-TLSv1.2 is enabled
-TLSv1.3 is not enabled
+SSLv2     [32mdisabled[0m
+SSLv3     [31menabled[0m
+TLSv1.0   [33menabled[0m
+TLSv1.1   enabled
+TLSv1.2   enabled
+TLSv1.3   not enabled
 
   [1;34mTLS Fallback SCSV:[0m
 Server [32msupports[0m TLS Fallback SCSV
@@ -21,9 +21,9 @@ Server [32msupports[0m TLS Fallback SCSV
 Compression [31menabled[0m (CRIME)
 
   [1;34mHeartbleed:[0m
-TLS 1.2 [32mnot vulnerable[0m to heartbleed
-TLS 1.1 [32mnot vulnerable[0m to heartbleed
-TLS 1.0 [32mnot vulnerable[0m to heartbleed
+TLSv1.2 [32mnot vulnerable[0m to heartbleed
+TLSv1.1 [32mnot vulnerable[0m to heartbleed
+TLSv1.0 [32mnot vulnerable[0m to heartbleed
 
   [1;34mSupported Server Cipher(s):[0m
 [32mPreferred[0m TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-AES256-GCM-SHA384  [0m Curve P-256 DHE 256
