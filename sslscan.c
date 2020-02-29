@@ -3948,7 +3948,7 @@ int main(int argc, char *argv[])
             }
 
             while ((hostString[tempInt] != 0) && ((squareBrackets == true && hostString[tempInt] != ']')
-                        || (squareBrackets == false && hostString[tempInt] != ':')))
+                        || (squareBrackets == false && hostString[tempInt] != ':' && hostString[tempInt] != '/')))
             {
                 tempInt++;
             }
@@ -3956,7 +3956,7 @@ int main(int argc, char *argv[])
             if (squareBrackets == true && hostString[tempInt] == ']')
             {
                 hostString[tempInt] = 0;
-                if (tempInt < maxSize && hostString[tempInt + 1] == ':')
+                if (tempInt < maxSize && (hostString[tempInt + 1] == ':' || hostString[tempInt + 1] == '/'))
                 {
                     tempInt++;
                     hostString[tempInt] = 0;
