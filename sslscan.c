@@ -3982,7 +3982,7 @@ int main(int argc, char *argv[])
                 options.port = strtol((hostString + tempInt), NULL, 10);
                 if (options.port < 1 || options.port > 65535)
                 {
-                    printf("\n%sInvalid port specified%s\n\n", COL_RED, RESET);
+                    printf("\n%sInvalid target specified%s\n\n", COL_RED, RESET);
                     exit(1);
                 }
             }
