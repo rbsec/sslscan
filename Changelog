@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version: 2.0.0-alpha2
+Date   : 29/02/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Fix compilation on old versions of GCC.
+         > Minor changes to protocol support output.
+         > Strip a trailing slash from the specified target.
+         > Various other minor bugfixes.
+
 Version: 2.0.0-alpha1
 Date   : 22/02/2020
 Author : rbsec <robin@rbsec.net>
