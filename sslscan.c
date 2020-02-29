@@ -4053,12 +4053,8 @@ int main(int argc, char *argv[])
         case mode_help:
             // Program version banner...
             printf("%s%s%s\n", COL_BLUE, program_banner, RESET);
-            printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, VERSION,
+            printf("%s\t\t%s\n\t\t%s\n%s\n\n", COL_BLUE, VERSION,
                     SSLeay_version(SSLEAY_VERSION), RESET);
-#ifdef OPENSSL_NO_SSL2
-            printf("%sOpenSSL version does not support SSLv2%s\n", COL_RED, RESET);
-            printf("%sSSLv2 ciphers will not be detected%s\n\n", COL_RED, RESET);
-#endif
             printf("%sCommand:%s\n", COL_BLUE, RESET);
             printf("  %s%s [Options] [host:port | host]%s\n\n", COL_GREEN, argv[0], RESET);
             printf("%sOptions:%s\n", COL_BLUE, RESET);
