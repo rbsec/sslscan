@@ -9,7 +9,7 @@ SSLv3     [31menabled[0m
 TLSv1.0   [33menabled[0m
 TLSv1.1   disabled
 TLSv1.2   disabled
-TLSv1.3   not enabled
+TLSv1.3   [33mdisabled[0m
 
   [1;34mTLS Fallback SCSV:[0m
 Server [31mdoes not[0m support TLS Fallback SCSV

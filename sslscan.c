@@ -3388,7 +3388,7 @@ int testHost(struct sslCheckOptions *options)
 	printf("TLSv1.3   %senabled%s\n", COL_GREEN, RESET);
 	printf_xml("  <protocol type=\"tls\" version=\"1.3\" enabled=\"1\" />\n");
       } else {
-	printf("TLSv1.3   not enabled\n");
+	printf("TLSv1.3   %sdisabled%s\n", COL_YELLOW, RESET);
 	printf_xml("  <protocol type=\"tls\" version=\"1.3\" enabled=\"0\" />\n");
       }
     }
@@ -3562,16 +3562,11 @@ int testHost(struct sslCheckOptions *options)
     // Show weak certificate signing algorithm or key strength
     if (status == true && options->checkCertificate == true)
     {
+        status = checkCertificateProtocol(options, TLS_client_method());
         if (status != false)
-            status = checkCertificateProtocol(options, TLSv1_3_client_method());
-        if (status != false)
-            status = checkCertificateProtocol(options, TLSv1_2_client_method());
-        if (status != false)
-            status = checkCertificateProtocol(options, TLSv1_1_client_method());
-        if (status != false)
-            status = checkCertificateProtocol(options, TLSv1_client_method());
-        if (status != false)
-            printf("Certificate information cannot be enumerated through SSLv2 nor SSLv3.\n\n");
+        {
+            printf("Certificate information cannot be retrieved.\n\n");
+        }
     }
 
     // Print client auth trusted CAs

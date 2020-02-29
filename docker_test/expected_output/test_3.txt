@@ -9,7 +9,7 @@ SSLv3     [31menabled[0m
 TLSv1.0   [32mdisabled[0m
 TLSv1.1   disabled
 TLSv1.2   disabled
-TLSv1.3   not enabled
+TLSv1.3   [33mdisabled[0m
 
   [1;34mTLS Fallback SCSV:[0m
 [33mConnection failed[0m - unable to determine TLS Fallback SCSV support
@@ -23,5 +23,5 @@ Compression [32mdisabled[0m
   [1;34mHeartbleed:[0m
 
   [1;34mSupported Server Cipher(s):[0m
-Certificate information cannot be enumerated through SSLv2 nor SSLv3.
+Certificate information cannot be retrieved.
 
