@@ -4,12 +4,12 @@
 Testing SSL server [32m127.0.0.1[0m on port [32m4443[0m using SNI name [32m127.0.0.1[0m
 
   [1;34mSSL/TLS Protocols:[0m
-SSLv2 is [32mnot enabled[0m
-SSLv3 is [32mnot enabled[0m
-TLSv1.0 is [33menabled[0m
-TLSv1.1 is enabled
-TLSv1.2 is enabled
-TLSv1.3 is enabled
+SSLv2     [32mdisabled[0m
+SSLv3     [32mdisabled[0m
+TLSv1.0   [33menabled[0m
+TLSv1.1   enabled
+TLSv1.2   enabled
+TLSv1.3   [32menabled[0m
 
   [1;34mTLS Fallback SCSV:[0m
 Server [32msupports[0m TLS Fallback SCSV
@@ -21,16 +21,16 @@ Server [32msupports[0m TLS Fallback SCSV
 Compression [32mdisabled[0m
 
   [1;34mHeartbleed:[0m
-TLS 1.3 [32mnot vulnerable[0m to heartbleed
-TLS 1.2 [32mnot vulnerable[0m to heartbleed
-TLS 1.1 [32mnot vulnerable[0m to heartbleed
-TLS 1.0 [32mnot vulnerable[0m to heartbleed
+TLSv1.3 [32mnot vulnerable[0m to heartbleed
+TLSv1.2 [32mnot vulnerable[0m to heartbleed
+TLSv1.1 [32mnot vulnerable[0m to heartbleed
+TLSv1.0 [32mnot vulnerable[0m to heartbleed
 
   [1;34mSupported Server Cipher(s):[0m
-[32mPreferred[0m TLSv1.3  [32m128[0m bits  TLS_AES_128_GCM_SHA256        Curve [32m25519[0m DHE 253
-Accepted  TLSv1.3  [32m256[0m bits  TLS_AES_256_GCM_SHA384        Curve [32m25519[0m DHE 253
-Accepted  TLSv1.3  [32m256[0m bits  TLS_CHACHA20_POLY1305_SHA256  Curve [32m25519[0m DHE 253
-Accepted  TLSv1.3  [32m128[0m bits  TLS_AES_128_CCM_SHA256        Curve [32m25519[0m DHE 253
+[32mPreferred[0m [32mTLSv1.3[0m  [32m128[0m bits  TLS_AES_128_GCM_SHA256        Curve [32m25519[0m DHE 253
+Accepted  [32mTLSv1.3[0m  [32m256[0m bits  TLS_AES_256_GCM_SHA384        Curve [32m25519[0m DHE 253
+Accepted  [32mTLSv1.3[0m  [32m256[0m bits  TLS_CHACHA20_POLY1305_SHA256  Curve [32m25519[0m DHE 253
+Accepted  [32mTLSv1.3[0m  [32m128[0m bits  TLS_AES_128_CCM_SHA256        Curve [32m25519[0m DHE 253
 [32mPreferred[0m TLSv1.2  [32m256[0m bits  [32mECDHE-ECDSA-AES256-GCM-SHA384[0m Curve [32m25519[0m DHE 253
 Accepted  TLSv1.2  [32m256[0m bits  [32mECDHE-ECDSA-CHACHA20-POLY1305[0m Curve [32m25519[0m DHE 253
 Accepted  TLSv1.2  [32m256[0m bits  ECDHE-ECDSA-AES256-CCM        Curve [32m25519[0m DHE 253
