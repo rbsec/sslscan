@@ -95,6 +95,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <openssl/ec.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/pkcs12.h>
@@ -2030,14 +2031,28 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                                 }
                                                 break;
                                             case EVP_PKEY_EC:
-                                                if (EVP_PKEY_get1_EC_KEY(publicKey))
                                                 {
-                                                    // TODO - display key strength
-                                                    printf_xml("   <pk error=\"false\" type=\"EC\" />\n");
-                                                    /* EC_KEY_print(stdoutBIO, publicKey->pkey.ec, 6); */
-                                                }
-                                                else
-                                                {
+                                                  EC_KEY *ec_key = EVP_PKEY_get1_EC_KEY(publicKey);
+                                                  if (ec_key != NULL)
+                                                  {
+                                                    // We divide by two to get the symmetric key strength equivalent; this
+                                                    // ensures consistency with the Server Key Exchange Group section.
+                                                    int keyBits = EVP_PKEY_bits(publicKey) / 2;
+                                                    const char *ec_group_name = OBJ_nid2sn(EC_GROUP_get_curve_name(EC_KEY_get0_group(ec_key)));
+                                                    char *color = "";
+
+
+                                                    if (keyBits < 112)
+                                                      color = COL_RED;
+                                                    else if (keyBits < 128)
+                                                      color = COL_YELLOW;
+
+                                                    printf("ECC Curve Name:      %s\n", ec_group_name);
+                                                    printf("ECC Key Strength:    %s%d%s\n\n", color, keyBits, RESET);
+                                                    printf_xml("   <pk error=\"false\" type=\"EC\" curve_name=\"%s\" bits=\"%d\" />\n", ec_group_name, keyBits);
+                                                    EC_KEY_free(ec_key); ec_key = NULL;
+                                                  }
+                                                  else
                                                     printf("    EC Public Key: NULL\n");
                                                 }
                                                 break;
