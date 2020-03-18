@@ -67,6 +67,9 @@ TLSv1.2  ecdsa_secp521r1_sha512[0m
 
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m
+ECC Curve Name:      prime256v1
+ECC Key Strength:    128[0m
+
 Subject:  itspeanutbutterjellytime.com
 Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere
 Not valid before: [32mDec 22 19:01:56 2019 GMT[0m
