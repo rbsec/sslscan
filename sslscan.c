@@ -4084,8 +4084,8 @@ int main(int argc, char *argv[])
             printf("  %s--show-ciphers%s       Show supported client ciphers\n", COL_GREEN, RESET);
             printf("  %s--show-cipher-ids%s    Show cipher ids\n", COL_GREEN, RESET);
             printf("  %s--show-times%s         Show handhake times in milliseconds\n", COL_GREEN, RESET);
-            printf("  %s--ssl2%s               Only check SSLv2 ciphers\n", COL_GREEN, RESET);
-            printf("  %s--ssl3%s               Only check SSLv3 ciphers\n", COL_GREEN, RESET);
+            printf("  %s--ssl2%s               Only check if SSLv2 is enabled\n", COL_GREEN, RESET);
+            printf("  %s--ssl3%s               Only check if SSLv3 is enabled\n", COL_GREEN, RESET);
             printf("  %s--tls10%s              Only check TLSv1.0 ciphers\n", COL_GREEN, RESET);
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
             printf("  %s--tls11%s              Only check TLSv1.1 ciphers\n", COL_GREEN, RESET);
