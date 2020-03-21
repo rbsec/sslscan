@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version: 2.0.0-beta1
+Date   : 29/02/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+         > Print curve name and key strength for ECC certs
+		 > Various documentation updates
+
 Version: 2.0.0-alpha2
 Date   : 29/02/2020
 Author : rbsec <robin@rbsec.net>
