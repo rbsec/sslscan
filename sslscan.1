@@ -1,21 +1,14 @@
-.TH SSLSCAN 1 "December 30, 2013"
+.TH SSLSCAN 1 "March 19, 2020"
 .SH NAME
 sslscan \- Fast SSL/TLS scanner
 .SH SYNOPSIS
 .B sslscan
 .RI [ options ] " [host:port | host]"
 .SH DESCRIPTION
-This manual page documents briefly the
-.B sslscan
-command
 .PP
-\fBsslscan\fP queries SSL/TLS services, such as HTTPS, in order to determine the
-ciphers that are supported.
+\fBsslscan\fP queries SSL/TLS services (such as HTTPS) and reports the protocol versions, cipher suites, key exchanges, signature algorithms, and certificates in use.  This helps the user understand which parameters are weak from a security standpoint.
 
-SSLScan is designed to be easy, lean and fast. The output includes preferred
-ciphers of the SSL/TLS service, and text and XML output formats are supported. It is TLS SNI aware when used with a supported version of OpenSSL.
-
-Output is colour coded to indicate security issues. Colours are as follows:
+Terminal output is thus colour-coded as follows:
 
 Red Background  NULL cipher (no encryption)
 .br
@@ -24,14 +17,14 @@ Red             Broken cipher (<= 40 bit), broken protocol (SSLv2 or SSLv3) or b
 Yellow          Weak cipher (<= 56 bit or RC4) or weak certificate signing algorithm (SHA-1)
 .br
 Purple          Anonymous cipher (ADH or AECDH)
+
+\fBsslscan\fP can also output results into an XML file for easy consumption by external programs.
+
 .SH OPTIONS
 .TP
 .B \-\-help
 .br
 Show summary of options
-.TP
-.B \-\-version
-Show version of program
 .TP
 .B \-\-targets=<file>
 A file containing a list of hosts to
@@ -74,15 +67,11 @@ You might want to also use \-\-no\-cipher\-details to make the output a bit clea
 .TP
 .B \-\-ssl2
 .br
-Only check SSLv2 ciphers
-.br
-Note that this option may not be available if system OpenSSL does not support SSLv2. Either build OpenSSL statically or rebuild your system OpenSSL with SSLv2 support. See the readme for further details.
+Only check if SSLv2 is enabled
 .TP
 .B \-\-ssl3
 .br
-Only check SSLv3 ciphers
-.br
-Note that this option may not be available if system OpenSSL does not support SSLv3. Either build OpenSSL statically or rebuild your system OpenSSL with SSLv3 support. See the readme for further details.
+Only check if SSLv3 is enabled
 .TP
 .B \-\-tls10
 .br
@@ -96,9 +85,13 @@ Only check TLS 1.1 ciphers
 .br
 Only check TLS 1.2 ciphers
 .TP
+.B \-\-tls13
+.br
+Only check TLS 1.3 ciphers
+.TP
 .B \-\-tlsall
 .br
-Only check TLS ciphers (versions 1.0, 1.1 and 1.2)
+Only check TLS ciphers (versions 1.0, 1.1, 1.2, and 1.3)
 .TP
 .B \-\-ocsp
 .br
@@ -119,11 +112,11 @@ A file containing PEM/ASN1 formatted client certificates
 .B \-\-no\-ciphersuites
 Do not scan for supported ciphersuites.
 .TP
-.B \-\-no\-renegotiation
-Do not check for secure TLS renegotiation
-.TP
 .B \-\-no\-fallback
 Do not check for TLS Fallback Signaling Cipher Suite Value (fallback)
+.TP
+.B \-\-no\-renegotiation
+Do not check for secure TLS renegotiation
 .TP
 .B \-\-no\-compression
 Do not check for TLS compression (CRIME)
@@ -131,14 +124,20 @@ Do not check for TLS compression (CRIME)
 .B \-\-no\-heartbleed
 Do not check for OpenSSL Heartbleed (CVE-2014-0160)
 .TP
+.B \-\-no\-groups
+Do not enumerate key exchange groups
+.TP
+.B \-\-no\-sigs
+Do not enumerate signature algorithms
+.TP
 .B \-\-starttls\-ftp
 STARTTLS setup for FTP
 .TP
-.B \-\-starttls\-irc
-STARTTLS setup for IRC
-.TP
 .B \-\-starttls\-imap
 STARTTLS setup for IMAP
+.TP
+.B \-\-starttls\-irc
+STARTTLS setup for IRC
 .TP
 .B \-\-starttls\-ldap
 STARTTLS setup for LDAP
@@ -148,11 +147,6 @@ STARTTLS setup for POP3
 .TP
 .B \-\-starttls\-smtp
 STARTTLS setup for SMTP
-.br
-Note that some servers hang when we try to use SSLv3 ciphers over STARTTLS. If you scan hangs, try using the --tlsall option.
-.TP
-.B \-\-starttls\-psql
-STARTTLS setup for PostgreSQL
 .TP
 .B \-\-starttls\-mysql
 STARTTLS setup for MySQL
@@ -160,21 +154,20 @@ STARTTLS setup for MySQL
 .B \-\-starttls\-xmpp
 STARTTLS setup for XMPP
 .TP
+.B \-\-starttls\-psql
+STARTTLS setup for PostgreSQL
+.TP
 .B \-\-xmpp-server
 Perform a server-to-server XMPP connection. Try this if --starttls-xmpp is failing.
-.TP
-.B \-\-rdp
-.br
-Send RDP preamble before starting scan.
 .TP
 .B \-\-http
 .br
 Makes a HTTP request after a successful connection and returns
 the server response code
 .TP
-.B \-\-no\-cipher\-details
+.B \-\-rdp
 .br
-Hide NIST EC curve name and EDH/RSA key length. Requires OpenSSL >= 1.0.2 (so if you distro doesn't ship this, you'll need to statically build sslscan).
+Send RDP preamble before starting scan.
 .TP
 .B \-\-bugs
 .br
@@ -192,6 +185,16 @@ Pause between connections. Useful on STARTTLS SMTP services, or anything else th
 .br
 Output results to an XML file. - can be used to mean stdout.
 .br
+.TP
+.B \-\-version
+Show version of program
+.TP
+.B \-\-verbose
+Display verbose output
+.TP
+.B \-\-no\-cipher\-details
+.br
+Hide NIST EC curve name and EDH/RSA key length.
 .TP
 .B \-\-no-colour
 .br
