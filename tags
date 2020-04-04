@@ -1,97 +1,274 @@
 !_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
 !_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
-!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
-!_TAG_PROGRAM_NAME	Exuberant Ctags	//
-!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.8	//
-BUFFERSIZE	sslscan.c	61;"	d	file:
-COL_BLUE	sslscan.c	/^const char *COL_BLUE = "[1;34m";$/;"	v
-COL_BLUE	sslscan.c	/^const char *COL_BLUE = "";$/;"	v
-COL_GREEN	sslscan.c	/^const char *COL_GREEN = "[32m";$/;"	v
-COL_GREEN	sslscan.c	/^const char *COL_GREEN = "";$/;"	v
-COL_PURPLE	sslscan.c	/^const char *COL_PURPLE = "[35m";$/;"	v
-COL_PURPLE	sslscan.c	/^const char *COL_PURPLE = "";$/;"	v
-COL_RED	sslscan.c	/^const char *COL_RED = "[31m";$/;"	v
-COL_RED	sslscan.c	/^const char *COL_RED = "";$/;"	v
-COL_YELLOW	sslscan.c	/^const char *COL_YELLOW = "[33m";$/;"	v
-COL_YELLOW	sslscan.c	/^const char *COL_YELLOW = "";$/;"	v
-RESET	sslscan.c	/^const char *RESET = "[0m";            \/\/ DEFAULT$/;"	v
-RESET	sslscan.c	/^const char *RESET = "";$/;"	v
-SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION	sslscan.c	674;"	d	file:
-SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION	sslscan.c	671;"	d	file:
-bits	sslscan.c	/^    int bits;$/;"	m	struct:sslCipher	file:
-ciphers	sslscan.c	/^    struct sslCipher *ciphers;$/;"	m	struct:sslCheckOptions	typeref:struct:sslCheckOptions::sslCipher	file:
-ciphersuites	sslscan.c	/^    int ciphersuites;$/;"	m	struct:sslCheckOptions	file:
-clientCertsFile	sslscan.c	/^    char *clientCertsFile;$/;"	m	struct:sslCheckOptions	file:
-compression	sslscan.c	/^    int compression;$/;"	m	struct:sslCheckOptions	file:
-ctx	sslscan.c	/^    SSL_CTX *ctx;$/;"	m	struct:sslCheckOptions	file:
-defaultCipher	sslscan.c	/^int defaultCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f
-description	sslscan.c	/^    char description[512];$/;"	m	struct:sslCipher	file:
-false	sslscan.c	53;"	d	file:
-fileExists	sslscan.c	/^int fileExists(char *fileName)$/;"	f
-freeRenegotiationOutput	sslscan.c	/^int freeRenegotiationOutput( struct renegotiationOutput *myRenOut )$/;"	f
-getCertificate	sslscan.c	/^    int getCertificate;$/;"	m	struct:sslCheckOptions	file:
-getCertificate	sslscan.c	/^int getCertificate(struct sslCheckOptions *options)$/;"	f
-host	sslscan.c	/^    char host[512];$/;"	m	struct:sslCheckOptions	file:
-hostStruct	sslscan.c	/^    struct hostent *hostStruct;$/;"	m	struct:sslCheckOptions	typeref:struct:sslCheckOptions::hostent	file:
-http	sslscan.c	/^    int http;$/;"	m	struct:sslCheckOptions	file:
-ipv4	sslscan.c	/^    int ipv4;$/;"	m	struct:sslCheckOptions	file:
-ipv6	sslscan.c	/^    int ipv6;$/;"	m	struct:sslCheckOptions	file:
-loadCerts	sslscan.c	/^int loadCerts(struct sslCheckOptions *options)$/;"	f
-main	sslscan.c	/^int main(int argc, char *argv[])$/;"	f
-mode_help	sslscan.c	56;"	d	file:
-mode_multiple	sslscan.c	59;"	d	file:
-mode_single	sslscan.c	58;"	d	file:
-mode_version	sslscan.c	57;"	d	file:
-name	sslscan.c	/^    const char *name;$/;"	m	struct:sslCipher	file:
-newRenegotiationOutput	sslscan.c	/^struct renegotiationOutput * newRenegotiationOutput( void )$/;"	f
-next	sslscan.c	/^    struct sslCipher *next;$/;"	m	struct:sslCipher	typeref:struct:sslCipher::sslCipher	file:
-noFailed	sslscan.c	/^    int noFailed;$/;"	m	struct:sslCheckOptions	file:
-outputRenegotiation	sslscan.c	/^int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOutput *outputData)$/;"	f
-password_callback	sslscan.c	/^static int password_callback(char *buf, int size, int rwflag, void *userdata)$/;"	f	file:
-populateCipherList	sslscan.c	/^int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f
-port	sslscan.c	/^    int port;$/;"	m	struct:sslCheckOptions	file:
-privateKeyFile	sslscan.c	/^    char *privateKeyFile;$/;"	m	struct:sslCheckOptions	file:
-privateKeyPassword	sslscan.c	/^    char *privateKeyPassword;$/;"	m	struct:sslCheckOptions	file:
-program_banner	sslscan.c	/^const char *program_banner = "                   _\\n"$/;"	v
-program_version	sslscan.c	/^const char *program_version = "1.9.1-rbsec";$/;"	v
-readLine	sslscan.c	/^void readLine(FILE *input, char *lineFromFile, int maxSize)$/;"	f
-readOrLogAndClose	sslscan.c	/^int readOrLogAndClose(int fd, void* buffer, size_t len, const struct sslCheckOptions *options)$/;"	f
-reneg	sslscan.c	/^    int reneg;$/;"	m	struct:sslCheckOptions	file:
-renegotiationOutput	sslscan.c	/^struct renegotiationOutput$/;"	s	file:
-secure	sslscan.c	/^    int secure;$/;"	m	struct:renegotiationOutput	file:
-serverAddress	sslscan.c	/^    struct sockaddr_in serverAddress;$/;"	m	struct:sslCheckOptions	typeref:struct:sslCheckOptions::sockaddr_in	file:
-serverAddress6	sslscan.c	/^    struct sockaddr_in6 serverAddress6;$/;"	m	struct:sslCheckOptions	typeref:struct:sslCheckOptions::sockaddr_in6	file:
-showClientCiphers	sslscan.c	/^    int showClientCiphers;$/;"	m	struct:sslCheckOptions	file:
-sslCheckOptions	sslscan.c	/^struct sslCheckOptions$/;"	s	file:
-sslCipher	sslscan.c	/^struct sslCipher$/;"	s	file:
-sslMethod	sslscan.c	/^    const SSL_METHOD *sslMethod;$/;"	m	struct:sslCipher	file:
-sslVersion	sslscan.c	/^    int sslVersion;$/;"	m	struct:sslCheckOptions	file:
-ssl_all	sslscan.c	63;"	d	file:
-ssl_v2	sslscan.c	64;"	d	file:
-ssl_v3	sslscan.c	65;"	d	file:
-sslbugs	sslscan.c	/^    int sslbugs;$/;"	m	struct:sslCheckOptions	file:
-starttls_ftp	sslscan.c	/^    int starttls_ftp;$/;"	m	struct:sslCheckOptions	file:
-starttls_imap	sslscan.c	/^    int starttls_imap;$/;"	m	struct:sslCheckOptions	file:
-starttls_pop3	sslscan.c	/^    int starttls_pop3;$/;"	m	struct:sslCheckOptions	file:
-starttls_smtp	sslscan.c	/^    int starttls_smtp;$/;"	m	struct:sslCheckOptions	file:
-starttls_xmpp	sslscan.c	/^    int starttls_xmpp;$/;"	m	struct:sslCheckOptions	file:
-supported	sslscan.c	/^    int supported;$/;"	m	struct:renegotiationOutput	file:
-targets	sslscan.c	/^    int targets;$/;"	m	struct:sslCheckOptions	file:
-tcpConnect	sslscan.c	/^int tcpConnect(struct sslCheckOptions *options)$/;"	f
-testCipher	sslscan.c	/^int testCipher(struct sslCheckOptions *options, struct sslCipher *sslCipherPointer)$/;"	f
-testCompression	sslscan.c	/^int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f
-testHost	sslscan.c	/^int testHost(struct sslCheckOptions *options)$/;"	f
-testRenegotiation	sslscan.c	/^int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f
-tls_all	sslscan.c	66;"	d	file:
-tls_reneg_init	sslscan.c	/^void tls_reneg_init(struct sslCheckOptions *options)$/;"	f
-tls_v10	sslscan.c	67;"	d	file:
-tls_v11	sslscan.c	68;"	d	file:
-tls_v12	sslscan.c	69;"	d	file:
-true	sslscan.c	54;"	d	file:
-use_unsafe_renegotiation_flag	sslscan.c	/^static int use_unsafe_renegotiation_flag = 0;$/;"	v	file:
-use_unsafe_renegotiation_op	sslscan.c	/^static int use_unsafe_renegotiation_op = 0;$/;"	v	file:
-verbose	sslscan.c	/^    int verbose;$/;"	m	struct:sslCheckOptions	file:
-version	sslscan.c	/^    char *version;$/;"	m	struct:sslCipher	file:
-xmlOutput	sslscan.c	/^    FILE *xmlOutput;$/;"	m	struct:sslCheckOptions	file:
-xml_version	sslscan.c	/^const char *xml_version = "1.9.1-rbsec";$/;"	v
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/a3c87ab5/
+BOGUS_SIG_ALG_ID	sslscan.c	/^#define BOGUS_SIG_ALG_ID /;"	d	file:
+BS_DEFAULT_NEW_SIZE	sslscan.h	/^#define BS_DEFAULT_NEW_SIZE /;"	d
+BUFFERSIZE	sslscan.h	/^#define BUFFERSIZE /;"	d
+CIPHERSUITE_LIST_ALL	sslscan.h	/^#define CIPHERSUITE_LIST_ALL /;"	d
+CLOSE	sslscan.h	/^#define CLOSE(/;"	d
+COL_BLUE	sslscan.h	/^char *COL_BLUE = "[1;34m";$/;"	v	typeref:typename:char *
+COL_BLUE	sslscan.h	/^char *COL_BLUE = "[1;36m";$/;"	v	typeref:typename:char *
+COL_GREEN	sslscan.h	/^char *COL_GREEN = "[32m";$/;"	v	typeref:typename:char *
+COL_GREEN	sslscan.h	/^char *COL_GREEN = "[92m";$/;"	v	typeref:typename:char *
+COL_GREY	sslscan.h	/^char *COL_GREY = "[1;30m";$/;"	v	typeref:typename:char *
+COL_PLAIN	sslscan.c	/^#define COL_PLAIN /;"	d	file:
+COL_PURPLE	sslscan.h	/^char *COL_PURPLE = "[35m";$/;"	v	typeref:typename:char *
+COL_PURPLE	sslscan.h	/^char *COL_PURPLE = "[95m";$/;"	v	typeref:typename:char *
+COL_RED	sslscan.h	/^char *COL_RED = "[31m";$/;"	v	typeref:typename:char *
+COL_RED	sslscan.h	/^char *COL_RED = "[91m";$/;"	v	typeref:typename:char *
+COL_RED_BG	sslscan.h	/^char *COL_RED_BG = "[41m";$/;"	v	typeref:typename:char *
+COL_YELLOW	sslscan.h	/^char *COL_YELLOW = "[33m";$/;"	v	typeref:typename:char *
+COL_YELLOW	sslscan.h	/^char *COL_YELLOW = "[93m";$/;"	v	typeref:typename:char *
+ENABLE_VIRTUAL_TERMINAL_PROCESSING	sslscan.c	/^    #define ENABLE_VIRTUAL_TERMINAL_PROCESSING /;"	d	file:
+FREE	sslscan.h	/^#define FREE(/;"	d
+FREE_CTX	sslscan.h	/^#define FREE_CTX(/;"	d
+FREE_SSL	sslscan.h	/^#define FREE_SSL(/;"	d
+HAVE_SSLSCAN_H_	sslscan.h	/^#define HAVE_SSLSCAN_H_$/;"	d
+NID_TYPE_DHE	sslscan.c	/^#define NID_TYPE_DHE /;"	d	file:
+NID_TYPE_ECDHE	sslscan.c	/^#define NID_TYPE_ECDHE /;"	d	file:
+NID_TYPE_NA	sslscan.c	/^#define NID_TYPE_NA /;"	d	file:
+OCSP_RESPDATA	sslscan.h	/^typedef struct ocsp_response_data_st OCSP_RESPDATA;$/;"	t	typeref:struct:ocsp_response_data_st
+OCSP_RESPID	sslscan.h	/^typedef struct ocsp_responder_id_st OCSP_RESPID;$/;"	t	typeref:struct:ocsp_responder_id_st
+OVERFLOW_MESSAGE	sslscan.c	/^#define OVERFLOW_MESSAGE /;"	d	file:
+RESET	sslscan.h	/^char *RESET = "[0m";            \/\/ DEFAULT$/;"	v	typeref:typename:char *
+R_OK	sslscan.c	/^    #define R_OK /;"	d	file:
+SIZE_T_FMT	sslscan.c	/^  #define SIZE_T_FMT /;"	d	file:
+SLEEPMS	sslscan.h	/^    #define SLEEPMS(/;"	d
+SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION	sslscan.h	/^#    define SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION /;"	d
+SSL_CIPHER_get_id	sslscan.c	/^unsigned long SSL_CIPHER_get_id(const SSL_CIPHER* cipher) { return cipher->id; }$/;"	f	typeref:typename:unsigned long
+SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION	sslscan.h	/^#    define SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION /;"	d
+TLSV13_CIPHERSUITES	sslscan.h	/^#define TLSV13_CIPHERSUITES /;"	d
+TLSv1_0	sslscan.h	/^#define TLSv1_0 /;"	d
+TLSv1_1	sslscan.h	/^#define TLSv1_1 /;"	d
+TLSv1_2	sslscan.h	/^#define TLSv1_2 /;"	d
+TLSv1_3	sslscan.h	/^#define TLSv1_3 /;"	d
+TLSv1_3_client_method	sslscan.c	/^const SSL_METHOD *TLSv1_3_client_method(void)$/;"	f	typeref:typename:const SSL_METHOD *
+TLSv1_3_method	sslscan.c	/^const SSL_METHOD *TLSv1_3_method(void)$/;"	f	typeref:typename:const SSL_METHOD *
+VC_EXTRALEAN	sslscan.c	/^  #define VC_EXTRALEAN$/;"	d	file:
+WIN32_LEAN_AND_MEAN	sslscan.c	/^  #define WIN32_LEAN_AND_MEAN$/;"	d	file:
+_GNU_SOURCE	sslscan.c	/^#define _GNU_SOURCE$/;"	d	file:
+_WIN32_WINNT	sslscan.c	/^  #define _WIN32_WINNT /;"	d	file:
+__anonf49f55d2010a	sslscan.h	/^    union {$/;"	u	struct:ocsp_responder_id_st
+__anonf49f55d2020a	sslscan.h	/^    union {$/;"	u	struct:ocsp_cert_status_st
+_bs	sslscan.h	/^struct _bs {$/;"	s
+access	sslscan.c	/^    #define access /;"	d	file:
+addrstr	sslscan.h	/^    char addrstr[INET6_ADDRSTRLEN];$/;"	m	struct:sslCheckOptions	typeref:typename:char[]
+bits	sslscan.h	/^    int bits;$/;"	m	struct:sslCipher	typeref:typename:int
+bs	sslscan.h	/^typedef struct _bs bs; \/* Stands for 'byte string'. *\/$/;"	t	typeref:struct:_bs
+bs_append_bs	sslscan.c	/^void bs_append_bs(bs *dst, bs *src) {$/;"	f	typeref:typename:void
+bs_append_bytes	sslscan.c	/^void bs_append_bytes(bs *b, unsigned char *bytes, size_t bytes_len) {$/;"	f	typeref:typename:void
+bs_append_uint32_t	sslscan.c	/^void bs_append_uint32_t(bs *b, uint32_t u) {$/;"	f	typeref:typename:void
+bs_append_ushort	sslscan.c	/^void bs_append_ushort(bs *b, unsigned short us) {$/;"	f	typeref:typename:void
+bs_free	sslscan.c	/^void bs_free(bs **b) {$/;"	f	typeref:typename:void
+bs_get_byte	sslscan.c	/^unsigned char bs_get_byte(bs *b, size_t offset) {$/;"	f	typeref:typename:unsigned char
+bs_get_bytes	sslscan.c	/^unsigned char *bs_get_bytes(bs *b) {$/;"	f	typeref:typename:unsigned char *
+bs_get_len	sslscan.c	/^size_t bs_get_len(bs *b) {$/;"	f	typeref:typename:size_t
+bs_get_size	sslscan.c	/^size_t bs_get_size(bs *b) {$/;"	f	typeref:typename:size_t
+bs_new	sslscan.c	/^void bs_new(bs **b) {$/;"	f	typeref:typename:void
+bs_new_size	sslscan.c	/^void bs_new_size(bs **b, size_t new_size) {$/;"	f	typeref:typename:void
+bs_read_socket	sslscan.c	/^int bs_read_socket(bs *b, int s, size_t num_bytes) {$/;"	f	typeref:typename:int
+bs_set_byte	sslscan.c	/^void bs_set_byte(bs *b, size_t offset, unsigned char byte) {$/;"	f	typeref:typename:void
+bs_set_ushort	sslscan.c	/^void bs_set_ushort(bs *b, size_t offset, unsigned short length) {$/;"	f	typeref:typename:void
+buf	sslscan.h	/^  unsigned char *buf;$/;"	m	struct:_bs	typeref:typename:unsigned char *
+byKey	sslscan.h	/^        ASN1_OCTET_STRING *byKey;$/;"	m	union:ocsp_responder_id_st::__anonf49f55d2010a	typeref:typename:ASN1_OCTET_STRING *
+byName	sslscan.h	/^        X509_NAME *byName;$/;"	m	union:ocsp_responder_id_st::__anonf49f55d2010a	typeref:typename:X509_NAME *
+certId	sslscan.h	/^    OCSP_CERTID *certId;$/;"	m	struct:ocsp_single_response_st	typeref:typename:OCSP_CERTID *
+certStatus	sslscan.h	/^    OCSP_CERTSTATUS *certStatus;$/;"	m	struct:ocsp_single_response_st	typeref:typename:OCSP_CERTSTATUS *
+checkCertificate	sslscan.c	/^int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f	typeref:typename:int
+checkCertificate	sslscan.h	/^    int checkCertificate;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+checkCertificateProtocol	sslscan.c	/^int checkCertificateProtocol(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f	typeref:typename:int
+checkIfTLSVersionIsSupported	sslscan.c	/^unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsigned int tls_vers/;"	f	typeref:typename:unsigned int
+cipherRemove	sslscan.c	/^char *cipherRemove(char *str, const char *sub) {$/;"	f	typeref:typename:char *
+cipher_details	sslscan.h	/^    int cipher_details;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+ciphers	sslscan.h	/^    struct sslCipher *ciphers;$/;"	m	struct:sslCheckOptions	typeref:struct:sslCipher *
+cipherstring	sslscan.h	/^    char cipherstring[65536];$/;"	m	struct:sslCheckOptions	typeref:typename:char[65536]
+ciphersuites	sslscan.h	/^    int ciphersuites;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+clientCertsFile	sslscan.h	/^    char *clientCertsFile;$/;"	m	struct:sslCheckOptions	typeref:typename:char *
+close	sslscan.c	/^    #define close /;"	d	file:
+color	sslscan.c	/^    char *color;$/;"	m	struct:testSignatureAlgorithms::signature_algorithm	typeref:typename:char *	file:
+color	sslscan.c	/^    char *color;$/;"	m	struct:testSupportedGroups::group_key_exchange	typeref:typename:char *	file:
+compression	sslscan.h	/^    int compression;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+ctx	sslscan.h	/^    SSL_CTX *ctx;$/;"	m	struct:sslCheckOptions	typeref:typename:SSL_CTX *
+description	sslscan.h	/^    char description[512];$/;"	m	struct:sslCipher	typeref:typename:char[512]
+fallback	sslscan.h	/^    int fallback;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+false	sslscan.h	/^#define false /;"	d
+fileExists	sslscan.c	/^int fileExists(char *fileName)$/;"	f	typeref:typename:int
+findMissingCiphers	sslscan.c	/^void findMissingCiphers() {$/;"	f	typeref:typename:void
+freeRenegotiationOutput	sslscan.c	/^int freeRenegotiationOutput( struct renegotiationOutput *myRenOut )$/;"	f	typeref:typename:int
+getPrintableTLSName	sslscan.c	/^char *getPrintableTLSName(unsigned int tls_version) {$/;"	f	typeref:typename:char *
+getServerHello	sslscan.c	/^bs *getServerHello(int s) {$/;"	f	typeref:typename:bs *
+getTLSHandshakeRecord	sslscan.c	/^bs *getTLSHandshakeRecord(int s) {$/;"	f	typeref:typename:bs *
+good	sslscan.h	/^        ASN1_NULL *good;$/;"	m	union:ocsp_cert_status_st::__anonf49f55d2020a	typeref:typename:ASN1_NULL *
+group_bit_strength	sslscan.c	/^    unsigned int group_bit_strength; \/* The bit strength equivalent of this group. *\/$/;"	m	struct:testSupportedGroups::group_key_exchange	typeref:typename:unsigned int	file:
+group_id	sslscan.c	/^    uint16_t group_id;$/;"	m	struct:testSupportedGroups::group_key_exchange	typeref:typename:uint16_t	file:
+group_key_exchange	sslscan.c	/^  struct group_key_exchange {$/;"	s	function:testSupportedGroups	file:
+group_name	sslscan.c	/^    char *group_name;$/;"	m	struct:testSupportedGroups::group_key_exchange	typeref:typename:char *	file:
+groups	sslscan.h	/^    int groups;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+h_addrtype	sslscan.h	/^    short h_addrtype;$/;"	m	struct:sslCheckOptions	typeref:typename:short
+hashAlgorithm	sslscan.h	/^    X509_ALGOR hashAlgorithm;$/;"	m	struct:ocsp_cert_id_st	typeref:typename:X509_ALGOR
+heartbleed	sslscan.h	/^    int heartbleed;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+host	sslscan.h	/^    char host[512];$/;"	m	struct:sslCheckOptions	typeref:typename:char[512]
+http	sslscan.h	/^    int http;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+ipv4	sslscan.h	/^    int ipv4;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+ipv6	sslscan.h	/^    int ipv6;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+issuerKeyHash	sslscan.h	/^    ASN1_OCTET_STRING issuerKeyHash;$/;"	m	struct:ocsp_cert_id_st	typeref:typename:ASN1_OCTET_STRING
+issuerNameHash	sslscan.h	/^    ASN1_OCTET_STRING issuerNameHash;$/;"	m	struct:ocsp_cert_id_st	typeref:typename:ASN1_OCTET_STRING
+key_exchange_len	sslscan.c	/^    uint16_t key_exchange_len;$/;"	m	struct:testSupportedGroups::group_key_exchange	typeref:typename:uint16_t	file:
+len	sslscan.h	/^  size_t len;   \/* The number of bytes currently in the buffer. *\/$/;"	m	struct:_bs	typeref:typename:size_t
+loadCerts	sslscan.c	/^int loadCerts(struct sslCheckOptions *options)$/;"	f	typeref:typename:int
+main	sslscan.c	/^int main(int argc, char *argv[])$/;"	f	typeref:typename:int
+makeCiphersuiteListAll	sslscan.c	/^bs *makeCiphersuiteListAll(unsigned int tls_version) {$/;"	f	typeref:typename:bs *
+makeCiphersuiteListMissing	sslscan.c	/^bs *makeCiphersuiteListMissing(unsigned int tls_version) {$/;"	f	typeref:typename:bs *
+makeCiphersuiteListTLS13All	sslscan.c	/^bs *makeCiphersuiteListTLS13All() {$/;"	f	typeref:typename:bs *
+makeClientHello	sslscan.c	/^bs *makeClientHello(struct sslCheckOptions *options, unsigned int tls_version, bs *ciphersuite_l/;"	f	typeref:typename:bs *
+makeTLSExtensions	sslscan.c	/^bs *makeTLSExtensions(struct sslCheckOptions *options, unsigned int include_signature_algorithms/;"	f	typeref:typename:bs *
+markFoundCiphersuite	sslscan.c	/^void markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_version) {$/;"	f	typeref:typename:void
+memmem	sslscan.c	/^void *memmem(const void *haystack_start, size_t haystack_len, const void *needle, size_t needle_/;"	f	typeref:typename:void *
+mode_help	sslscan.h	/^#define mode_help /;"	d
+mode_multiple	sslscan.h	/^#define mode_multiple /;"	d
+mode_single	sslscan.h	/^#define mode_single /;"	d
+mode_version	sslscan.h	/^#define mode_version /;"	d
+name	sslscan.h	/^    const char *name;$/;"	m	struct:sslCipher	typeref:typename:const char *
+newRenegotiationOutput	sslscan.c	/^struct renegotiationOutput * newRenegotiationOutput( void )$/;"	f	typeref:struct:renegotiationOutput *
+new_CTX	sslscan.c	/^SSL_CTX *new_CTX(const SSL_METHOD *method) {$/;"	f	typeref:typename:SSL_CTX *
+new_SSL	sslscan.c	/^SSL *new_SSL(SSL_CTX *ctx) {$/;"	f	typeref:typename:SSL *
+next	sslscan.h	/^    struct sslCipher *next;$/;"	m	struct:sslCipher	typeref:struct:sslCipher *
+nextUpdate	sslscan.h	/^    ASN1_GENERALIZEDTIME *nextUpdate;$/;"	m	struct:ocsp_single_response_st	typeref:typename:ASN1_GENERALIZEDTIME *
+nid	sslscan.c	/^    int nid;               \/* NID for group, or -1 for X25519\/X448. *\/$/;"	m	struct:testSupportedGroups::group_key_exchange	typeref:typename:int	file:
+nid_type	sslscan.c	/^    unsigned int nid_type; \/* One of the NID_TYPE_* flags. *\/$/;"	m	struct:testSupportedGroups::group_key_exchange	typeref:typename:unsigned int	file:
+ocspRequest	sslscan.c	/^int ocspRequest(struct sslCheckOptions *options)$/;"	f	typeref:typename:int
+ocspStatus	sslscan.h	/^    int ocspStatus;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+ocsp_basic_response_st	sslscan.h	/^struct ocsp_basic_response_st {$/;"	s
+ocsp_cert_id_st	sslscan.h	/^struct ocsp_cert_id_st {$/;"	s
+ocsp_cert_status_st	sslscan.h	/^struct ocsp_cert_status_st {$/;"	s
+ocsp_certid_print	sslscan.c	/^int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent)$/;"	f	typeref:typename:int
+ocsp_resp_bytes_st	sslscan.h	/^struct ocsp_resp_bytes_st {$/;"	s
+ocsp_resp_cb	sslscan.c	/^static int ocsp_resp_cb(SSL *s, void *unused) {$/;"	f	typeref:typename:int	file:
+ocsp_responder_id_st	sslscan.h	/^struct ocsp_responder_id_st {$/;"	s
+ocsp_response_data_st	sslscan.h	/^struct ocsp_response_data_st {$/;"	s
+ocsp_response_st	sslscan.h	/^struct ocsp_response_st {$/;"	s
+ocsp_revoked_info_st	sslscan.h	/^struct ocsp_revoked_info_st {$/;"	s
+ocsp_single_response_st	sslscan.h	/^struct ocsp_single_response_st {$/;"	s
+outputCipher	sslscan.c	/^void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSslMethod, uint32_/;"	f	typeref:typename:void
+outputRenegotiation	sslscan.c	/^int outputRenegotiation( struct sslCheckOptions *options, struct renegotiationOutput *outputData/;"	f	typeref:typename:int
+password_callback	sslscan.c	/^static int password_callback(char *buf, int size, int rwflag, void *userdata)$/;"	f	typeref:typename:int	file:
+populateCipherList	sslscan.c	/^int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f	typeref:typename:int
+port	sslscan.h	/^    int port;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+printableSslMethod	sslscan.c	/^const char* printableSslMethod(const SSL_METHOD *sslMethod)$/;"	f	typeref:typename:const char *
+printf	sslscan.h	/^#define printf(/;"	d
+printf_error	sslscan.h	/^#define printf_error(/;"	d
+printf_verbose	sslscan.h	/^#define printf_verbose(/;"	d
+printf_xml	sslscan.h	/^#define printf_xml(/;"	d
+privateKeyFile	sslscan.h	/^    char *privateKeyFile;$/;"	m	struct:sslCheckOptions	typeref:typename:char *
+privateKeyPassword	sslscan.h	/^    char *privateKeyPassword;$/;"	m	struct:sslCheckOptions	typeref:typename:char *
+producedAt	sslscan.h	/^    ASN1_GENERALIZEDTIME *producedAt;$/;"	m	struct:ocsp_response_data_st	typeref:typename:ASN1_GENERALIZEDTIME *
+program_banner	sslscan.h	/^const char *program_banner = "                   _\\n"$/;"	v	typeref:typename:const char *
+rdp	sslscan.h	/^    int rdp;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+readLine	sslscan.c	/^void readLine(FILE *input, char *lineFromFile, int maxSize)$/;"	f	typeref:typename:void
+readOrLogAndClose	sslscan.c	/^int readOrLogAndClose(int fd, void* buffer, size_t len, const struct sslCheckOptions *options)$/;"	f	typeref:typename:int
+reneg	sslscan.h	/^    int reneg;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+renegotiationOutput	sslscan.h	/^struct renegotiationOutput$/;"	s
+resolveCipherID	sslscan.c	/^char *resolveCipherID(unsigned short cipher_id, int *cipher_bits) {$/;"	f	typeref:typename:char *
+responderId	sslscan.h	/^    OCSP_RESPID responderId;$/;"	m	struct:ocsp_response_data_st	typeref:typename:OCSP_RESPID
+response	sslscan.h	/^    ASN1_OCTET_STRING *response;$/;"	m	struct:ocsp_resp_bytes_st	typeref:typename:ASN1_OCTET_STRING *
+responseBytes	sslscan.h	/^    OCSP_RESPBYTES *responseBytes;$/;"	m	struct:ocsp_response_st	typeref:typename:OCSP_RESPBYTES *
+responseStatus	sslscan.h	/^    ASN1_ENUMERATED *responseStatus;$/;"	m	struct:ocsp_response_st	typeref:typename:ASN1_ENUMERATED *
+responseType	sslscan.h	/^    ASN1_OBJECT *responseType;$/;"	m	struct:ocsp_resp_bytes_st	typeref:typename:ASN1_OBJECT *
+revocationReason	sslscan.h	/^    ASN1_ENUMERATED *revocationReason;$/;"	m	struct:ocsp_revoked_info_st	typeref:typename:ASN1_ENUMERATED *
+revocationTime	sslscan.h	/^    ASN1_GENERALIZEDTIME *revocationTime;$/;"	m	struct:ocsp_revoked_info_st	typeref:typename:ASN1_GENERALIZEDTIME *
+revoked	sslscan.h	/^        OCSP_REVOKEDINFO *revoked;$/;"	m	union:ocsp_cert_status_st::__anonf49f55d2020a	typeref:typename:OCSP_REVOKEDINFO *
+runSSLv2Test	sslscan.c	/^int runSSLv2Test(struct sslCheckOptions *options) {$/;"	f	typeref:typename:int
+runSSLv3Test	sslscan.c	/^int runSSLv3Test(struct sslCheckOptions *options) {$/;"	f	typeref:typename:int
+secure	sslscan.h	/^    int secure;$/;"	m	struct:renegotiationOutput	typeref:typename:int
+security_callback_allow_all	sslscan.c	/^static int security_callback_allow_all(const SSL *s, const SSL_CTX *ctx, int op, int bits, int n/;"	f	typeref:typename:int	file:
+sendString	sslscan.c	/^ssize_t sendString(int sockfd, const char str[])$/;"	f	typeref:typename:ssize_t
+serialNumber	sslscan.h	/^    ASN1_INTEGER serialNumber;$/;"	m	struct:ocsp_cert_id_st	typeref:typename:ASN1_INTEGER
+serverAddress	sslscan.h	/^    struct sockaddr_in serverAddress;$/;"	m	struct:sslCheckOptions	typeref:struct:sockaddr_in
+serverAddress6	sslscan.h	/^    struct sockaddr_in6 serverAddress6;$/;"	m	struct:sslCheckOptions	typeref:struct:sockaddr_in6
+setCipherSuite	sslscan.c	/^int setCipherSuite(struct sslCheckOptions *options, const SSL_METHOD *sslMethod, const char *str/;"	f	typeref:typename:int
+showCertificate	sslscan.c	/^int showCertificate(struct sslCheckOptions *options)$/;"	f	typeref:typename:int
+showCertificate	sslscan.h	/^    int showCertificate;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+showCipherIds	sslscan.h	/^    int showCipherIds;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+showClientCiphers	sslscan.h	/^    int showClientCiphers;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+showTimes	sslscan.h	/^    int showTimes;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+showTrustedCAs	sslscan.c	/^int showTrustedCAs(struct sslCheckOptions *options)$/;"	f	typeref:typename:int
+showTrustedCAs	sslscan.h	/^    int showTrustedCAs;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+sig_id	sslscan.c	/^    uint16_t sig_id;$/;"	m	struct:testSignatureAlgorithms::signature_algorithm	typeref:typename:uint16_t	file:
+sig_name	sslscan.c	/^    char *sig_name;$/;"	m	struct:testSignatureAlgorithms::signature_algorithm	typeref:typename:char *	file:
+signature	sslscan.h	/^    ASN1_BIT_STRING *signature;$/;"	m	struct:ocsp_basic_response_st	typeref:typename:ASN1_BIT_STRING *
+signatureAlgorithm	sslscan.h	/^    X509_ALGOR signatureAlgorithm;$/;"	m	struct:ocsp_basic_response_st	typeref:typename:X509_ALGOR
+signature_algorithm	sslscan.c	/^  struct signature_algorithm {$/;"	s	function:testSignatureAlgorithms	file:
+signature_algorithms	sslscan.h	/^    int signature_algorithms;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+size	sslscan.h	/^  size_t size;  \/* The size of the allocated buffer. *\/$/;"	m	struct:_bs	typeref:typename:size_t
+sleep	sslscan.h	/^    unsigned int sleep;$/;"	m	struct:sslCheckOptions	typeref:typename:unsigned int
+sniname	sslscan.h	/^    char sniname[512];$/;"	m	struct:sslCheckOptions	typeref:typename:char[512]
+snprintf	sslscan.c	/^    #define snprintf /;"	d	file:
+ssize_t	sslscan.c	/^    typedef int ssize_t;$/;"	t	typeref:typename:int	file:
+sslCheckOptions	sslscan.h	/^struct sslCheckOptions$/;"	s
+sslCipher	sslscan.h	/^struct sslCipher$/;"	s
+sslMethod	sslscan.h	/^    const SSL_METHOD *sslMethod;$/;"	m	struct:sslCipher	typeref:typename:const SSL_METHOD *
+sslVersion	sslscan.h	/^    int sslVersion;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+ssl_all	sslscan.h	/^#define ssl_all /;"	d
+ssl_print_tmp_key	sslscan.c	/^int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)$/;"	f	typeref:typename:int
+ssl_v2	sslscan.h	/^#define ssl_v2 /;"	d
+ssl_v3	sslscan.h	/^#define ssl_v3 /;"	d
+sslbugs	sslscan.h	/^    int sslbugs;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+starttls_ftp	sslscan.h	/^    int starttls_ftp;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+starttls_imap	sslscan.h	/^    int starttls_imap;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+starttls_irc	sslscan.h	/^    int starttls_irc;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+starttls_ldap	sslscan.h	/^    int starttls_ldap;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+starttls_mysql	sslscan.h	/^    int starttls_mysql;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+starttls_pop3	sslscan.h	/^    int starttls_pop3;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+starttls_psql	sslscan.h	/^    int starttls_psql;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+starttls_smtp	sslscan.h	/^    int starttls_smtp;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+starttls_xmpp	sslscan.h	/^    int starttls_xmpp;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+supported	sslscan.h	/^    int supported;$/;"	m	struct:renegotiationOutput	typeref:typename:int
+targets	sslscan.h	/^    int targets;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+tbsResponseData	sslscan.h	/^    OCSP_RESPDATA tbsResponseData;$/;"	m	struct:ocsp_basic_response_st	typeref:typename:OCSP_RESPDATA
+tcpConnect	sslscan.c	/^int tcpConnect(struct sslCheckOptions *options)$/;"	f	typeref:typename:int
+testCipher	sslscan.c	/^int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f	typeref:typename:int
+testCompression	sslscan.c	/^int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f	typeref:typename:int
+testConnection	sslscan.c	/^int testConnection(struct sslCheckOptions *options)$/;"	f	typeref:typename:int
+testFallback	sslscan.c	/^int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)$/;"	f	typeref:typename:int
+testHeartbleed	sslscan.c	/^int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f	typeref:typename:int
+testHost	sslscan.c	/^int testHost(struct sslCheckOptions *options)$/;"	f	typeref:typename:int
+testMissingCiphers	sslscan.c	/^int testMissingCiphers(struct sslCheckOptions *options, unsigned int tls_version) {$/;"	f	typeref:typename:int
+testProtocolCiphers	sslscan.c	/^int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f	typeref:typename:int
+testRenegotiation	sslscan.c	/^int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)$/;"	f	typeref:typename:int
+testSignatureAlgorithms	sslscan.c	/^int testSignatureAlgorithms(struct sslCheckOptions *options) {$/;"	f	typeref:typename:int
+testSupportedGroups	sslscan.c	/^int testSupportedGroups(struct sslCheckOptions *options) {$/;"	f	typeref:typename:int
+thisUpdate	sslscan.h	/^    ASN1_GENERALIZEDTIME *thisUpdate;$/;"	m	struct:ocsp_single_response_st	typeref:typename:ASN1_GENERALIZEDTIME *
+timeout	sslscan.h	/^    struct timeval timeout;$/;"	m	struct:sslCheckOptions	typeref:struct:timeval
+timersub	sslscan.c	/^    #define timersub(/;"	d	file:
+tls10_supported	sslscan.h	/^    unsigned int tls10_supported;$/;"	m	struct:sslCheckOptions	typeref:typename:unsigned int
+tls11_supported	sslscan.h	/^    unsigned int tls11_supported;$/;"	m	struct:sslCheckOptions	typeref:typename:unsigned int
+tls12_supported	sslscan.h	/^    unsigned int tls12_supported;$/;"	m	struct:sslCheckOptions	typeref:typename:unsigned int
+tls13_supported	sslscan.h	/^    unsigned int tls13_supported;$/;"	m	struct:sslCheckOptions	typeref:typename:unsigned int
+tlsExtensionAddDefaultKeyShare	sslscan.c	/^void tlsExtensionAddDefaultKeyShare(bs *tls_extensions) {$/;"	f	typeref:typename:void
+tlsExtensionAddTLSv1_3	sslscan.c	/^void tlsExtensionAddTLSv1_3(bs *tls_extensions) {$/;"	f	typeref:typename:void
+tlsExtensionUpdateLength	sslscan.c	/^void tlsExtensionUpdateLength(bs *tls_extensions) {$/;"	f	typeref:typename:void
+tls_all	sslscan.h	/^#define tls_all /;"	d
+tls_reneg_init	sslscan.c	/^void tls_reneg_init(struct sslCheckOptions *options)$/;"	f	typeref:typename:void
+tls_v10	sslscan.h	/^#define tls_v10 /;"	d
+tls_v11	sslscan.h	/^#define tls_v11 /;"	d
+tls_v12	sslscan.h	/^#define tls_v12 /;"	d
+tls_v13	sslscan.h	/^#define tls_v13 /;"	d
+true	sslscan.h	/^#define true /;"	d
+type	sslscan.h	/^    int type;$/;"	m	struct:ocsp_cert_status_st	typeref:typename:int
+type	sslscan.h	/^    int type;$/;"	m	struct:ocsp_responder_id_st	typeref:typename:int
+unknown	sslscan.h	/^        ASN1_NULL *unknown;$/;"	m	union:ocsp_cert_status_st::__anonf49f55d2020a	typeref:typename:ASN1_NULL *
+use_unsafe_renegotiation_flag	sslscan.c	/^static int use_unsafe_renegotiation_flag = 0;$/;"	v	typeref:typename:int	file:
+use_unsafe_renegotiation_op	sslscan.c	/^static int use_unsafe_renegotiation_op = 0;$/;"	v	typeref:typename:int	file:
+value	sslscan.h	/^    } value;$/;"	m	struct:ocsp_cert_status_st	typeref:union:ocsp_cert_status_st::__anonf49f55d2020a
+value	sslscan.h	/^    } value;$/;"	m	struct:ocsp_responder_id_st	typeref:union:ocsp_responder_id_st::__anonf49f55d2010a
+verbose	sslscan.h	/^    int verbose;$/;"	m	struct:sslCheckOptions	typeref:typename:int
+version	sslscan.h	/^    ASN1_INTEGER *version;$/;"	m	struct:ocsp_response_data_st	typeref:typename:ASN1_INTEGER *
+version	sslscan.h	/^    const char *version;$/;"	m	struct:sslCipher	typeref:typename:const char *
+xmlOutput	sslscan.h	/^    FILE *xmlOutput;$/;"	m	struct:sslCheckOptions	typeref:typename:FILE *
+xml_to_stdout	sslscan.c	/^static int xml_to_stdout = 0;$/;"	v	typeref:typename:int	file:
+xmpp_server	sslscan.h	/^    int xmpp_server;$/;"	m	struct:sslCheckOptions	typeref:typename:int
