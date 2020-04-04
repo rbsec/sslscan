@@ -24,9 +24,8 @@ There are likely to be bugs in this version, so please report any that you encou
 
 [![Build Status](https://travis-ci.org/rbsec/sslscan.svg?branch=master)](https://travis-ci.org/rbsec/sslscan)
 
-See the **sslscan2** branch for a beta build of the new version, which supports TLSv1.3.
-
-This is a fork of ioerror's version of sslscan (the original readme of which is included below). Changes are as follows:
+This is a fork of ioerror's version of sslscan (the original readme of which is included below).
+Key changes are as follows:
 
 * Highlight SSLv2 and SSLv3 ciphers in output.
 * Highlight CBC ciphers on SSLv3 (POODLE).
@@ -36,9 +35,8 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Highlight anonymous (ADH and AECDH) ciphers in output (purple).
 * Hide certificate information by default (display with `--get-certificate`).
 * Hide rejected ciphers by default (display with `--failed`).
-* Added TLSv1.1 and TLSv1.2 support (merged from twwbond/sslscan).
-* Compiles if OpenSSL does not support SSLv2 ciphers (merged from digineo/sslscan).
-* Supports IPv6 hostnames (can be forced with `--ipv6`).
+* Added TLSv1.1, TLSv1.2 and TLSv1.3 support.
+* Supports IPv6  (can be forced with `--ipv6`).
 * Check for TLS compression (CRIME, disable with `--no-compression`).
 * Disable cipher suite checking `--no-ciphersuites`.
 * Disable coloured output `--no-colour`.
@@ -51,51 +49,31 @@ This is a fork of ioerror's version of sslscan (the original readme of which is 
 * Added `--sleep` option to pause between requests.
 * Disable output for anything than specified checks `--no-preferred`.
 * Determine the list of CAs acceptable for client certificates `--show-client-cas`.
-* Experimental build support on OSX (credit MikeSchroll).
+* Experimental build support on OS X (credit MikeSchroll).
 * Flag some self-signed SSL certificates.
 * Experimental Windows support (credit jtesta).
 * Display EC curve names and DHE key lengths with OpenSSL >= 1.0.2 `--no-cipher-details`.
 * Flag weak DHE keys with OpenSSL >= 1.0.2 `--cipher-details`.
 * Flag expired certificates.
 * Flag TLSv1.0 ciphers in output as weak.
-* Experimental OSX support (static building only).
+* Experimental OS X support (static building only).
 * Support for scanning PostgreSQL servers (credit nuxi).
 * Check for TLS Fallback SCSV support.
 * Added StartTLS support for LDAP `--starttls-ldap`.
 * Added SNI support `--sni-name` (credit Ken).
 * Support STARTTLS for MySQL (credit bk2017).
+* Check for supported key exchange groups.
+* Check for supported server signature algorithms.
 
-### Building on Windows
-Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can
-either be done natively or by cross-compiling from Linux. See INSTALL for
-instructions.
-
-Note that sslscan was originally written for Linux, and has not been extensively
-tested on Windows. As such, the Windows version should be considered experimental.
-
-Pre-build cross-compiled Windows binaries are available on the [GitHub Releases Page](https://github.com/rbsec/sslscan/releases).
-
-
-### Building on OS X
-There is experimental support for statically building on OS X, however this
-should be considered unsupported. You may need to install any dependencies
-required to compile OpenSSL from source on OS X. Once you have, just run:
-
-    make static
-
-### OpenSSL issues
-
-#### Statically linking a custom OpenSSL build
+### Building on Linux
 
 It is possible to ignore the OpenSSL system installation and ship your own
 version. Although this results in a more resource-heavy `sslscan` binary
-(file size, memory consumption, etc.), this allows to enable both SSLv2 and
-SSLv3 ciphers. In comparison to the method of repackaging the
-Debian build, this custom OpenSSL build won't affect other tools on the same
-system, as they would use the version packaged by the distro's maintainers.
+(file size, memory consumption, etc.), this allows some additional checks
+such as TLS compression.
 
 To compile your own OpenSSL version, you'll probably need to install the
-OpenSSL build dependencies:
+OpenSSL build dependencies (and enable the `deb-src` repos in your apt config):
 
     apt-get install build-essential git zlib1g-dev
     apt-get build-dep openssl
@@ -123,40 +101,23 @@ looks a bit like
 
 (pay attention to the `-static` suffix and the `1.0.2-chacha` OpenSSL version).
 
+### Building on Windows
 
-#### Building on Kali
-Kali now ships with a statically built version of sslscan which supports SSLv2.
-You can install it with:
+Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can
+either be done natively or by cross-compiling from Linux. See INSTALL for
+instructions.
 
-    apt install sslscan
+Note that sslscan was originally written for Linux, and has not been extensively
+tested on Windows. As such, the Windows version should be considered experimental.
 
-The package can be found in the [Kali Git Repository](https://gitlab.com/kalilinux/packages/sslscan).
+Pre-build cross-compiled Windows binaries are available on the [GitHub Releases Page](https://github.com/rbsec/sslscan/releases).
 
-If for whatever reason you can't install this package, follow the instructions
-above for statically building against OpenSSL.
+### Building on OS X
+There is experimental support for statically building on OS X, however this
+should be considered unsupported. You may need to install any dependencies
+required to compile OpenSSL from source on OS X. Once you have, just run:
 
-#### Building on Debian
-It is recommended that you statically build sslscan using the instructions listed
-above. If this is not an option and you want to compile your system OpenSSL
-with support for legacy protocols such as SSLv2 and SSLv3 then follow the
-instructions below.
-
-Note that many modern distros (including Debian) ship with a version of OpenSSL
-that disables support for SSLv2 ciphers. If `sslscan` is compiled on one of
-these distros, it will not be able to detect SSLv2.
-
-This issue can be resolved by rebuilding OpenSSL from source after removing
-the patch that disables SSLv2 support.
-
-The `build_openssl_debian.sh` script automates this process for Debian systems.
-It has been tested on Debian Squeeze/Wheezy; it may work on other
-Debian based distros, but has not been tested. The built version of OpenSSL
-will be installed using `dpkg`.
-
-If it is not possible to rebuild OpenSSL, `sslscan` will still compile
-(thanks to a patch from [digineo/sslscan](https://github.com/digineo/sslscan),
-based on the debian patch). However, a warning will be displayed in the
-output to notify the user that SSLv2 ciphers will not be detected.
+    make static
 
 # Original (ioerror) README
 This is a fork of sslscan.c to better support STARTTLS.
