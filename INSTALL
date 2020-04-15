@@ -28,7 +28,11 @@ tools requires downloading gigabytes of data!
   In any case, it is necessary to compile OpenSSL to ensure that all
 protocols and algorithms are enabled (note that some systems that package
 OpenSSL have some deprecated features such as SSLv2 turned off for safety
-reasons; we actually need those to test with). 
+reasons; we actually need those to test with).
+
+Please note that building on Windows (especially x86) is not supported, and
+you may well encounter issues when trying to do so. Cross-compiling for x86
+from Debian Buster (10) is reported to work, but your mileage may vary.
 
 
 I. Cross-compiling from Linux
