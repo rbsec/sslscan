@@ -65,7 +65,7 @@ Key changes are as follows:
 * Check for supported key exchange groups.
 * Check for supported server signature algorithms.
 
-### Building on Linux
+### Building on Debian
 
 It is possible to ignore the OpenSSL system installation and ship your own
 version. Although this results in a more resource-heavy `sslscan` binary
