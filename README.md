@@ -73,16 +73,19 @@ version. Although this results in a more resource-heavy `sslscan` binary
 such as TLS compression.
 
 To compile your own OpenSSL version, you'll probably need to install the
-OpenSSL build dependencies (and enable the `deb-src` repos in your apt config):
+OpenSSL build dependencies. The commands below can be used to do this on Debian.
+If you don't have them already, you will need to enable the `deb-src` repos
+in your apt config. sslscan was primarily developed on Debian, so if you are
+compiling on other distributions your mileage may vary.
 
     apt-get install build-essential git zlib1g-dev
     apt-get build-dep openssl
 
-then run
+Then run
 
     make static
 
-which will clone the [OpenSSL repository](https://github.com/openssl/openssl),
+This will clone the [OpenSSL repository](https://github.com/openssl/openssl),
 and configure/compile/test OpenSSL prior to compiling `sslscan`.
 
 **Please note:** Out of the box, OpenSSL cannot compiled with `clang` without
@@ -90,16 +93,9 @@ further customization (which is not done by the provided `Makefile`).
 For more information on this, see [Modifying Build Settings](http://wiki.openssl.org/index.php/Compilation_and_Installation#Modifying_Build_Settings)
 in the OpenSSL wiki.
 
-You can verify whether you have a statically linked OpenSSL version, if
-
-    ./sslscan --version
-
-looks a bit like
-
-        1.x.y-...-static
-        OpenSSL 1.0.2-chacha xx XXX xxxx
-
-(pay attention to the `-static` suffix and the `1.0.2-chacha` OpenSSL version).
+You can verify whether you have a statically linked OpenSSL version, by
+checking whether the version listed by `sslscan --version` has the `-static`
+suffix.
 
 ### Building on Windows
 
