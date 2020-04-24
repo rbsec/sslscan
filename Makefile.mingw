@@ -16,11 +16,11 @@ ifneq ($(BUILD_32BIT),)
 endif
 
 ifeq ($(shell uname), Linux)
-  MINGW32=$(shell which i586-mingw32msvc-gcc)
+  MINGW32=$(shell which i686-w64-mingw32-gcc)
   ifneq ($(MINGW32),)
     CC=$(MINGW32)
     ARCHITECTURE=32-bit
-    CC_PREFIX=i586-mingw32msvc-
+    CC_PREFIX=i686-w64-mingw32-
     OPENSSL_TARGET=mingw
   endif
 
