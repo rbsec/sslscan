@@ -322,7 +322,7 @@ bs *makeCiphersuiteListTLS13All();
 bs *makeCiphersuiteListMissing(unsigned int tls_version);
 bs *makeClientHello(struct sslCheckOptions *options, unsigned int version, bs *ciphersuite_list, bs *tls_extensions);
 bs *makeTLSExtensions(struct sslCheckOptions *options, unsigned int include_signature_algorithms);
-void markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_version);
+int markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_version);
 int ocsp_certid_print(BIO *bp, OCSP_CERTID *a, int indent);
 static int ocsp_resp_cb(SSL *s, void *arg);
 void readLine(FILE *, char *, int);
