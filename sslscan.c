@@ -4857,7 +4857,7 @@ bs *makeCiphersuiteListMissing(unsigned int tls_version) {
 }
 
 /* Marks a ciphersuite as found so that it is not re-tested again. */
-void markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_version) {
+int markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_version) {
   if (tls_version == TLSv1_0)
     tls_version = V1_0;
   else if (tls_version == TLSv1_1)
@@ -4867,10 +4867,14 @@ void markFoundCiphersuite(unsigned short server_cipher_id, unsigned int tls_vers
 
   for (int i = 0; i < (sizeof(missing_ciphersuites) / sizeof(struct missing_ciphersuite)); i++) {
     if (missing_ciphersuites[i].id == server_cipher_id) {
+      if (missing_ciphersuites[i].accepted_tls_versions & tls_version) {
+	return 0; // Return a fail so that we can skip repeated ciphers
+      }
       missing_ciphersuites[i].accepted_tls_versions |= tls_version;
       break;
     }
   }
+  return 1;
 }
 
 /* Resolves an IANA cipher ID to its IANA name.  Sets the cipher_bits argument to the cipher strength (or to -1 if unknown).  Returns "UNKNOWN_CIPHER if cipher ID is not found. */
@@ -5208,7 +5212,8 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int tls_version
     bs_free(&server_hello);
 
     /* Mark this cipher ID as supported by the server, so when we loop again, the next ciphersuite list doesn't include it. */
-    markFoundCiphersuite(cipher_id, tls_version);
+    if( ! markFoundCiphersuite(cipher_id, tls_version)
+       goto done;
 
     /* Get the IANA name and cipher bit strength (maybe -1 when unknown). */
     cipher_name = resolveCipherID(cipher_id, &cipher_bits);
