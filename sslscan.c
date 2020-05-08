@@ -5212,7 +5212,7 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int tls_version
     bs_free(&server_hello);
 
     /* Mark this cipher ID as supported by the server, so when we loop again, the next ciphersuite list doesn't include it. */
-    if( ! markFoundCiphersuite(cipher_id, tls_version)
+    if( ! markFoundCiphersuite(cipher_id, tls_version))
        goto done;
 
     /* Get the IANA name and cipher bit strength (maybe -1 when unknown). */
