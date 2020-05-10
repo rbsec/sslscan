@@ -5111,7 +5111,7 @@ bs *makeClientHello(struct sslCheckOptions *options, unsigned int tls_version, b
 
 /* Checks all ciphersuites that OpenSSL does not support.  When version is 0, TLSv1.0 is tested.  When set to 1, TLSv1.1 is tested.  When set to 2, TLSv1.2 is tested. */
 int testMissingCiphers(struct sslCheckOptions *options, unsigned int tls_version) {
-  int ret = false, s = -1;
+  int ret = false, s = -1, valid_cipher_id = false;
   unsigned int tls_version_low_byte = 1;
   char *tls_printable_name = getPrintableTLSName(tls_version);
   bs *client_hello = NULL, *server_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL;
@@ -5156,7 +5156,6 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int tls_version
     ciphersuite_list = makeCiphersuiteListMissing(tls_version);
 
     client_hello = makeClientHello(options, tls_version, ciphersuite_list, tls_extensions);
-    bs_free(&ciphersuite_list);
     bs_free(&tls_extensions);
 
     /* Now connect to the target server. */
@@ -5203,9 +5202,28 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int tls_version
     }
 
     /* Extract the cipher ID. */
-    unsigned short cipher_id = (bs_get_byte(server_hello, session_id_len + 43 + 1) << 8) | bs_get_byte(server_hello, session_id_len + 43 + 2);
+    unsigned char cipher_id_byte1 = bs_get_byte(server_hello, session_id_len + 43 + 1);
+    unsigned char cipher_id_byte2 = bs_get_byte(server_hello, session_id_len + 43 + 2);
+    unsigned short cipher_id = (cipher_id_byte1 << 8) | cipher_id_byte2;
 
     bs_free(&server_hello);
+
+    /* Check that the server returned a cipher ID that we requested.  Some servers
+     * will return a cipher ID that we didn't request when our ciphersuite list
+     * doesn't match anything (this likely violates the spec, but real servers in the
+     * wild do this sometimes, so we have to handle it).  When this happens, we
+     * conclude that the server does not accept any of the ciphers, so we're done. */
+    valid_cipher_id = false;
+    for (int i = 0; i < (bs_get_len(ciphersuite_list) / 2) && (valid_cipher_id == false); i++) {
+      if ((bs_get_byte(ciphersuite_list, i * 2) == cipher_id_byte1) &&
+          (bs_get_byte(ciphersuite_list, (i * 2) + 1) == cipher_id_byte2))
+        valid_cipher_id = true;
+    }
+
+    if (valid_cipher_id == false)
+      goto done;
+
+    bs_free(&ciphersuite_list);
 
     /* Mark this cipher ID as supported by the server, so when we loop again, the next ciphersuite list doesn't include it. */
     markFoundCiphersuite(cipher_id, tls_version);
