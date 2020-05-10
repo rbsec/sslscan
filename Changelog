@@ -1,5 +1,12 @@
 Changelog
 =========
+Version: 2.0.0-beta2
+Date   : 10/05/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Fix a bug with servers that return incorrect cipher IDs.
+		 > Portability improvements.
+		 > Fix x86 windows build.
 
 Version: 2.0.0-beta1
 Date   : 29/02/2020
