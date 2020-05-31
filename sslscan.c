@@ -82,8 +82,6 @@
     #endif
   #endif
 
-  const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
-
   #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
     #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
   #endif
@@ -148,6 +146,8 @@ static int xml_to_stdout = 0;
 #if OPENSSL_VERSION_NUMBER < 0x1000100L
 unsigned long SSL_CIPHER_get_id(const SSL_CIPHER* cipher) { return cipher->id; }
 #endif
+
+const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
 
 const SSL_METHOD *TLSv1_3_client_method(void)
 {
