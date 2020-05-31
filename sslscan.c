@@ -1670,7 +1670,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     int socketDescriptor = 0;
     SSL *ssl = NULL;
     BIO *cipherConnectionBio = NULL;
-    char requestBuffer[256];
+    char requestBuffer[1024];
     char buffer[64];
     char http_code[64];
     int resultSize = 0;
@@ -1788,7 +1788,8 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     }
                     else
                     {
-                      strncat(options->cipherstring, ":!", 2);
+                      // Using strcat rather than strncat to avoid a warning from GCC
+                      strcat(options->cipherstring, ":!");
                       strncat(options->cipherstring, usedcipher, strlen(usedcipher));
                     }
                     SSL_shutdown(ssl);
@@ -3973,7 +3974,7 @@ int main(int argc, char *argv[])
             // No SNI name passed on command line
             if (strlen(options.sniname) == 0)
             {
-                strncpy(options.sniname, options.host, sizeof(options.host));
+                strncpy(options.sniname, options.host, sizeof(options.host) -1);
             }
 
             // Get port (if it exists)...
