@@ -1574,6 +1574,7 @@ char *cipherRemove(char *str, const char *sub) {
 /* Outputs an accepted cipher to the console and XML file. */
 void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSslMethod, uint32_t cipherid, const char *ciphername, int cipherbits, int cipher_accepted, unsigned int milliseconds_elapsed, char *http_code) {
   char hexCipherId[8] = {0};
+  char *strength;
   unsigned int tempInt = 0;
 
 
@@ -1629,22 +1630,31 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
 
     printf_xml(" bits=\"%d\" cipher=\"%s\" id=\"%s\"", cipherbits, ciphername, hexCipherId);
     if (strstr(ciphername, "NULL")) {
-      printf("%s%-29s%s", COL_RED_BG, ciphername, RESET);
+        printf("%s%-29s%s", COL_RED_BG, ciphername, RESET);
+        strength = "null";
     } else if (strstr(ciphername, "ADH") || strstr(ciphername, "AECDH") || strstr(ciphername, "_anon_")) {
-      printf("%s%-29s%s", COL_PURPLE, ciphername, RESET);
+        printf("%s%-29s%s", COL_PURPLE, ciphername, RESET);
+        strength = "anonymous";
     } else if (strstr(ciphername, "EXP")) {
-      printf("%s%-29s%s", COL_RED, ciphername, RESET);
+        printf("%s%-29s%s", COL_RED, ciphername, RESET);
+        strength = "weak";
     } else if (strstr(ciphername, "RC4") || strstr(ciphername, "DES")) {
-      printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        strength = "medium";
     } else if (strstr(ciphername, "_SM4_")) { /* Developed by Chinese government */
-      printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        strength = "medium";
     } else if (strstr(ciphername, "_GOSTR341112_")) { /* Developed by Russian government */
-      printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        strength = "medium";
     } else if ((strstr(ciphername, "CHACHA20") || (strstr(ciphername, "GCM"))) && strstr(ciphername, "DHE")) {
-      printf("%s%-29s%s", COL_GREEN, ciphername, RESET);
+        printf("%s%-29s%s", COL_GREEN, ciphername, RESET);
+        strength = "strong";
     } else {
-      printf("%-29s", ciphername);
+        printf("%-29s", ciphername);
+        strength = "acceptable";
     }
+    printf_xml(" strength=\"%s\"", strength);
 
     if ((options->cipher_details == true) && (ssl != NULL))
       ssl_print_tmp_key(options, ssl);
