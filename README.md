@@ -16,7 +16,7 @@ Other key changes include:
 There are likely to be bugs in this version, so please report any that you encounter.
 
 ## XML Output Changes
-A potentially breaking change has been made to the XML output in version **2.0.0-beta4**. Previously, multiple `<certificaite>` elements could be returned (one by default, and a second one if `--show-certificate` was used).
+A potentially breaking change has been made to the XML output in version **2.0.0-beta4**. Previously, multiple `<certificate>` elements could be returned (one by default, and a second one if `--show-certificate` was used).
 
 The key changes are:
 
