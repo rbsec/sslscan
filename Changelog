@@ -1,5 +1,18 @@
 Changelog
 =========
+Version: 2.0.0-beta4
+Date   : 10/06/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Add a new "<certificates>" element to the XML output.
+
+Version: 2.0.0-beta3
+Date   : 10/06/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Fix a few compiler warnings.
+		 > Fix a regression where the "strength" attribute was missing.
+
 Version: 2.0.0-beta2
 Date   : 10/05/2020
 Author : rbsec <robin@rbsec.net>
