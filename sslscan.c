@@ -1938,7 +1938,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
 
                             // Get Certificate...
                             printf("\n  %sSSL Certificate:%s\n", COL_BLUE, RESET);
-                            printf_xml("  <certificate>\n");
+                            printf_xml("  <certificate type=\"short\">\n");
                             x509Cert = SSL_get_peer_certificate(ssl);
                             if (x509Cert != NULL)
                             {
@@ -2681,7 +2681,7 @@ int showCertificate(struct sslCheckOptions *options)
 
                             // Get Certificate...
                             printf("\n  %sSSL Certificate:%s\n", COL_BLUE, RESET);
-                            printf_xml("  <certificate>\n");
+                            printf_xml("  <certificate type=\"full\">\n");
                             x509Cert = SSL_get_peer_certificate(ssl);
                             if (x509Cert != NULL)
                             {
@@ -3571,20 +3571,26 @@ int testHost(struct sslCheckOptions *options)
     if (options->signature_algorithms)
         testSignatureAlgorithms(options);
 
-    // Print certificate
-    if (status == true && options->showCertificate == true)
+    // Certificate checks
+    if (status == true && (options->showCertificate == true || options->checkCertificate == true))
     {
-        status = showCertificate(options);
-    }
-
-    // Show weak certificate signing algorithm or key strength
-    if (status == true && options->checkCertificate == true)
-    {
-        status = checkCertificateProtocol(options, TLS_client_method());
-        if (status != false)
+        printf_xml(" <certificates>\n");
+        // Full certificate details (--show-certificates)
+        if (status == true && options->showCertificate == true)
         {
-            printf("Certificate information cannot be retrieved.\n\n");
+            status = showCertificate(options);
         }
+
+        // Default certificate details
+        if (status == true && options->checkCertificate == true)
+        {
+            status = checkCertificateProtocol(options, TLS_client_method());
+            if (status != false)
+            {
+                printf("Certificate information cannot be retrieved.\n\n");
+            }
+        }
+        printf_xml(" </certificates>\n");
     }
 
     // Print client auth trusted CAs

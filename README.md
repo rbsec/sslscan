@@ -1,15 +1,10 @@
 # sslscan2
 
-An alpha build of sslscan 2 has been merged into master. If you want the old code,
-the tag [1.11.13-rbsec](https://github.com/rbsec/sslscan/releases/tag/1.11.13-rbsec) was the last release in that branch.
+An beta build of sslscan 2 has been merged into master. If you want the old code, the tag [1.11.13-rbsec](https://github.com/rbsec/sslscan/releases/tag/1.11.13-rbsec) was the last release in that branch.
 
-The main changes in sslscan2 is a major rewrite of the backend scanning code,
-which means that it is no longer reliant on the version of OpenSSL for many checks.
-This means that it is possible to support legacy protocols (SSLv2 and SSLv3), as well
-as supporting TLSv1.3 - regardless of the version of OpenSSL that it has been compiled against.
+The main changes in sslscan2 is a major rewrite of the backend scanning code, which means that it is no longer reliant on the version of OpenSSL for many checks. This means that it is possible to support legacy protocols (SSLv2 and SSLv3), as well as supporting TLSv1.3 - regardless of the version of OpenSSL that it has been compiled against.
 
-This has been made possible largely by the work of [jtesta](https://github.com/jtesta), who has been
-responsible for most of the backend rewrite.
+This has been made possible largely by the work of [jtesta](https://github.com/jtesta), who has been responsible for most of the backend rewrite.
 
 Other key changes include:
 
@@ -19,6 +14,19 @@ Other key changes include:
 * A test suite is included using Docker, to verify that sslscan is functionality correctly.
 
 There are likely to be bugs in this version, so please report any that you encounter.
+
+## XML Output Changes
+A potentially breaking change has been made to the XML output in version **2.0.0-beta4**. Previously, multiple `<certificate>` elements could be returned (one by default, and a second one if `--show-certificate` was used).
+
+The key changes are:
+
+* A new parent `<certificates>` element that will contain the `<certificate>` elements.
+* `<certificate>` elements have a new `type` attribute, which can either be:
+  * `short` for the default output.
+  * `full` for when `--show-certificate` is used.
+* There will potentially be more than one certificate of each type returned on servers that have multiple certificates with different signature algorithms (see discussion in issue [#208](https://github.com/rbsec/sslscan/issues/208)).
+
+If you are using the XML output, then you may need to make changes to your parser.
 
 # README
 
@@ -67,15 +75,9 @@ Key changes are as follows:
 
 ### Building on Linux
 
-It is possible to ignore the OpenSSL system installation and ship your own
-version. Although this results in a more resource-heavy `sslscan` binary
-(file size, memory consumption, etc.), this allows some additional checks
-such as TLS compression.
+It is possible to ignore the OpenSSL system installation and ship your own version. Although this results in a more resource-heavy `sslscan` binary (file size, memory consumption, etc.), this allows some additional checks such as TLS compression.
 
-To compile your own OpenSSL version, you'll probably need to install the
-OpenSSL build dependencies. The commands below can be used to do this on Debian.
-If you don't have them already, you will need to enable the `deb-src` repos
-in your apt config. sslscan was primarily developed on Debian, so if you are
+To compile your own OpenSSL version, you'll probably need to install the OpenSSL build dependencies. The commands below can be used to do this on Debian.  If you don't have them already, you will need to enable the `deb-src` repos in your apt config. sslscan was primarily developed on Debian, so if you are
 compiling on other distributions your mileage may vary.
 
     apt-get install build-essential git zlib1g-dev
@@ -85,33 +87,22 @@ Then run
 
     make static
 
-This will clone the [OpenSSL repository](https://github.com/openssl/openssl),
-and configure/compile/test OpenSSL prior to compiling `sslscan`.
+This will clone the [OpenSSL repository](https://github.com/openssl/openssl), and configure/compile/test OpenSSL prior to compiling `sslscan`.
 
-**Please note:** Out of the box, OpenSSL cannot compiled with `clang` without
-further customization (which is not done by the provided `Makefile`).
-For more information on this, see [Modifying Build Settings](http://wiki.openssl.org/index.php/Compilation_and_Installation#Modifying_Build_Settings)
-in the OpenSSL wiki.
+**Please note:** Out of the box, OpenSSL cannot compiled with `clang` without further customization (which is not done by the provided `Makefile`). For more information on this, see [Modifying Build Settings](http://wiki.openssl.org/index.php/Compilation_and_Installation#Modifying_Build_Settings) in the OpenSSL wiki.
 
-You can verify whether you have a statically linked OpenSSL version, by
-checking whether the version listed by `sslscan --version` has the `-static`
-suffix.
+You can verify whether you have a statically linked OpenSSL version, by checking whether the version listed by `sslscan --version` has the `-static` suffix.
 
 ### Building on Windows
 
-Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can
-either be done natively or by cross-compiling from Linux. See INSTALL for
-instructions.
+Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can either be done natively or by cross-compiling from Linux. See INSTALL for instructions.
 
-Note that sslscan was originally written for Linux, and has not been extensively
-tested on Windows. As such, the Windows version should be considered experimental.
+Note that sslscan was originally written for Linux, and has not been extensively tested on Windows. As such, the Windows version should be considered experimental.
 
 Pre-build cross-compiled Windows binaries are available on the [GitHub Releases Page](https://github.com/rbsec/sslscan/releases).
 
 ### Building on OS X
-There is experimental support for statically building on OS X, however this
-should be considered unsupported. You may need to install any dependencies
-required to compile OpenSSL from source on OS X. Once you have, just run:
+There is experimental support for statically building on OS X, however this should be considered unsupported. You may need to install any dependencies required to compile OpenSSL from source on OS X. Once you have, just run:
 
     make static
 
