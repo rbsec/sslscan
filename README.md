@@ -25,6 +25,7 @@ The key changes are:
   * `short` for the default output.
   * `full` for when `--show-certificate` is used.
 * There will potentially be more than one certificate of each type returned on servers that have multiple certificates with different signature algorithms (see discussion in issue [#208](https://github.com/rbsec/sslscan/issues/208)).
+* The `<signature-algorithm>` element in a `<certificate>` no longer contains the "Signature Algorithm:" prefix, or the spacing and newline.
 
 If you are using the XML output, then you may need to make changes to your parser.
 

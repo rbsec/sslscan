@@ -1,5 +1,11 @@
 Changelog
 =========
+Version: 2.0.0-beta5
+Date   : 30/06/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Remove the "Signature Algorithm:" text and spacing from the XML.
+
 Version: 2.0.0-beta4
 Date   : 10/06/2020
 Author : rbsec <robin@rbsec.net>

@@ -1977,9 +1977,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
 
                                     if (options->xmlOutput)
                                     {
-                                        printf_xml("   <signature-algorithm>");
-                                        X509_signature_print(fileBIO, palg, NULL);
-                                        printf_xml("</signature-algorithm>\n");
+                                        printf_xml("   <signature-algorithm>%s</signature-algorithm>\n", certAlgorithm);
                                     }
                                 }
 
