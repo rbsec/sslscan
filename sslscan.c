@@ -5741,6 +5741,7 @@ int testSignatureAlgorithms(struct sslCheckOptions *options) {
       /* If the server accepted our bogus signature ID, then we can conclude that it will accept all of them (and not test any further).  Some servers in the wild do this for some reason... */
       if (sig_id == BOGUS_SIG_ALG_ID) {
         printf("%s%s  Server accepts all signature algorithms.%s\n", getPrintableTLSName(tls_version), COL_YELLOW, RESET);
+        printf_xml("  <connection-signature-algorithm sslversion=\"%s\" name=\"ANY\" id=\"0xfdff\" />\n", getPrintableTLSName(tls_version));
         goto done;
       } else {
         printf("%s  %s%s%s\n", getPrintableTLSName(tls_version), color, sig_name, RESET);
