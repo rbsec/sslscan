@@ -4078,19 +4078,23 @@ int main(int argc, char *argv[])
             printf("%s\t\t%s\n\t\t%s\n%s\n\n", COL_BLUE, VERSION,
                     SSLeay_version(SSLEAY_VERSION), RESET);
             printf("%sCommand:%s\n", COL_BLUE, RESET);
-            printf("  %s%s [Options] [host:port | host]%s\n\n", COL_GREEN, argv[0], RESET);
+            printf("  %s%s [options] [host:port | host]%s\n\n", COL_GREEN, argv[0], RESET);
             printf("%sOptions:%s\n", COL_BLUE, RESET);
             printf("  %s--targets=<file>%s     A file containing a list of hosts to check.\n", COL_GREEN, RESET);
             printf("                       Hosts can  be supplied  with ports (host:port)\n");
             printf("  %s--sni-name=<name>%s    Hostname for SNI\n", COL_GREEN, RESET);
             printf("  %s--ipv4, -4%s           Only use IPv4\n", COL_GREEN, RESET);
             printf("  %s--ipv6, -6%s           Only use IPv6\n", COL_GREEN, RESET);
+            printf("\n");
             printf("  %s--show-certificate%s   Show full certificate information\n", COL_GREEN, RESET);
-            printf("  %s--no-check-certificate%s  Don't warn about weak certificate algorithm or keys\n", COL_GREEN, RESET);
             printf("  %s--show-client-cas%s    Show trusted CAs for TLS client auth\n", COL_GREEN, RESET);
-            printf("  %s--show-ciphers%s       Show supported client ciphers\n", COL_GREEN, RESET);
-            printf("  %s--show-cipher-ids%s    Show cipher ids\n", COL_GREEN, RESET);
-            printf("  %s--show-times%s         Show handhake times in milliseconds\n", COL_GREEN, RESET);
+            printf("  %s--no-check-certificate%s  Don't warn about weak certificate algorithm or keys\n", COL_GREEN, RESET);
+            printf("  %s--ocsp%s               Request OCSP response from server\n", COL_GREEN, RESET);
+            printf("  %s--pk=<file>%s          A file containing the private key or a PKCS#12 file\n", COL_GREEN, RESET);
+            printf("                       containing a private key/certificate pair\n");
+            printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
+            printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted client certificates\n", COL_GREEN, RESET);
+            printf("\n");
             printf("  %s--ssl2%s               Only check if SSLv2 is enabled\n", COL_GREEN, RESET);
             printf("  %s--ssl3%s               Only check if SSLv3 is enabled\n", COL_GREEN, RESET);
             printf("  %s--tls10%s              Only check TLSv1.0 ciphers\n", COL_GREEN, RESET);
@@ -4100,44 +4104,44 @@ int main(int argc, char *argv[])
             printf("  %s--tls13%s              Only check TLSv1.3 ciphers\n", COL_GREEN, RESET);
 #endif
             printf("  %s--tlsall%s             Only check TLS ciphers (all versions)\n", COL_GREEN, RESET);
-            printf("  %s--ocsp%s               Request OCSP response from server\n", COL_GREEN, RESET);
-            printf("  %s--pk=<file>%s          A file containing the private key or a PKCS#12 file\n", COL_GREEN, RESET);
-            printf("                       containing a private key/certificate pair\n");
-            printf("  %s--pkpass=<password>%s  The password for the private  key or PKCS#12 file\n", COL_GREEN, RESET);
-            printf("  %s--certs=<file>%s       A file containing PEM/ASN1 formatted client certificates\n", COL_GREEN, RESET);
+            printf("  %s--show-ciphers%s       Show supported client ciphers\n", COL_GREEN, RESET);
+            printf("  %s--show-cipher-ids%s    Show cipher ids\n", COL_GREEN, RESET);
+            printf("  %s--show-times%s         Show handhake times in milliseconds\n", COL_GREEN, RESET);
+            printf("\n");
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+            printf("  %s--no-cipher-details%s  Disable EC curve names and EDH/RSA key lengths output\n", COL_GREEN, RESET);
+#endif
             printf("  %s--no-ciphersuites%s    Do not check for supported ciphersuites\n", COL_GREEN, RESET);
+            printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
 #ifdef SSL_MODE_SEND_FALLBACK_SCSV
             printf("  %s--no-fallback%s        Do not check for TLS Fallback SCSV\n", COL_GREEN, RESET);
 #endif
-            printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
-            printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
-            printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
             printf("  %s--no-groups%s          Do not enumerate key exchange groups\n", COL_GREEN, RESET);
+            printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
+            printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
             printf("  %s--no-sigs%s            Do not enumerate signature algorithms\n", COL_GREEN, RESET);
+            printf("\n");
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
             printf("  %s--starttls-irc%s       STARTTLS setup for IRC\n", COL_GREEN, RESET);
             printf("  %s--starttls-ldap%s      STARTTLS setup for LDAP\n", COL_GREEN, RESET);
-            printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
-            printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-mysql%s     STARTTLS setup for MYSQL\n", COL_GREEN, RESET);
-            printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
+            printf("  %s--starttls-pop3%s      STARTTLS setup for POP3\n", COL_GREEN, RESET);
             printf("  %s--starttls-psql%s      STARTTLS setup for PostgreSQL\n", COL_GREEN, RESET);
+            printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
+            printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
             printf("  %s--xmpp-server%s        Use a server-to-server XMPP handshake\n", COL_GREEN, RESET);
             printf("  %s--http%s               Test a HTTP connection\n", COL_GREEN, RESET);
             printf("  %s--rdp%s                Send RDP preamble before starting scan\n", COL_GREEN, RESET);
+            printf("\n");
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
-            printf("  %s--timeout=<sec>%s      Set socket timeout. Default is 3s\n", COL_GREEN, RESET);
-            printf("  %s--sleep=<msec>%s       Pause between connection request. Default is disabled\n", COL_GREEN, RESET);
-            printf("  %s--xml=<file>%s         Output results to an XML file\n", COL_GREEN, RESET);
-            printf("                       <file> can be -, which means stdout\n");
-            printf("  %s--version%s            Display the program version\n", COL_GREEN, RESET);
-            printf("  %s--verbose%s            Display verbose output\n", COL_GREEN, RESET);
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
-            printf("  %s--no-cipher-details%s  Disable EC curve names and EDH/RSA key lengths output\n", COL_GREEN, RESET);
-#endif
             printf("  %s--no-colour%s          Disable coloured output\n", COL_GREEN, RESET);
-            printf("  %s--help%s               Display the  help text  you are  now reading\n\n", COL_GREEN, RESET);
+            printf("  %s--sleep=<msec>%s       Pause between connection request. Default is disabled\n", COL_GREEN, RESET);
+            printf("  %s--timeout=<sec>%s      Set socket timeout. Default is 3s\n", COL_GREEN, RESET);
+            printf("  %s--verbose%s            Display verbose output\n", COL_GREEN, RESET);
+            printf("  %s--version%s            Display the program version\n", COL_GREEN, RESET);
+            printf("  %s--xml=<file>%s         Output results to an XML file. Use - for STDOUT.\n", COL_GREEN, RESET);
+            printf("  %s--help%s               Display the help text you are now reading\n\n", COL_GREEN, RESET);
             printf("%sExample:%s\n", COL_BLUE, RESET);
             printf("  %s%s 127.0.0.1%s\n", COL_GREEN, argv[0], RESET);
             printf("  %s%s [::1]%s\n\n", COL_GREEN, argv[0], RESET);
