@@ -1,8 +1,6 @@
 # sslscan2
 
-An beta build of sslscan 2 has been merged into master. If you want the old code, the tag [1.11.13-rbsec](https://github.com/rbsec/sslscan/releases/tag/1.11.13-rbsec) was the last release in that branch.
-
-The main changes in sslscan2 is a major rewrite of the backend scanning code, which means that it is no longer reliant on the version of OpenSSL for many checks. This means that it is possible to support legacy protocols (SSLv2 and SSLv3), as well as supporting TLSv1.3 - regardless of the version of OpenSSL that it has been compiled against.
+sslscan version 2 has now been released. This includes a major rewrite of the backend scanning code, which means that it is no longer reliant on the version of OpenSSL for many checks. This means that it is possible to support legacy protocols (SSLv2 and SSLv3), as well as supporting TLSv1.3 - regardless of the version of OpenSSL that it has been compiled against.
 
 This has been made possible largely by the work of [jtesta](https://github.com/jtesta), who has been responsible for most of the backend rewrite.
 
@@ -10,10 +8,8 @@ Other key changes include:
 
 * Enumeration of server key exchange groups.
 * Enumeration of server signature algorithms.
-* SSLv2 and SSLv3 protocol support it scanned, but individual ciphers are not.
+* SSLv2 and SSLv3 protocol support is scanned, but individual ciphers are not.
 * A test suite is included using Docker, to verify that sslscan is functionality correctly.
-
-There are likely to be bugs in this version, so please report any that you encounter.
 
 ## XML Output Changes
 A potentially breaking change has been made to the XML output in version **2.0.0-beta4**. Previously, multiple `<certificate>` elements could be returned (one by default, and a second one if `--show-certificate` was used).
