@@ -3933,7 +3933,10 @@ int main(int argc, char *argv[])
 
         // SNI name
         else if (strncmp("--sni-name=", argv[argLoop], 11) == 0)
+        {
             strncpy(options.sniname, argv[argLoop]+11, strlen(argv[argLoop])-11);
+            options.sni_set = 1;
+        }
 
 
         // Host (maybe port too)...
@@ -3986,7 +3989,7 @@ int main(int argc, char *argv[])
             strncpy(options.host, hostString, sizeof(options.host) -1);
 
             // No SNI name passed on command line
-            if (strlen(options.sniname) == 0)
+            if (!options.sni_set)
             {
                 strncpy(options.sniname, options.host, sizeof(options.host) -1);
             }
@@ -4191,6 +4194,11 @@ int main(int argc, char *argv[])
                                     tempInt++;
                                 line[tempInt] = 0;
                                 strncpy(options.host, line, sizeof(options.host) -1);
+
+                                if (!options.sni_set)
+                                {
+                                    strncpy(options.sniname, options.host, sizeof(options.host) -1);
+                                }
 
                                 // Get port (if it exists)...
                                 tempInt++;
