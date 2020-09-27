@@ -955,8 +955,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     {
         // Could not connect
         printf_error("Could not connect.");
-        status = false;
-        exit(status);
+        exit(1);
     }
 
     return status;
@@ -1124,8 +1123,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
     {
         // Could not connect
         printf_error("Could not connect.");
-        status = false;
-        exit(status);
+        exit(1);
     }
 
     // Call function again with downgraded protocol
@@ -1312,9 +1310,8 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
         // Could not connect
         printf_error("Could not connect.");
         renOut->supported = false;
-        status = false;
         freeRenegotiationOutput( renOut );
-        exit(status);
+        exit(1);
     }
     outputRenegotiation(options, renOut);
     freeRenegotiationOutput( renOut );
@@ -1459,9 +1456,8 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     {
         // Could not connect
         printf_error("Could not connect.");
-        status = false;
         printf("dying");
-        exit(status);
+        exit(1);
     }
 
     return status;
