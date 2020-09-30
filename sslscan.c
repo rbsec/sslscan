@@ -192,13 +192,13 @@ int populateCipherList(struct sslCheckOptions *options, const SSL_METHOD *sslMet
     SSL *ssl = NULL;
     options->ctx = new_CTX(sslMethod);
     if (options->ctx == NULL) {
-        printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+        printf_error("Could not create CTX object.");
         return false;
     }
     SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL);
     ssl = new_SSL(options->ctx);
     if (ssl == NULL) {
-        printf_error("%sERROR: Could not create SSL object.%s\n", COL_RED, RESET);
+        printf_error("Could not create SSL object.");
         FREE_CTX(options->ctx);
         return false;
     }
@@ -268,11 +268,11 @@ int readOrLogAndClose(int fd, void* buffer, size_t len, const struct sslCheckOpt
     n = recv(fd, buffer, len - 1, 0);
 
     if (n < 0 && errno != 11) {
-        printf_error("%s    ERROR: error reading from %s:%d: %s%s\n", COL_RED, options->host, options->port, strerror(errno), RESET);
+        printf_error("Error reading from %s:%d: %s", options->host, options->port, strerror(errno));
         close(fd);
         return 0;
     } else if (n == 0) {
-        printf_error("%s    ERROR: unexpected EOF reading from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+        printf_error("Unexpected EOF reading from %s:%d", options->host, options->port);
         close(fd);
         return 0;
     } else {
@@ -315,7 +315,7 @@ int tcpConnect(struct sslCheckOptions *options)
 
     if(socketDescriptor < 0)
     {
-        printf_error("%s    ERROR: Could not open a socket.%s\n", COL_RED, RESET);
+        printf_error("Could not open a socket.");
         return 0;
     }
 
@@ -340,7 +340,7 @@ int tcpConnect(struct sslCheckOptions *options)
 
     if(status < 0)
     {
-        printf_error("%sERROR: Could not open a connection to host %s (%s) on port %d.%s\n", COL_RED, options->host, options->addrstr, options->port, RESET);
+        printf_error("Could not open a connection to host %s (%s) on port %d.", options->host, options->addrstr, options->port);
         close(socketDescriptor);
         return 0;
     }
@@ -355,7 +355,7 @@ int tcpConnect(struct sslCheckOptions *options)
         if (strncmp(buffer, "220", 3) != 0)
         {
             close(socketDescriptor);
-            printf("%s    ERROR: The host %s on port %d did not appear to be an SMTP service.%s\n", COL_RED, options->host, options->port, RESET);
+            printf_error("The host %s on port %d did not appear to be an SMTP service.", options->host, options->port);
             return 0;
         }
         sendString(socketDescriptor, "EHLO example.org\r\n");
@@ -364,7 +364,7 @@ int tcpConnect(struct sslCheckOptions *options)
         if (strncmp(buffer, "250", 3) != 0)
         {
             close(socketDescriptor);
-            printf("%s    ERROR: The SMTP service on %s port %d did not respond with status 250 to our HELO.%s\n", COL_RED, options->host, options->port, RESET);
+            printf_error("The SMTP service on %s port %d did not respond with status 250 to our HELO.", options->host, options->port);
             return 0;
         }
         sendString(socketDescriptor, "STARTTLS\r\n");
@@ -373,7 +373,7 @@ int tcpConnect(struct sslCheckOptions *options)
         if (strncmp(buffer, "220", 3) != 0)
         {
             close(socketDescriptor);
-            printf("%s    ERROR: The SMTP service on %s port %d did not appear to support STARTTLS.%s\n", COL_RED, options->host, options->port, RESET);
+            printf_error("The SMTP service on %s port %d did not appear to support STARTTLS.", options->host, options->port);
             return 0;
         }
     }
@@ -546,12 +546,12 @@ int tcpConnect(struct sslCheckOptions *options)
             printf_verbose("STARTLS LDAP setup complete.\n");
         }
         else if (strstr(buffer, unsupported)) {
-            printf_error("%sSTARTLS LDAP connection to %s:%d failed with '%s'.%s\n",
-                         COL_RED, options->host, options->port, unsupported, RESET);
+            printf_error("STARTLS LDAP connection to %s:%d failed with '%s'.",
+                         options->host, options->port, unsupported);
             return 0;
         } else {
-            printf_error("%sSTARTLS LDAP connection to %s:%d failed with unknown error.%s\n",
-                         COL_RED, options->host, options->port, RESET);
+            printf_error("STARTLS LDAP connection to %s:%d failed with unknown error.",
+                         options->host, options->port);
             return 0;
         }
     }
@@ -589,12 +589,12 @@ int tcpConnect(struct sslCheckOptions *options)
 
         // Read reply byte
         if (1 != recv(socketDescriptor, &buffer, 1, 0)) {
-            printf_error("%s    ERROR: unexpected EOF reading from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+            printf_error("Unexpected EOF reading from %s:%d", options->host, options->port);
             return 0;
         }
 
         if (buffer != 'S') {
-            printf_error("%s    ERROR: server at %s:%d%s rejected TLS startup\n", COL_RED, options->host, options->port, RESET);
+            printf_error("Server at %s:%d rejected TLS startup", options->host, options->port);
             return 0;
         }
     }
@@ -613,21 +613,21 @@ int tcpConnect(struct sslCheckOptions *options)
 
         // Read reply header
         if (4 != recv(socketDescriptor, buffer, 4, 0)) {
-            printf_error("%s    ERROR: unexpected EOF reading from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+            printf_error("Unexpected EOF reading from %s:%d", options->host, options->port);
             return 0;
         }
 
         // Calculate remaining bytes (and check for overflows)
         readlen = ((buffer[2] & 0x7f) << 8) + buffer[3] - 4;
         if (readlen > sizeof(buffer)) {
-            printf_error("%s    ERROR: unexpected data from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+            printf_error("Unexpected data from %s:%d", options->host, options->port);
             return 0;
 
         }
 
         // Read reply data
         if (readlen != recv(socketDescriptor, buffer, readlen, 0)) {
-            printf_error("%s    ERROR: unexpected EOF reading from %s:%d%s\n", COL_RED, options->host, options->port, RESET);
+            printf_error("Unexpected EOF reading from %s:%d", options->host, options->port);
             return 0;
         }
     }
@@ -929,14 +929,14 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                     else
                     {
                         status = false;
-                        printf_error("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                        printf_error("Could not create SSL object.");
                     }
                 }
             }
             else
             {
                 status = false;
-                printf_error("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+                printf_error("Could not set cipher.");
             }
             // Free CTX Object
             FREE_CTX(options->ctx);
@@ -945,7 +945,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
         else
         {
             status = false;
-            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("Could not create CTX object.");
         }
 
         // Disconnect from host
@@ -954,9 +954,8 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     else
     {
         // Could not connect
-        printf_error("%sERROR: Could not connect.%s\n", COL_RED, RESET);
-        status = false;
-        exit(status);
+        printf_error("Could not connect.");
+        exit(1);
     }
 
     return status;
@@ -1098,14 +1097,14 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                     else
                     {
                         status = false;
-                        printf_error("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                        printf_error("Could not create SSL object.");
                     }
                 }
             }
             else
             {
                 status = false;
-                printf_error("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+                printf_error("Could not set cipher.");
             }
             // Free CTX Object
             FREE_CTX(options->ctx);
@@ -1114,7 +1113,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
         else
         {
             status = false;
-            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("Could not create CTX object.");
         }
 
         // Disconnect from host
@@ -1123,9 +1122,8 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
     else
     {
         // Could not connect
-        printf_error("%sERROR: Could not connect.%s\n", COL_RED, RESET);
-        status = false;
-        exit(status);
+        printf_error("Could not connect.");
+        exit(1);
     }
 
     // Call function again with downgraded protocol
@@ -1253,7 +1251,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                                     res = SSL_do_handshake(ssl); // Send renegotiation request to server
                                     if( res != 1 )
                                     {
-                                        printf_error("\n\nSSL_do_handshake() call failed\n");
+                                        printf_error("SSL_do_handshake() call failed");
                                     }
                                     if (SSL_get_state(ssl) == TLS_ST_OK)
                                     {
@@ -1263,7 +1261,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                                     } else {
                                         renOut->supported = false;
                                         status = false;
-                                        printf_error("\n\nFailed to complete renegotiation\n");
+                                        printf_error("Failed to complete renegotiation");
                                     }
                                 } else {
                                     status = false;
@@ -1283,7 +1281,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                     {
                         status = false;
                         renOut->supported = false;
-                        printf_error("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                        printf_error("Could not create SSL object.");
                     }
                 }
             }
@@ -1291,7 +1289,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
             {
                 status = false;
                 renOut->supported = false;
-                printf_error("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+                printf_error("Could not set cipher.");
             }
             // Free CTX Object
             FREE_CTX(options->ctx);
@@ -1301,7 +1299,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
         {
             status = false;
             renOut->supported = false;
-            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("Could not create CTX object.");
         }
 
         // Disconnect from host
@@ -1310,11 +1308,10 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
     else
     {
         // Could not connect
-        printf_error("%sERROR: Could not connect.%s\n", COL_RED, RESET);
+        printf_error("Could not connect.");
         renOut->supported = false;
-        status = false;
         freeRenegotiationOutput( renOut );
-        exit(status);
+        exit(1);
     }
     outputRenegotiation(options, renOut);
     freeRenegotiationOutput( renOut );
@@ -1374,7 +1371,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
             hello[10] = 0x03;
         }
         if (send(socketDescriptor, hello, sizeof(hello), 0) <= 0) {
-            printf_error("send() failed: %s\n", strerror(errno));
+            printf_error("send() failed: %s", strerror(errno));
             exit(1);
         }
 
@@ -1399,7 +1396,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
             hb[2] = 0x03;
         }
         if (send(socketDescriptor, hb, sizeof(hb), 0) <= 0) {
-            printf_error("send() failed: %s\n", strerror(errno));
+            printf_error("send() failed: %s", strerror(errno));
             exit(1);
         }
 
@@ -1458,10 +1455,9 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     else
     {
         // Could not connect
-        printf_error("%sERROR: Could not connect.%s\n", COL_RED, RESET);
-        status = false;
+        printf_error("Could not connect.");
         printf("dying");
-        exit(status);
+        exit(1);
     }
 
     return status;
@@ -1811,7 +1807,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
             else
             {
                 status = false;
-                printf("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                printf_error("Could not create SSL object.");
             }
         }
         else
@@ -1855,7 +1851,7 @@ int checkCertificateProtocol(struct sslCheckOptions *options, const SSL_METHOD *
     // Error Creating Context Object
     else
     {
-        printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+        printf_error("Could not create CTX object.");
         status = false;
     }
     return status;
@@ -2245,14 +2241,14 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                     else
                     {
                         status = false;
-                        printf("%s    ERROR: Could not create SSL object.%s\n", COL_RED, RESET);
+                        printf_error("Could not create SSL object.");
                     }
                 }
             }
             else
             {
                 status = false;
-                printf("%s    ERROR: Could not set cipher.%s\n", COL_RED, RESET);
+                printf_error("Could not set cipher.");
             }
 
             // Free CTX Object
@@ -2262,7 +2258,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
         else
         {
             status = false;
-            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("Could not create CTX object.");
         }
 
         // Disconnect from host
@@ -2388,14 +2384,14 @@ int ocspRequest(struct sslCheckOptions *options)
                     else
                     {
                         status = false;
-                        printf("%s    ERROR: Could not create SSL object.%s\n", COL_RED, RESET);
+                        printf_error("Could not create SSL object.");
                     }
                 }
             }
             else
             {
                 status = false;
-                printf("%s    ERROR: Could not set cipher.%s\n", COL_RED, RESET);
+                printf_error("Could not set cipher.");
             }
 
             // Free CTX Object
@@ -2405,7 +2401,7 @@ int ocspRequest(struct sslCheckOptions *options)
         else
         {
             status = false;
-            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("Could not create CTX object.");
         }
 
         // Disconnect from host
@@ -2998,14 +2994,14 @@ int showCertificate(struct sslCheckOptions *options)
                     else
                     {
                         status = false;
-                        printf("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                        printf_error("Could not create SSL object.");
                     }
                 }
             }
             else
             {
                 status = false;
-                printf("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+                printf_error("Could not set cipher.");
             }
 
             // Free CTX Object
@@ -3016,7 +3012,7 @@ int showCertificate(struct sslCheckOptions *options)
         else
         {
             status = false;
-            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("Could not create CTX object.");
         }
 
         // Disconnect from host
@@ -3166,14 +3162,14 @@ int showTrustedCAs(struct sslCheckOptions *options)
                     else
                     {
                         status = false;
-                        printf("%s    ERROR: Could create SSL object.%s\n", COL_RED, RESET);
+                        printf_error("Could not create SSL object.");
                     }
                 }
             }
             else
             {
                 status = false;
-                printf("%s    ERROR: Could set cipher.%s\n", COL_RED, RESET);
+                printf_error("Could not set cipher.");
             }
 
             // Free CTX Object
@@ -3184,7 +3180,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
         else
         {
             status = false;
-            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("Could not create CTX object.");
         }
 
         // Disconnect from host
@@ -3229,7 +3225,7 @@ int testConnection(struct sslCheckOptions *options)
     // Perform the actual lookup.
     if (getaddrinfo(options->host, NULL, &hints, &addrinfoResult) != 0)
     {
-        printf("%sERROR: Could not resolve hostname %s.%s\n", COL_RED, options->host, RESET);
+        printf_error("Could not resolve hostname %s.", options->host);
         return false;
     }
 
@@ -3307,7 +3303,7 @@ int testProtocolCiphers(struct sslCheckOptions *options, const SSL_METHOD *sslMe
         // Error Creating Context Object
         else
         {
-            printf_error("%sERROR: Could not create CTX object.%s\n", COL_RED, RESET);
+            printf_error("Could not create CTX object.");
             return false;
         }
     }
@@ -3708,7 +3704,7 @@ int main(int argc, char *argv[])
     err = WSAStartup(wVersionRequested, &wsaData);
     if (err != 0)
     {
-        printf_error("WSAStartup failed: %d\n", err);
+        printf_error("WSAStartup failed: %d", err);
         return -1;
     }
 #endif
@@ -4002,7 +3998,7 @@ int main(int argc, char *argv[])
                 options.port = strtol((hostString + tempInt), NULL, 10);
                 if (options.port < 1 || options.port > 65535)
                 {
-                    printf("\n%sInvalid target specified%s\n\n", COL_RED, RESET);
+                    printf_error("Invalid target specified.");
                     exit(1);
                 }
             }
@@ -4050,7 +4046,7 @@ int main(int argc, char *argv[])
             options.xmlOutput = fopen(argv[xmlArg] + 6, "w");
             if (options.xmlOutput == NULL)
             {
-                printf_error("%sERROR: Could not open XML output file %s.%s\n", COL_RED, argv[xmlArg] + 6, RESET);
+                printf_error("Could not open XML output file %s.", argv[xmlArg] + 6);
                 exit(0);
             }
         }
@@ -4180,7 +4176,7 @@ int main(int argc, char *argv[])
                     // Open targets file...
                     targetsFile = fopen(argv[options.targets] + 10, "r");
                     if (targetsFile == NULL)
-                        printf_error("%sERROR: Could not open targets file %s.%s\n", COL_RED, argv[options.targets] + 10, RESET);
+                        printf_error("Could not open targets file %s.", argv[options.targets] + 10);
                     else
                     {
                         readLine(targetsFile, line, sizeof(line));
@@ -4209,7 +4205,7 @@ int main(int argc, char *argv[])
                                     // Invalid port
                                     if (port == 0)
                                     {
-                                        printf_error("%sERROR: Invalid port specified.%s", COL_RED, RESET);
+                                        printf_error("Invalid port specified.");
                                         exit(1);
                                     }
                                     else
@@ -4235,7 +4231,7 @@ int main(int argc, char *argv[])
                     }
                 }
                 else
-                    printf_error("%sERROR: Targets file %s does not exist.%s\n", COL_RED, argv[options.targets] + 10, RESET);
+                    printf_error("Targets file %s does not exist.", argv[options.targets] + 10);
             }
 
             // Free Structures
@@ -4290,7 +4286,7 @@ int runSSLv2Test(struct sslCheckOptions *options) {
 
   /* Send the SSLv2 Client Hello packet. */
   if (send(s, sslv2_client_hello, sizeof(sslv2_client_hello), 0) <= 0) {
-    printf_error("send() failed: %s\n", strerror(errno));
+    printf_error("send() failed: %s", strerror(errno));
     exit(1);
   }
 
@@ -4433,7 +4429,7 @@ int runSSLv3Test(struct sslCheckOptions *options) {
 
   /* Send the SSLv3 Client Hello packet. */
   if (send(s, sslv3_client_hello_1, sizeof(sslv3_client_hello_1), 0) <= 0) {
-    printf_error("send() failed: %s\n", strerror(errno));
+    printf_error("send() failed: %s", strerror(errno));
     exit(1);
   }
 
@@ -4444,12 +4440,12 @@ int runSSLv3Test(struct sslCheckOptions *options) {
   timestamp_bytes[3] = (timestamp >> 24) & 0xff;
 
   if (send(s, timestamp_bytes, sizeof(timestamp_bytes), 0) <= 0) {
-    printf_error("send() failed: %s\n", strerror(errno));
+    printf_error("send() failed: %s", strerror(errno));
     exit(1);
   }
 
   if (send(s, sslv3_client_hello_2, sizeof(sslv3_client_hello_2), 0) <= 0) {
-    printf_error("send() failed: %s\n", strerror(errno));
+    printf_error("send() failed: %s", strerror(errno));
     exit(1);
   }
 
@@ -4775,7 +4771,7 @@ unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsig
 
   /* Send the Client Hello message. */
   if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
-    printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
+    printf_error("send() failed while sending Client Hello: %d (%s)", errno, strerror(errno));
     goto done; /* Returns false. */
   }
   bs_free(&client_hello);
@@ -5192,7 +5188,7 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int tls_version
 
     /* Send the Client Hello message. */
     if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
-      printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
+      printf_error("send() failed while sending Client Hello: %d (%s)", errno, strerror(errno));
       goto done; /* Returns false. */
     }
     bs_free(&client_hello);
@@ -5500,7 +5496,7 @@ int testSupportedGroups(struct sslCheckOptions *options) {
 
       /* Send the Client Hello message. */
       if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
-        printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
+        printf_error("send() failed while sending Client Hello: %d (%s)", errno, strerror(errno));
         ret = false;
         goto done;
       }
@@ -5730,7 +5726,7 @@ int testSignatureAlgorithms(struct sslCheckOptions *options) {
 
       /* Send the Client Hello message. */
       if (send(s, bs_get_bytes(client_hello), bs_get_len(client_hello), 0) <= 0) {
-        printf_error("send() failed while sending Client Hello: %d (%s)\n", errno, strerror(errno));
+        printf_error("send() failed while sending Client Hello: %d (%s)", errno, strerror(errno));
         ret = false;
         goto done;
       }
