@@ -1,5 +1,11 @@
 Changelog
 =========
+Version: 2.0.2
+Date   : 04/10/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Add <error> element to XML output
+
 Version: 2.0.1
 Date   : 20/09/2020
 Author : rbsec <robin@rbsec.net>
