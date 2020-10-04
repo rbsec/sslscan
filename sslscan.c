@@ -3604,7 +3604,7 @@ int testHost(struct sslCheckOptions *options)
 int main(int argc, char *argv[])
 {
     // Variables...
-    struct sslCheckOptions options;
+    struct sslCheckOptions sslOptions;
     struct sslCipher *sslCipherPointer;
     int argLoop;
     int tempInt;
@@ -3624,45 +3624,47 @@ int main(int argc, char *argv[])
 #endif
 
     // Init...
-    memset(&options, 0, sizeof(struct sslCheckOptions));
-    options.port = 0;
+    memset(&sslOptions, 0, sizeof(struct sslCheckOptions));
+    sslOptions.port = 0;
     xmlArg = 0;
-    strncpy(options.host, "127.0.0.1", 10);
-    options.showCertificate = false;
-    options.showTrustedCAs = false;
-    options.checkCertificate = true;
-    options.showClientCiphers = false;
-    options.showCipherIds = false;
-    options.showTimes = false;
-    options.ciphersuites = true;
-    options.reneg = true;
-    options.fallback = true;
-    options.compression = true;
-    options.heartbleed = true;
-    options.groups = true;
-    options.signature_algorithms = true;
-    options.starttls_ftp = false;
-    options.starttls_imap = false;
-    options.starttls_irc = false;
-    options.starttls_ldap = false;
-    options.starttls_pop3 = false;
-    options.starttls_smtp = false;
-    options.starttls_mysql = false;
-    options.starttls_xmpp = false;
-    options.starttls_psql = false;
-    options.xmpp_server = false;
-    options.verbose = false;
-    options.cipher_details = true;
-    options.ipv4 = true;
-    options.ipv6 = true;
-    options.ocspStatus = false;
+    strncpy(sslOptions.host, "127.0.0.1", 10);
+    sslOptions.showCertificate = false;
+    sslOptions.showTrustedCAs = false;
+    sslOptions.checkCertificate = true;
+    sslOptions.showClientCiphers = false;
+    sslOptions.showCipherIds = false;
+    sslOptions.showTimes = false;
+    sslOptions.ciphersuites = true;
+    sslOptions.reneg = true;
+    sslOptions.fallback = true;
+    sslOptions.compression = true;
+    sslOptions.heartbleed = true;
+    sslOptions.groups = true;
+    sslOptions.signature_algorithms = true;
+    sslOptions.starttls_ftp = false;
+    sslOptions.starttls_imap = false;
+    sslOptions.starttls_irc = false;
+    sslOptions.starttls_ldap = false;
+    sslOptions.starttls_pop3 = false;
+    sslOptions.starttls_smtp = false;
+    sslOptions.starttls_mysql = false;
+    sslOptions.starttls_xmpp = false;
+    sslOptions.starttls_psql = false;
+    sslOptions.xmpp_server = false;
+    sslOptions.verbose = false;
+    sslOptions.cipher_details = true;
+    sslOptions.ipv4 = true;
+    sslOptions.ipv6 = true;
+    sslOptions.ocspStatus = false;
 
     // Default socket timeout 3s
-    options.timeout.tv_sec = 3;
-    options.timeout.tv_usec = 0;
-    options.sleep = 0;
+    sslOptions.timeout.tv_sec = 3;
+    sslOptions.timeout.tv_usec = 0;
+    sslOptions.sleep = 0;
 
-    options.sslVersion = ssl_all;
+    sslOptions.sslVersion = ssl_all;
+
+    struct sslCheckOptions *options = &sslOptions;
 
 #ifdef _WIN32
     /* Attempt to enable console colors.  This succeeds in Windows 10.  For other
@@ -3710,7 +3712,6 @@ int main(int argc, char *argv[])
 #endif
     SSL_library_init();
 
-
     // Get program parameters
     for (argLoop = 1; argLoop < argc; argLoop++)
     {
@@ -3722,36 +3723,36 @@ int main(int argc, char *argv[])
         else if ((strncmp("--targets=", argv[argLoop], 10) == 0) && (strlen(argv[argLoop]) > 10))
         {
             mode = mode_multiple;
-            options.targets = argLoop;
+            options->targets = argLoop;
         }
 
         // Show certificate
         else if (strcmp("--show-certificate", argv[argLoop]) == 0)
-            options.showCertificate = true;
+            options->showCertificate = true;
 
         // Don't check certificate strength
         else if (strcmp("--no-check-certificate", argv[argLoop]) == 0)
-            options.checkCertificate = false;
+            options->checkCertificate = false;
 
         // Show supported client ciphers
         else if (strcmp("--show-ciphers", argv[argLoop]) == 0)
-            options.showClientCiphers = true;
+            options->showClientCiphers = true;
 
         // Show ciphers ids
         else if (strcmp("--show-cipher-ids", argv[argLoop]) == 0)
         {
-            options.showCipherIds = true;
+            options->showCipherIds = true;
         }
 
         // Show handshake times
         else if (strcmp("--show-times", argv[argLoop]) == 0)
         {
-            options.showTimes = true;
+            options->showTimes = true;
         }
 
         // Show client auth trusted CAs
         else if (strcmp("--show-client-cas", argv[argLoop]) == 0)
-            options.showTrustedCAs = true;
+            options->showTrustedCAs = true;
 
         // Version
         else if (strcmp("--version", argv[argLoop]) == 0)
@@ -3763,12 +3764,12 @@ int main(int argc, char *argv[])
 
         // Verbose
         else if (strcmp("--verbose", argv[argLoop]) == 0)
-            options.verbose = true;
+            options->verbose = true;
 
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
         // Cipher details (curve names and EDH key lengths)
         else if (strcmp("--no-cipher-details", argv[argLoop]) == 0)
-            options.cipher_details = false;
+            options->cipher_details = false;
 #endif
 
         // Disable coloured output
@@ -3786,152 +3787,152 @@ int main(int argc, char *argv[])
 
         // Client Certificates
         else if (strncmp("--certs=", argv[argLoop], 8) == 0)
-            options.clientCertsFile = argv[argLoop] +8;
+            options->clientCertsFile = argv[argLoop] +8;
 
         // Private Key File
         else if (strncmp("--pk=", argv[argLoop], 5) == 0)
-            options.privateKeyFile = argv[argLoop] +5;
+            options->privateKeyFile = argv[argLoop] +5;
 
         // Private Key Password
         else if (strncmp("--pkpass=", argv[argLoop], 9) == 0)
-            options.privateKeyPassword = argv[argLoop] +9;
+            options->privateKeyPassword = argv[argLoop] +9;
 
         // Should we check for supported cipher suites
         else if (strcmp("--no-ciphersuites", argv[argLoop]) == 0)
-            options.ciphersuites = false;
+            options->ciphersuites = false;
 
         // Should we check for TLS Falback SCSV?
         else if (strcmp("--no-fallback", argv[argLoop]) == 0)
-            options.fallback = false;
+            options->fallback = false;
 
         // Should we check for TLS renegotiation?
         else if (strcmp("--no-renegotiation", argv[argLoop]) == 0)
-            options.reneg = false;
+            options->reneg = false;
 
         // Should we check for TLS Compression
         else if (strcmp("--no-compression", argv[argLoop]) == 0)
-            options.compression = false;
+            options->compression = false;
 
         // Should we check for Heartbleed (CVE-2014-0160)
         else if (strcmp("--no-heartbleed", argv[argLoop]) == 0)
-            options.heartbleed = false;
+            options->heartbleed = false;
 
 	// Should we check for key exchange groups?
 	else if (strcmp("--no-groups", argv[argLoop]) == 0)
-            options.groups = false;
+            options->groups = false;
 
 	// Should we check for signature algorithms?
 	else if (strcmp("--no-sigs", argv[argLoop]) == 0)
-            options.signature_algorithms = false;
+            options->signature_algorithms = false;
 
         // StartTLS... FTP
         else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
-            options.starttls_ftp = true;
+            options->starttls_ftp = true;
 
         // StartTLS... IMAP
         else if (strcmp("--starttls-imap", argv[argLoop]) == 0)
-            options.starttls_imap = true;
+            options->starttls_imap = true;
 
         else if (strcmp("--starttls-irc", argv[argLoop]) == 0)
-            options.starttls_irc = true;
+            options->starttls_irc = true;
 
         // StartTLS... LDAP
         else if (strcmp("--starttls-ldap", argv[argLoop]) == 0)
-            options.starttls_ldap = true;
+            options->starttls_ldap = true;
 
         // StartTLS... POP3
         else if (strcmp("--starttls-pop3", argv[argLoop]) == 0)
-            options.starttls_pop3 = true;
+            options->starttls_pop3 = true;
 
         // StartTLS... SMTP
         else if (strcmp("--starttls-smtp", argv[argLoop]) == 0)
-            options.starttls_smtp = true;
+            options->starttls_smtp = true;
 
         // StartTLS... MYSQL
         else if (strcmp("--starttls-mysql", argv[argLoop]) == 0)
-            options.starttls_mysql = true;
+            options->starttls_mysql = true;
 
         // StartTLS... XMPP
         else if (strcmp("--starttls-xmpp", argv[argLoop]) == 0)
-            options.starttls_xmpp = true;
+            options->starttls_xmpp = true;
 
         // StartTLS... PostgreSQL
         else if (strcmp("--starttls-psql", argv[argLoop]) == 0)
-            options.starttls_psql = true;
+            options->starttls_psql = true;
 
         // SSL v2 only...
         else if (strcmp("--ssl2", argv[argLoop]) == 0)
-            options.sslVersion = ssl_v2;
+            options->sslVersion = ssl_v2;
 
         // SSL v3 only...
         else if (strcmp("--ssl3", argv[argLoop]) == 0)
-            options.sslVersion = ssl_v3;
+            options->sslVersion = ssl_v3;
 
         // TLS v1 only...
         else if (strcmp("--tls10", argv[argLoop]) == 0)
-            options.sslVersion = tls_v10;
+            options->sslVersion = tls_v10;
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
         // TLS v11 only...
         else if (strcmp("--tls11", argv[argLoop]) == 0)
-            options.sslVersion = tls_v11;
+            options->sslVersion = tls_v11;
 
         // TLS v12 only...
         else if (strcmp("--tls12", argv[argLoop]) == 0)
-            options.sslVersion = tls_v12;
+            options->sslVersion = tls_v12;
         // TLS v13 only...
         else if (strcmp("--tls13", argv[argLoop]) == 0)
-            options.sslVersion = tls_v13;
+            options->sslVersion = tls_v13;
 #endif
         // TLS (all versions)...
         else if (strcmp("--tlsall", argv[argLoop]) == 0)
-            options.sslVersion = tls_all;
+            options->sslVersion = tls_all;
 
         // Use a server-to-server XMPP handshake
         else if (strcmp("--xmpp-server", argv[argLoop]) == 0)
-            options.xmpp_server = true;
+            options->xmpp_server = true;
 
         // SSL Bugs...
         else if (strcmp("--bugs", argv[argLoop]) == 0)
-            options.sslbugs = 1;
+            options->sslbugs = 1;
 
         // Socket Timeout
         else if (strncmp("--timeout=", argv[argLoop], 10) == 0)
-            options.timeout.tv_sec = atoi(argv[argLoop] + 10);
+            options->timeout.tv_sec = atoi(argv[argLoop] + 10);
 
         // Sleep between requests (ms)
         else if (strncmp("--sleep=", argv[argLoop], 8) == 0)
         {
             msec = atoi(argv[argLoop] + 8);
             if (msec >= 0) {
-                options.sleep = msec;
+                options->sleep = msec;
             }
         }
 
         // SSL HTTP Get...
         else if (strcmp("--http", argv[argLoop]) == 0)
-            options.http = 1;
+            options->http = 1;
 
         // RDP Preamble...
         else if (strcmp("--rdp", argv[argLoop]) == 0)
-            options.rdp = 1;
+            options->rdp = 1;
 
         // IPv4 only
         else if ((strcmp("--ipv4", argv[argLoop]) == 0) || (strcmp("-4", argv[argLoop]) == 0))
-            options.ipv6 = false;
+            options->ipv6 = false;
 
         // IPv6 only
         else if ((strcmp("--ipv6", argv[argLoop]) == 0) || (strcmp("-6", argv[argLoop]) == 0))
-            options.ipv4 = false;
+            options->ipv4 = false;
 
         // Check OCSP response
         else if (strcmp("--ocsp", argv[argLoop]) == 0)
-            options.ocspStatus = true;
+            options->ocspStatus = true;
 
         // SNI name
         else if (strncmp("--sni-name=", argv[argLoop], 11) == 0)
         {
-            strncpy(options.sniname, argv[argLoop]+11, strlen(argv[argLoop])-11);
-            options.sni_set = 1;
+            strncpy(options->sniname, argv[argLoop]+11, strlen(argv[argLoop])-11);
+            options->sni_set = 1;
         }
 
 
@@ -3982,12 +3983,12 @@ int main(int argc, char *argv[])
             {
                 hostString[tempInt] = 0;
             }
-            strncpy(options.host, hostString, sizeof(options.host) -1);
+            strncpy(options->host, hostString, sizeof(options->host) -1);
 
             // No SNI name passed on command line
-            if (!options.sni_set)
+            if (!options->sni_set)
             {
-                strncpy(options.sniname, options.host, sizeof(options.host) -1);
+                strncpy(options->sniname, options->host, sizeof(options->host) -1);
             }
 
             // Get port (if it exists)...
@@ -3995,36 +3996,36 @@ int main(int argc, char *argv[])
             if (tempInt < maxSize)
             {
                 errno = 0;
-                options.port = strtol((hostString + tempInt), NULL, 10);
-                if (options.port < 1 || options.port > 65535)
+                options->port = strtol((hostString + tempInt), NULL, 10);
+                if (options->port < 1 || options->port > 65535)
                 {
                     printf_error("Invalid target specified.");
                     exit(1);
                 }
             }
-            else if (options.port == 0) {
-                if (options.starttls_ftp)
-                    options.port = 21;
-                else if (options.starttls_imap)
-                    options.port = 143;
-                else if (options.starttls_irc)
-                    options.port = 6667;
-                else if (options.starttls_ldap)
-                    options.port = 389;
-                else if (options.starttls_pop3)
-                    options.port = 110;
-                else if (options.starttls_smtp)
-                    options.port = 25;
-                else if (options.starttls_mysql)
-                    options.port = 3306;
-                else if (options.starttls_xmpp)
-                    options.port = 5222;
-                else if (options.starttls_psql)
-                    options.port = 5432;
-                else if (options.rdp)
-                    options.port = 3389;
+            else if (options->port == 0) {
+                if (options->starttls_ftp)
+                    options->port = 21;
+                else if (options->starttls_imap)
+                    options->port = 143;
+                else if (options->starttls_irc)
+                    options->port = 6667;
+                else if (options->starttls_ldap)
+                    options->port = 389;
+                else if (options->starttls_pop3)
+                    options->port = 110;
+                else if (options->starttls_smtp)
+                    options->port = 25;
+                else if (options->starttls_mysql)
+                    options->port = 3306;
+                else if (options->starttls_xmpp)
+                    options->port = 5222;
+                else if (options->starttls_psql)
+                    options->port = 5432;
+                else if (options->rdp)
+                    options->port = 3389;
                 else
-                    options.port = 443;
+                    options->port = 443;
             }
         }
 
@@ -4038,13 +4039,13 @@ int main(int argc, char *argv[])
     {
         if (strcmp(argv[xmlArg] + 6, "-") == 0)
         {
-            options.xmlOutput = stdout;
+            options->xmlOutput = stdout;
             xml_to_stdout = 1;
         }
         else
         {
-            options.xmlOutput = fopen(argv[xmlArg] + 6, "w");
-            if (options.xmlOutput == NULL)
+            options->xmlOutput = fopen(argv[xmlArg] + 6, "w");
+            if (options->xmlOutput == NULL)
             {
                 printf_error("Could not open XML output file %s.", argv[xmlArg] + 6);
                 exit(0);
@@ -4052,7 +4053,7 @@ int main(int argc, char *argv[])
         }
 
         // Output file header...
-        fprintf(options.xmlOutput, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<document title=\"SSLScan Results\" version=\"%s\" web=\"http://github.com/rbsec/sslscan\">\n", VERSION);
+        fprintf(options->xmlOutput, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<document title=\"SSLScan Results\" version=\"%s\" web=\"http://github.com/rbsec/sslscan\">\n", VERSION);
     }
 
     // Build the list of ciphers missing from OpenSSL.
@@ -4164,19 +4165,19 @@ int main(int argc, char *argv[])
             // Do the testing...
             if (mode == mode_single)
             {
-                if (testConnection(&options))
+                if (testConnection(options))
                 {
-                    testHost(&options);
+                    testHost(options);
                 }
             }
             else
             {
-                if (fileExists(argv[options.targets] + 10) == true)
+                if (fileExists(argv[options->targets] + 10) == true)
                 {
                     // Open targets file...
-                    targetsFile = fopen(argv[options.targets] + 10, "r");
+                    targetsFile = fopen(argv[options->targets] + 10, "r");
                     if (targetsFile == NULL)
-                        printf_error("Could not open targets file %s.", argv[options.targets] + 10);
+                        printf_error("Could not open targets file %s.", argv[options->targets] + 10);
                     else
                     {
                         readLine(targetsFile, line, sizeof(line));
@@ -4189,11 +4190,11 @@ int main(int argc, char *argv[])
                                 while ((line[tempInt] != 0) && (line[tempInt] != ':'))
                                     tempInt++;
                                 line[tempInt] = 0;
-                                strncpy(options.host, line, sizeof(options.host) -1);
+                                strncpy(options->host, line, sizeof(options->host) -1);
 
-                                if (!options.sni_set)
+                                if (!options->sni_set)
                                 {
-                                    strncpy(options.sniname, options.host, sizeof(options.host) -1);
+                                    strncpy(options->sniname, options->host, sizeof(options->host) -1);
                                 }
 
                                 // Get port (if it exists)...
@@ -4210,19 +4211,19 @@ int main(int argc, char *argv[])
                                     }
                                     else
                                     {
-                                        options.port = port;
+                                        options->port = port;
                                     }
                                 }
                                 // Otherwise assume 443
                                 else
                                 {
-                                    options.port = 443;
+                                    options->port = 443;
                                 }
 
                                 // Test the host...
-                                if (testConnection(&options))
+                                if (testConnection(options))
                                 {
-                                    testHost(&options);
+                                    testHost(options);
                                 }
                                 printf("\n\n");
                             }
@@ -4231,15 +4232,15 @@ int main(int argc, char *argv[])
                     }
                 }
                 else
-                    printf_error("Targets file %s does not exist.", argv[options.targets] + 10);
+                    printf_error("Targets file %s does not exist.", argv[options->targets] + 10);
             }
 
             // Free Structures
-            while (options.ciphers != 0)
+            while (options->ciphers != 0)
             {
-                sslCipherPointer = options.ciphers->next;
-                free(options.ciphers);
-                options.ciphers = sslCipherPointer;
+                sslCipherPointer = options->ciphers->next;
+                free(options->ciphers);
+                options->ciphers = sslCipherPointer;
             }
             break;
     }
@@ -4247,8 +4248,8 @@ int main(int argc, char *argv[])
     // Close XML file, if required...
     if ((xmlArg > 0) && (mode != mode_help))
     {
-        fprintf(options.xmlOutput, "</document>\n");
-        fclose(options.xmlOutput);
+        fprintf(options->xmlOutput, "</document>\n");
+        fclose(options->xmlOutput);
     }
 
     return 0;

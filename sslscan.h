@@ -74,9 +74,12 @@
 
 // Macros for various outputs
 #define printf(format, ...)         if (!xml_to_stdout) fprintf(stdout, format, ##__VA_ARGS__)
-#define printf_error(format, ...)   fprintf(stderr, "%sERROR: " format "%s\n", COL_RED, ##__VA_ARGS__, RESET)
 #define printf_xml(format, ...)     if (options->xmlOutput) fprintf(options->xmlOutput, format, ##__VA_ARGS__)
 #define printf_verbose(format, ...) if (options->verbose) printf(format, ##__VA_ARGS__)
+
+#define printf_error(format, ...) \
+    if (!xml_to_stdout) fprintf(stderr, "%sERROR: " format "%s\n", COL_RED, ##__VA_ARGS__, RESET); \
+    printf_xml("  <error><![CDATA[" format "]]></error>\n", ##__VA_ARGS__)
 
 /* Calls close() on a file descriptor, then sets it to zero to prevent accidental re-use. */
 #define CLOSE(fd) { if ((fd) != -1) { close((fd)); (fd) = -1; } }
