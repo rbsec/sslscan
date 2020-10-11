@@ -1586,7 +1586,7 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
     }
 
     if (options->http == true) {
-      printf("%s", http_code);
+      printf("%-17s", http_code);
       printf_xml(" http=\"%s\"", http_code);
     }
 
@@ -1741,32 +1741,31 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                     if (options->http == true)
                     {
                         // Create request buffer...
-                        snprintf(requestBuffer, sizeof(requestBuffer) - 1, "GET / HTTP/1.0\r\nUser-Agent: SSLScan\r\nHost: %s\r\n\r\n", options->host);
+                        snprintf(requestBuffer, sizeof(requestBuffer) - 1, "GET / HTTP/1.1\r\nUser-Agent: SSLScan\r\nHost: %s\r\n\r\n", options->host);
 
                         // HTTP Get...
                         SSL_write(ssl, requestBuffer, strlen(requestBuffer));
                         memset(buffer, 0, sizeof(buffer));
                         resultSize = SSL_read(ssl, buffer, sizeof(buffer) - 1);
-                        if (resultSize > 9)
+                        if ((resultSize > 9) && (strstr(buffer, "HTTP/1.1") != NULL))
                         {
                             int loop = 0;
-                            for (loop = 9; (loop < sizeof(buffer) - 1) && (buffer[loop] != 0) && (buffer[loop] != '\r') && (buffer[loop] != '\n'); loop++)
+                            for (loop = 9;
+                                           (loop < sizeof(buffer) - 1)
+                                        && (buffer[loop] != 0)
+                                        && (buffer[loop] != '\r')
+                                        && (buffer[loop] != '\n');
+                                loop++)
                             { }
                             buffer[loop] = 0;
 
                             strncpy(http_code, buffer + 9, sizeof(http_code) - 1);
                             loop = strlen(buffer + 9);
-                            while (loop < 17)
-                            {
-                                loop++;
-                                strncat(http_code, " ", sizeof(http_code) - 1);
-                            }
-
                         }
                         else
                         {
-                            // Output HTTP code...
-                            strncpy(http_code, "                 ", sizeof(http_code) - 1);
+                            // No response code received
+                            strncpy(http_code, "No response", sizeof(http_code) - 1);
                         }
                     }
                 }
