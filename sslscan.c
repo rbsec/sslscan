@@ -1586,7 +1586,14 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
     }
 
     if (options->http == true) {
-      printf("%-17s", http_code);
+      /* Print error if we no response code was returned */
+      if (http_code[0] == 0) {
+        printf("No response      ");
+      }
+      else {
+        printf("%-17s", http_code);
+      }
+        
       printf_xml(" http=\"%s\"", http_code);
     }
 
@@ -1761,11 +1768,6 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 
                             strncpy(http_code, buffer + 9, sizeof(http_code) - 1);
                             loop = strlen(buffer + 9);
-                        }
-                        else
-                        {
-                            // No response code received
-                            strncpy(http_code, "No response", sizeof(http_code) - 1);
                         }
                     }
                 }
