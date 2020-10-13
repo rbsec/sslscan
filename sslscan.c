@@ -1671,8 +1671,6 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     int socketDescriptor = 0;
     SSL *ssl = NULL;
     BIO *cipherConnectionBio = NULL;
-    char requestBuffer[1024];
-    char buffer[64];
     int cipherbits = -1;
     uint32_t cipherid = 0;
     const SSL_CIPHER *sslCipherPointer = NULL;
@@ -1681,9 +1679,6 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     struct timeval tval_start = {0};
     unsigned int milliseconds_elapsed = 0;
 
-
-    memset(requestBuffer, 0, sizeof(requestBuffer));
-    memset(buffer, 0, sizeof(buffer));
 
     if (options->showTimes)
     {
