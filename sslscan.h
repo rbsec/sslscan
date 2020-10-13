@@ -176,7 +176,6 @@ struct sslCheckOptions
     int sslVersion;
     int targets;
     int sslbugs;
-    int http;
     int rdp;
     int verbose;
     int cipher_details;

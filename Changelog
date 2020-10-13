@@ -1,5 +1,11 @@
 Changelog
 =========
+Version: 2.0.4
+Date   : 13/10/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Remove the broken HTTP request scanning option (--http)
+
 Version: 2.0.3
 Date   : 11/10/2020
 Author : rbsec <robin@rbsec.net>

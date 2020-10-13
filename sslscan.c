@@ -1568,7 +1568,7 @@ char *cipherRemove(char *str, const char *sub) {
 }
 
 /* Outputs an accepted cipher to the console and XML file. */
-void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSslMethod, uint32_t cipherid, const char *ciphername, int cipherbits, int cipher_accepted, unsigned int milliseconds_elapsed, char *http_code) {
+void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSslMethod, uint32_t cipherid, const char *ciphername, int cipherbits, int cipher_accepted, unsigned int milliseconds_elapsed) {
   char hexCipherId[8] = {0};
   char *strength;
   unsigned int tempInt = 0;
@@ -1583,18 +1583,6 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
     else {
       printf_xml("preferred\"");
       printf("%sPreferred%s ", COL_GREEN, RESET);
-    }
-
-    if (options->http == true) {
-      /* Print error if we no response code was returned */
-      if (http_code[0] == 0) {
-        printf("No response      ");
-      }
-      else {
-        printf("%-17s", http_code);
-      }
-        
-      printf_xml(" http=\"%s\"", http_code);
     }
 
     printf_xml(" sslversion=\"%s\"", cleanSslMethod);
@@ -1685,8 +1673,6 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
     BIO *cipherConnectionBio = NULL;
     char requestBuffer[1024];
     char buffer[64];
-    char http_code[64];
-    int resultSize = 0;
     int cipherbits = -1;
     uint32_t cipherid = 0;
     const SSL_CIPHER *sslCipherPointer = NULL;
@@ -1698,7 +1684,6 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 
     memset(requestBuffer, 0, sizeof(requestBuffer));
     memset(buffer, 0, sizeof(buffer));
-    memset(http_code, 0, sizeof(http_code));
 
     if (options->showTimes)
     {
@@ -1743,35 +1728,6 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 cipherid = SSL_CIPHER_get_id(sslCipherPointer);
                 cipherid = cipherid & 0x00ffffff;  // remove first byte which is the version (0x03 for TLSv1/SSLv3)
 
-                if (cipherStatus == 1)
-                {
-                    if (options->http == true)
-                    {
-                        // Create request buffer...
-                        snprintf(requestBuffer, sizeof(requestBuffer) - 1, "GET / HTTP/1.1\r\nUser-Agent: SSLScan\r\nHost: %s\r\n\r\n", options->host);
-
-                        // HTTP Get...
-                        SSL_write(ssl, requestBuffer, strlen(requestBuffer));
-                        memset(buffer, 0, sizeof(buffer));
-                        resultSize = SSL_read(ssl, buffer, sizeof(buffer) - 1);
-                        if ((resultSize > 9) && (strstr(buffer, "HTTP/1.1") != NULL))
-                        {
-                            int loop = 0;
-                            for (loop = 9;
-                                           (loop < sizeof(buffer) - 1)
-                                        && (buffer[loop] != 0)
-                                        && (buffer[loop] != '\r')
-                                        && (buffer[loop] != '\n');
-                                loop++)
-                            { }
-                            buffer[loop] = 0;
-
-                            strncpy(http_code, buffer + 9, sizeof(http_code) - 1);
-                            loop = strlen(buffer + 9);
-                        }
-                    }
-                }
-
                 ciphername = SSL_CIPHER_get_name(sslCipherPointer);
 
 		// Timing
@@ -1783,7 +1739,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 		  milliseconds_elapsed = tval_elapsed.tv_sec * 1000 + (int)tval_elapsed.tv_usec / 1000;
 		}
 
-                outputCipher(options, ssl, cleanSslMethod, cipherid, ciphername, cipherbits, (cipherStatus == 1), milliseconds_elapsed, http_code);
+                outputCipher(options, ssl, cleanSslMethod, cipherid, ciphername, cipherbits, (cipherStatus == 1), milliseconds_elapsed);
 
                 // Disconnect SSL over socket
                 if (cipherStatus == 1)
@@ -3909,10 +3865,6 @@ int main(int argc, char *argv[])
             }
         }
 
-        // SSL HTTP Get...
-        else if (strcmp("--http", argv[argLoop]) == 0)
-            options->http = 1;
-
         // RDP Preamble...
         else if (strcmp("--rdp", argv[argLoop]) == 0)
             options->rdp = 1;
@@ -4132,7 +4084,6 @@ int main(int argc, char *argv[])
             printf("  %s--starttls-smtp%s      STARTTLS setup for SMTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-xmpp%s      STARTTLS setup for XMPP\n", COL_GREEN, RESET);
             printf("  %s--xmpp-server%s        Use a server-to-server XMPP handshake\n", COL_GREEN, RESET);
-            printf("  %s--http%s               Test a HTTP connection\n", COL_GREEN, RESET);
             printf("  %s--rdp%s                Send RDP preamble before starting scan\n", COL_GREEN, RESET);
             printf("\n");
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
@@ -5262,7 +5213,7 @@ int testMissingCiphers(struct sslCheckOptions *options, unsigned int tls_version
     unsigned int milliseconds_elapsed = tval_elapsed.tv_sec * 1000 + (int)tval_elapsed.tv_usec / 1000;
 
     /* Output the cipher information. */
-    outputCipher(options, NULL, tls_printable_name, cipher_id, cipher_name, cipher_bits, 1, milliseconds_elapsed, "");
+    outputCipher(options, NULL, tls_printable_name, cipher_id, cipher_name, cipher_bits, 1, milliseconds_elapsed);
   }
 
  done:

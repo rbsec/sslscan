@@ -10,6 +10,7 @@ Other key changes include:
 * Enumeration of server signature algorithms.
 * SSLv2 and SSLv3 protocol support is scanned, but individual ciphers are not.
 * A test suite is included using Docker, to verify that sslscan is functionality correctly.
+* Removed the `--http` option, as it was broken and had very little use in the first place.
 
 ## XML Output Changes
 A potentially breaking change has been made to the XML output in version **2.0.0-beta4**. Previously, multiple `<certificate>` elements could be returned (one by default, and a second one if `--show-certificate` was used).
