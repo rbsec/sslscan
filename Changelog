@@ -1,5 +1,11 @@
 Changelog
 =========
+Version: 2.0.5
+Date   : 24/10/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Fix --targets not working properly
+
 Version: 2.0.4
 Date   : 13/10/2020
 Author : rbsec <robin@rbsec.net>
