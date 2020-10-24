@@ -4124,7 +4124,9 @@ int main(int argc, char *argv[])
                     // Open targets file...
                     targetsFile = fopen(argv[options->targets] + 10, "r");
                     if (targetsFile == NULL)
+                    {
                         printf_error("Could not open targets file %s.", argv[options->targets] + 10);
+                    }
                     else
                     {
                         readLine(targetsFile, line, sizeof(line));
