@@ -120,6 +120,6 @@ Signature Algorithm: [32msha256WithRSAEncryption[0m
 RSA Key Strength:    2048
 
 Subject:  whythefuckwasibreached.com
-Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere
+Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere[0m
 Not valid before: [32mDec  3 03:01:23 2019 GMT[0m
 Not valid after:  [32mDec  3 03:01:23 2029 GMT[0m
