@@ -1950,7 +1950,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                                     {
                                                         printf("RSA Key Strength:    %s%d%s\n", COL_RED, keyBits, RESET);
                                                     }
-                                                    else if (keyBits >= 4096 )
+                                                    else if (keyBits >= 3072 )
                                                     {
                                                         printf("RSA Key Strength:    %s%d%s\n", COL_GREEN, keyBits, RESET);
                                                     }
