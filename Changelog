@@ -1,5 +1,12 @@
 Changelog
 =========
+Version: 2.0.6
+Date   : 31/10/2020
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Flag certificates in red if CN is the same as issuer
+
+Version: 2.0.4
 Version: 2.0.5
 Date   : 24/10/2020
 Author : rbsec <robin@rbsec.net>
