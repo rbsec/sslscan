@@ -79,6 +79,6 @@ Signature Algorithm: [32msha256WithRSAEncryption[0m
 RSA Key Strength:    3072
 
 Subject:  lmgtfy.com
-Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere
+Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere[0m
 Not valid before: [32mDec  3 04:07:43 2019 GMT[0m
 Not valid after:  [32mDec  3 04:07:43 2029 GMT[0m
