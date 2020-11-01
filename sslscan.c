@@ -2084,11 +2084,21 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                     {
                                         char *issuer = X509_NAME_oneline(X509_get_issuer_name(x509Cert), NULL, 0);
                                         char *color = "";
+                                        int self_signed = 0;
 
-                                        if ((subject != NULL) && (strcmp(subject, issuer) == 0))
+                                        if ((subject != NULL) && (strcmp(subject, issuer) == 0)) {
                                             color = COL_RED;
+                                            self_signed = 1;
+                                        }
                                         printf("%sIssuer:   %s%s", color, issuer, RESET);
                                         printf_xml("   <issuer><![CDATA[%s]]></issuer>\n", issuer);
+
+                                        if (self_signed) {
+                                            printf_xml("   <self-signed>true</self-signed>\n");
+                                        }
+                                        else {
+                                            printf_xml("   <self-signed>false</self-signed>\n");
+                                        }
                                     }
                                     else
                                     {
