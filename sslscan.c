@@ -2085,8 +2085,10 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                         char *issuer = X509_NAME_oneline(X509_get_issuer_name(x509Cert), NULL, 0);
                                         char *color = "";
 
-                                        if ((subject != NULL) && (strcmp(subject, issuer) == 0))
+                                        if ((subject != NULL) && (strcmp(subject, issuer) == 0)) {
                                             color = COL_RED;
+                                            printf_xml("   <self-signed>true</self-signed>\n");
+					}
                                         printf("%sIssuer:   %s%s", color, issuer, RESET);
                                         printf_xml("   <issuer><![CDATA[%s]]></issuer>\n", issuer);
                                     }
