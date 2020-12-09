@@ -4671,30 +4671,7 @@ unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsig
 
 
   tls_extensions = makeTLSExtensions(options, 1);
-  if (tls_version == TLSv1_2) {
-    /* Extension: supported_groups */
-    bs_append_bytes(tls_extensions, (unsigned char []) {
-      0x00, 0x0a, // Extension: supported_groups (10)
-      0x00, 0x1c, // Extension Length (28)
-      0x00, 0x1a, // Supported Groups List Length (26)
-      0x00, 0x17, // secp256r1
-      0x00, 0x19, // secp521r1
-      0x00, 0x1c, // brainpoolP512r1
-      0x00, 0x1b, // brainpoolP384r1
-      0x00, 0x18, // secp384r1
-      0x00, 0x1a, // brainpoolP256r1
-      0x00, 0x16, // secp256k1
-      0x00, 0x0e, // sect571r1
-      0x00, 0x0d, // sect571k1
-      0x00, 0x0b, // sect409k1
-      0x00, 0x0c, // sect409r1
-      0x00, 0x09, // sect283k1
-      0x00, 0x0a, // sect283r1
-    }, 32);
-
-    /* Update the length of the extensions. */
-    tlsExtensionUpdateLength(tls_extensions);
-  } else if (tls_version == TLSv1_3) {
+  if (tls_version == TLSv1_3) {
     /* Extension: supported_groups */
     bs_append_bytes(tls_extensions, (unsigned char []) {
       0x00, 0x0a, // Extension: supported_groups (10)
@@ -4717,6 +4694,29 @@ unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsig
 
     /* Explicitly mark that this is a TLSv1.3 Client Hello. */
     tlsExtensionAddTLSv1_3(tls_extensions);
+
+    /* Update the length of the extensions. */
+    tlsExtensionUpdateLength(tls_extensions);
+  } else {
+    /* Extension: supported_groups */
+    bs_append_bytes(tls_extensions, (unsigned char []) {
+      0x00, 0x0a, // Extension: supported_groups (10)
+      0x00, 0x1c, // Extension Length (28)
+      0x00, 0x1a, // Supported Groups List Length (26)
+      0x00, 0x17, // secp256r1
+      0x00, 0x19, // secp521r1
+      0x00, 0x1c, // brainpoolP512r1
+      0x00, 0x1b, // brainpoolP384r1
+      0x00, 0x18, // secp384r1
+      0x00, 0x1a, // brainpoolP256r1
+      0x00, 0x16, // secp256k1
+      0x00, 0x0e, // sect571r1
+      0x00, 0x0d, // sect571k1
+      0x00, 0x0b, // sect409k1
+      0x00, 0x0c, // sect409r1
+      0x00, 0x09, // sect283k1
+      0x00, 0x0a, // sect283r1
+    }, 32);
 
     /* Update the length of the extensions. */
     tlsExtensionUpdateLength(tls_extensions);
