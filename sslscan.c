@@ -323,9 +323,12 @@ int tcpConnect(struct sslCheckOptions *options)
 #ifdef _WIN32
     // Windows isn't looking for a timeval struct like in UNIX; it wants a timeout in a DWORD represented in milliseconds...
     DWORD timeout = (options->timeout.tv_sec * 1000) + (options->timeout.tv_usec / 1000);
+    DWORD sendTimeout = (options->sendTimeout.tv_sec * 1000) + (options->sendTimeout.tv_usec / 1000);
     setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+    setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, (char *)&sendTimeout, sizeof(timeout));
 #else
     setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&options->timeout,sizeof(struct timeval));
+    setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, (char *)&options->sendTimeout, sizeof(struct timeval));
 #endif
 
     // Connect
@@ -3622,9 +3625,12 @@ int main(int argc, char *argv[])
     sslOptions.ipv6 = true;
     sslOptions.ocspStatus = false;
 
-    // Default socket timeout 3s
+    // Default socket receive timeout 3s
     sslOptions.timeout.tv_sec = 3;
     sslOptions.timeout.tv_usec = 0;
+    // Default socket send timeout 60s
+    sslOptions.sendTimeout.tv_sec = 60;
+    sslOptions.sendTimeout.tv_usec = 0;
     sslOptions.sleep = 0;
 
     sslOptions.sslVersion = ssl_all;
@@ -3864,6 +3870,10 @@ int main(int argc, char *argv[])
         else if (strncmp("--timeout=", argv[argLoop], 10) == 0)
             options->timeout.tv_sec = atoi(argv[argLoop] + 10);
 
+        // Socket Send Timeout. This also sets connect() timeout on Linux.
+        else if (strncmp("--send-timeout=", argv[argLoop], 15) == 0)
+            options->sendTimeout.tv_sec = atoi(argv[argLoop] + 15);
+
         // Sleep between requests (ms)
         else if (strncmp("--sleep=", argv[argLoop], 8) == 0)
         {
@@ -4097,7 +4107,8 @@ int main(int argc, char *argv[])
             printf("  %s--bugs%s               Enable SSL implementation bug work-arounds\n", COL_GREEN, RESET);
             printf("  %s--no-colour%s          Disable coloured output\n", COL_GREEN, RESET);
             printf("  %s--sleep=<msec>%s       Pause between connection request. Default is disabled\n", COL_GREEN, RESET);
-            printf("  %s--timeout=<sec>%s      Set socket timeout. Default is 3s\n", COL_GREEN, RESET);
+            printf("  %s--timeout=<sec>%s      Set socket receive timeout. Default is 3s\n", COL_GREEN, RESET);
+            printf("  %s--send-timeout=<sec>%s Set socket send timeout. Default is 60s\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version\n", COL_GREEN, RESET);
             printf("  %s--xml=<file>%s         Output results to an XML file. Use - for STDOUT.\n", COL_GREEN, RESET);
