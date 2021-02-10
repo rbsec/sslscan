@@ -3605,7 +3605,7 @@ int main(int argc, char *argv[])
     sslOptions.compression = true;
     sslOptions.heartbleed = true;
     sslOptions.groups = true;
-    sslOptions.signature_algorithms = true;
+    sslOptions.signature_algorithms = false;
     sslOptions.starttls_ftp = false;
     sslOptions.starttls_imap = false;
     sslOptions.starttls_irc = false;
@@ -3782,13 +3782,13 @@ int main(int argc, char *argv[])
         else if (strcmp("--no-heartbleed", argv[argLoop]) == 0)
             options->heartbleed = false;
 
-	// Should we check for key exchange groups?
-	else if (strcmp("--no-groups", argv[argLoop]) == 0)
+        // Should we check for key exchange groups?
+        else if (strcmp("--no-groups", argv[argLoop]) == 0)
             options->groups = false;
 
-	// Should we check for signature algorithms?
-	else if (strcmp("--no-sigs", argv[argLoop]) == 0)
-            options->signature_algorithms = false;
+        // Should we check for signature algorithms?
+        else if (strcmp("--show-sigs", argv[argLoop]) == 0)
+            options->signature_algorithms = true;
 
         // StartTLS... FTP
         else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
@@ -4080,7 +4080,7 @@ int main(int argc, char *argv[])
             printf("  %s--no-groups%s          Do not enumerate key exchange groups\n", COL_GREEN, RESET);
             printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
-            printf("  %s--no-sigs%s            Do not enumerate signature algorithms\n", COL_GREEN, RESET);
+            printf("  %s--show-sigs%s          Enumerate signature algorithms\n", COL_GREEN, RESET);
             printf("\n");
             printf("  %s--starttls-ftp%s       STARTTLS setup for FTP\n", COL_GREEN, RESET);
             printf("  %s--starttls-imap%s      STARTTLS setup for IMAP\n", COL_GREEN, RESET);
