@@ -542,7 +542,7 @@ int tcpConnect(struct sslCheckOptions *options)
         if (!readOrLogAndClose(socketDescriptor, buffer, BUFFERSIZE, options))
             return 0;
 
-        if (strstr(buffer, ok)) {
+        if (memmem(buffer, BUFFERSIZE, ok, strlen(ok))) {
             printf_verbose("STARTLS LDAP setup complete.\n");
         }
         else if (strstr(buffer, unsupported)) {
