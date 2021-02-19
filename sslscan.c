@@ -3543,11 +3543,16 @@ int testHost(struct sslCheckOptions *options)
         // Default certificate details
         if (status == true && options->checkCertificate == true)
         {
-            status = checkCertificateProtocol(options, TLS_client_method());
             if (status != false)
-            {
+                status = checkCertificateProtocol(options, TLSv1_3_client_method());
+            if (status != false)
+                status = checkCertificateProtocol(options, TLSv1_2_client_method());
+            if (status != false)
+                status = checkCertificateProtocol(options, TLSv1_1_client_method());
+            if (status != false)
+                status = checkCertificateProtocol(options, TLSv1_client_method());
+            if (status != false)
                 printf("Certificate information cannot be retrieved.\n\n");
-            }
         }
         printf_xml(" </certificates>\n");
     }
