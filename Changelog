@@ -1,5 +1,12 @@
 Changelog
 =========
+Version: 2.0.8
+Date   : 12/02/2021
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Fix a bug with LDAP STARTTLS
+		 > Fix certificate detection on some broken servers
+
 Version: 2.0.7
 Date   : 10/02/2021
 Author : rbsec <robin@rbsec.net>
