@@ -7,7 +7,7 @@ Testing SSL server [32m127.0.0.1[0m on port [32m4443[0m using SNI name [32m
 SSLv2     [32mdisabled[0m
 SSLv3     [32mdisabled[0m
 TLSv1.0   [32mdisabled[0m
-TLSv1.1   disabled
+TLSv1.1   [32mdisabled[0m
 TLSv1.2   disabled
 TLSv1.3   [32menabled[0m
 
@@ -37,14 +37,9 @@ TLSv1.3  [32m260[0m bits  secp521r1 (NIST P-521)[0m
 TLSv1.3  [32m128[0m bits  [32mx25519[0m
 TLSv1.3  [32m224[0m bits  [32mx448[0m
 
-  [1;34mServer Signature Algorithm(s):[0m
-TLSv1.3  rsa_pss_rsae_sha256[0m
-TLSv1.3  rsa_pss_rsae_sha384[0m
-TLSv1.3  rsa_pss_rsae_sha512[0m
-
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m
-RSA Key Strength:    3072
+RSA Key Strength:    [32m3072[0m
 
 Subject:  lmgtfy.com
 Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere[0m

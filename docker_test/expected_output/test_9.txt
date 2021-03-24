@@ -7,7 +7,7 @@ Testing SSL server [32m127.0.0.1[0m on port [32m4443[0m using SNI name [32m
 SSLv2     [32mdisabled[0m
 SSLv3     [32mdisabled[0m
 TLSv1.0   [32mdisabled[0m
-TLSv1.1   disabled
+TLSv1.1   [32mdisabled[0m
 TLSv1.2   enabled
 TLSv1.3   [33mdisabled[0m
 

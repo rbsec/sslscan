@@ -7,7 +7,7 @@ Testing SSL server [32m127.0.0.1[0m on port [32m4443[0m using SNI name [32m
 SSLv2     [32mdisabled[0m
 SSLv3     [32mdisabled[0m
 TLSv1.0   [33menabled[0m
-TLSv1.1   enabled
+TLSv1.1   [33menabled[0m
 TLSv1.2   enabled
 TLSv1.3   [32menabled[0m
 
@@ -38,8 +38,8 @@ Accepted  TLSv1.2  [32m128[0m bits  [32mECDHE-ECDSA-AES128-GCM-SHA256[0m Cur
 Accepted  TLSv1.2  [32m128[0m bits  ECDHE-ECDSA-AES128-CCM        Curve [32m25519[0m DHE 253
 Accepted  TLSv1.2  [32m256[0m bits  ECDHE-ECDSA-AES256-SHA        Curve [32m25519[0m DHE 253
 Accepted  TLSv1.2  [32m128[0m bits  ECDHE-ECDSA-AES128-SHA        Curve [32m25519[0m DHE 253
-[32mPreferred[0m TLSv1.1  [32m256[0m bits  ECDHE-ECDSA-AES256-SHA        Curve [32m25519[0m DHE 253
-Accepted  TLSv1.1  [32m128[0m bits  ECDHE-ECDSA-AES128-SHA        Curve [32m25519[0m DHE 253
+[32mPreferred[0m [33mTLSv1.1[0m  [32m256[0m bits  ECDHE-ECDSA-AES256-SHA        Curve [32m25519[0m DHE 253
+Accepted  [33mTLSv1.1[0m  [32m128[0m bits  ECDHE-ECDSA-AES128-SHA        Curve [32m25519[0m DHE 253
 [32mPreferred[0m [33mTLSv1.0[0m  [32m256[0m bits  ECDHE-ECDSA-AES256-SHA        Curve [32m25519[0m DHE 253
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  ECDHE-ECDSA-AES128-SHA        Curve [32m25519[0m DHE 253
 
@@ -57,13 +57,6 @@ TLSv1.2  [32m128[0m bits  secp256r1 (NIST P-256)[0m
 TLSv1.2  [32m192[0m bits  secp384r1 (NIST P-384)[0m
 TLSv1.2  [32m260[0m bits  secp521r1 (NIST P-521)[0m
 TLSv1.2  [32m128[0m bits  [32mx25519[0m
-
-  [1;34mServer Signature Algorithm(s):[0m
-TLSv1.3  ecdsa_secp256r1_sha256[0m
-TLSv1.2  [31mecdsa_sha1[0m
-TLSv1.2  ecdsa_secp256r1_sha256[0m
-TLSv1.2  ecdsa_secp384r1_sha384[0m
-TLSv1.2  ecdsa_secp521r1_sha512[0m
 
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m

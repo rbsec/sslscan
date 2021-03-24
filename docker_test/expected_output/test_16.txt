@@ -7,7 +7,7 @@ Testing SSL server [32m127.0.0.1[0m on port [32m4443[0m using SNI name [32m
 SSLv2     [32mdisabled[0m
 SSLv3     [32mdisabled[0m
 TLSv1.0   [32mdisabled[0m
-TLSv1.1   disabled
+TLSv1.1   [32mdisabled[0m
 TLSv1.2   enabled
 TLSv1.3   [33mdisabled[0m
 
@@ -49,23 +49,6 @@ Accepted  TLSv1.2  [32m112[0m bits  [33mDES-CBC3-SHA                 [0m
 
   [1;34mServer Key Exchange Group(s):[0m
 TLSv1.2  [31m81[0m bits  [31msect163k1[0m
-
-  [1;34mServer Signature Algorithm(s):[0m
-TLSv1.2  [31mrsa_pkcs1_sha1[0m
-TLSv1.2  [31mdsa_sha1[0m
-TLSv1.2  [31mecdsa_sha1[0m
-TLSv1.2  [33mrsa_pkcs1_sha224[0m
-TLSv1.2  [31mdsa_sha224[0m
-TLSv1.2  [33mecdsa_sha224[0m
-TLSv1.2  rsa_pkcs1_sha256[0m
-TLSv1.2  [31mdsa_sha256[0m
-TLSv1.2  ecdsa_secp256r1_sha256[0m
-TLSv1.2  rsa_pkcs1_sha384[0m
-TLSv1.2  [31mdsa_sha384[0m
-TLSv1.2  ecdsa_secp384r1_sha384[0m
-TLSv1.2  rsa_pkcs1_sha512[0m
-TLSv1.2  [31mdsa_sha512[0m
-TLSv1.2  ecdsa_secp521r1_sha512[0m
 
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m

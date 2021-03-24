@@ -7,7 +7,7 @@ Testing SSL server [32m127.0.0.1[0m on port [32m4443[0m using SNI name [32m
 SSLv2     [32mdisabled[0m
 SSLv3     [32mdisabled[0m
 TLSv1.0   [32mdisabled[0m
-TLSv1.1   disabled
+TLSv1.1   [32mdisabled[0m
 TLSv1.2   enabled
 TLSv1.3   [33mdisabled[0m
 
@@ -33,9 +33,6 @@ TLSv1.2  [32m128[0m bits  secp256r1 (NIST P-256)[0m
 TLSv1.2  [32m192[0m bits  secp384r1 (NIST P-384)[0m
 TLSv1.2  [32m260[0m bits  secp521r1 (NIST P-521)[0m
 TLSv1.2  [32m128[0m bits  [32mx25519[0m
-
-  [1;34mServer Signature Algorithm(s):[0m
-TLSv1.2  [31mecdsa_sha1[0m
 
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m

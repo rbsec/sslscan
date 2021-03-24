@@ -7,9 +7,9 @@ Testing SSL server [32mwww.amazon.com[0m on port [32m443[0m using SNI name 
 SSLv2     [32mdisabled[0m
 SSLv3     [32mdisabled[0m
 TLSv1.0   [33menabled[0m
-TLSv1.1   enabled
+TLSv1.1   [33menabled[0m
 TLSv1.2   enabled
-TLSv1.3   [32menabled[0m
+TLSv1.3   [33mdisabled[0m
 
   [1;34mOCSP Stapling Request:[0m
 OCSP Response Status: successful (0x0)
