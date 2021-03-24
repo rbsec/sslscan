@@ -1591,6 +1591,9 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
     if (strcmp(cleanSslMethod, "TLSv1.3") == 0) {
       printf("%sTLSv1.3%s  ", COL_GREEN, RESET);
     }
+    else if (strcmp(cleanSslMethod, "TLSv1.1") == 0) {
+      printf("%sTLSv1.1%s  ", COL_YELLOW, RESET);
+    }
     else if (strcmp(cleanSslMethod, "TLSv1.0") == 0) {
       printf("%sTLSv1.0%s  ", COL_YELLOW, RESET);
     } else
@@ -3344,10 +3347,10 @@ int testHost(struct sslCheckOptions *options)
 
     if ((options->sslVersion == ssl_all) || (options->sslVersion == tls_all) || (options->sslVersion == tls_v11)) {
       if ((options->tls11_supported = checkIfTLSVersionIsSupported(options, TLSv1_1))) {
-	printf("TLSv1.1   enabled\n");
+	printf("TLSv1.1   %senabled%s\n", COL_YELLOW, RESET);
 	printf_xml("  <protocol type=\"tls\" version=\"1.1\" enabled=\"1\" />\n");
       } else {
-	printf("TLSv1.1   disabled\n");
+	printf("TLSv1.1   %sdisabled%s\n", COL_GREEN, RESET);
 	printf_xml("  <protocol type=\"tls\" version=\"1.1\" enabled=\"0\" />\n");
       }
     }

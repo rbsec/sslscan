@@ -61,7 +61,7 @@ Key changes are as follows:
 * Display EC curve names and DHE key lengths with OpenSSL >= 1.0.2 `--no-cipher-details`.
 * Flag weak DHE keys with OpenSSL >= 1.0.2 `--cipher-details`.
 * Flag expired certificates.
-* Flag TLSv1.0 ciphers in output as weak.
+* Flag TLSv1.0 and TLSv1.1 protocols in output as weak.
 * Experimental OS X support (static building only).
 * Support for scanning PostgreSQL servers (credit nuxi).
 * Check for TLS Fallback SCSV support.

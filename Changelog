@@ -1,5 +1,11 @@
 Changelog
 =========
+Version: 2.0.9
+Date   : 24/03/2021
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Warn on TLSv1.1, as it's now deprecated by RFC 8996
+
 Version: 2.0.8
 Date   : 12/02/2021
 Author : rbsec <robin@rbsec.net>
