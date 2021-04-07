@@ -45,6 +45,7 @@
   #include <winsock2.h>
   #include <ws2tcpip.h>
   #include <stdint.h>
+  #include <winbase.h>
   #ifdef _MSC_VER
     // For access().
     #include <io.h>
@@ -89,6 +90,7 @@
   #include <netdb.h>
   #include <sys/socket.h>
   #include <sys/select.h>
+  #include <fcntl.h>
 #endif
 #include <string.h>
 #include <sys/stat.h>
@@ -288,6 +290,129 @@ ssize_t sendString(int sockfd, const char str[])
     return send(sockfd, str, strlen(str), 0);
 }
 
+char *sock_strerror(int err)
+{
+#ifdef _WIN32
+    static char msg[255];
+
+    msg[0] = '\0';
+
+    if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+            NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), msg, sizeof(msg), NULL) == 0 || msg[0] == '\0')
+    {
+        sprintf(msg, "Error code %d", err);
+    }
+
+    return msg;
+#else
+    return strerror(err);
+#endif
+}
+
+int tcpConnectSocket(int socket, struct sslCheckOptions *options, char *error, int errlen)
+{
+    int status = -1, flags, errn = 0, len;
+    fd_set rset, wset, eset;
+    struct timeval tval;
+
+#ifdef _WIN32
+#define INPROGRESS  WSAEWOULDBLOCK
+#define sock_errno WSAGetLastError()
+    flags = 1;
+
+    if ((status = ioctlsocket(socket, FIONBIO, (u_long *)&flags)) != 0)
+    {
+        snprintf(error, errlen, "ioctlsocket: %s", sock_strerror(sock_errno));
+        return status;
+    }
+#else
+#define INPROGRESS  EINPROGRESS
+#define sock_errno errno
+    if ((flags = fcntl(socket, F_GETFL, 0)) < 0)
+    {
+        snprintf(error, errlen, "fcntl getfl: %s", sock_strerror(sock_errno));
+        return status;
+    }
+
+    if (fcntl(socket, F_SETFL, flags | O_NONBLOCK) < 0)
+    {
+        snprintf(error, errlen, "fcntl setfl: %s", sock_strerror(sock_errno));
+        return status;
+    }
+#endif
+
+    // Connect
+    if (options->h_addrtype == AF_INET)
+    {
+        status = connect(socket, (struct sockaddr *)&options->serverAddress, sizeof(options->serverAddress));
+    }
+    else    // IPv6
+    {
+        status = connect(socket, (struct sockaddr *)&options->serverAddress6, sizeof(options->serverAddress6));
+    }
+
+    if (status < 0 && sock_errno != INPROGRESS)
+    {
+        snprintf(error, errlen, "connect: %s", sock_strerror(sock_errno));
+        return status;
+    }
+
+    // connect() completed immediately
+    if (status == 0)
+        return status;
+
+    FD_ZERO(&rset);
+    FD_SET(socket, &rset);
+    wset = eset = rset;
+    tval.tv_sec = options->connect_timeout;
+    tval.tv_usec = 0;
+
+    if ((status = select(socket + 1, &rset, &wset, &eset, &tval)) == 0)
+    {
+        snprintf(error, errlen, "connect: Timed out");
+        return -1;
+    }
+    else if (status < 0)
+    {
+        snprintf(error, errlen, "connect: select: %s", sock_strerror(sock_errno));
+        return status;
+    }
+
+    if (FD_ISSET(socket, &rset) || FD_ISSET(socket, &wset) || FD_ISSET(socket, &eset))
+    {
+        len = sizeof(errn);
+        if (getsockopt(socket, SOL_SOCKET, SO_ERROR, (void *)&errn, (socklen_t *)&len) < 0)
+        {
+            snprintf(error, errlen, "connect: getsockopt: %s", sock_strerror(errn));
+            return -1;
+        }
+    }
+
+    if (errn)
+    {
+        snprintf(error, errlen, "connect: %s", sock_strerror(errn));
+        return -1;
+    }
+
+#ifdef _WIN32
+    flags = 0;
+
+    if ((status = ioctlsocket(socket, FIONBIO, (u_long *)&flags)) != NO_ERROR)
+    {
+        snprintf(error, errlen, "ioctlsocket: %s", sock_strerror(sock_errno));
+        return -1;
+    }
+#else
+    if (fcntl(socket, F_SETFL, flags) < 0)
+    {
+        snprintf(error, errlen, "fcntl setfl: %s", sock_strerror(sock_errno));
+        return -1;
+    }
+#endif
+
+    return status;
+}
+
 // Create a TCP socket
 int tcpConnect(struct sslCheckOptions *options)
 {
@@ -296,11 +421,11 @@ int tcpConnect(struct sslCheckOptions *options)
     {
         SLEEPMS(options->sleep);
     }
-    
+
     // Variables...
     int socketDescriptor;
     int tlsStarted = 0;
-    char buffer[BUFFERSIZE];
+    char buffer[BUFFERSIZE], errmsg[BUFFERSIZE];
     int status;
 
     // Create Socket
@@ -324,23 +449,18 @@ int tcpConnect(struct sslCheckOptions *options)
     // Windows isn't looking for a timeval struct like in UNIX; it wants a timeout in a DWORD represented in milliseconds...
     DWORD timeout = (options->timeout.tv_sec * 1000) + (options->timeout.tv_usec / 1000);
     setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+    setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
 #else
-    setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&options->timeout,sizeof(struct timeval));
+    setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, (char *)&options->timeout, sizeof(struct timeval));
+    setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, (char *)&options->timeout, sizeof(struct timeval));
 #endif
 
-    // Connect
-    if (options->h_addrtype == AF_INET)
-    {
-        status = connect(socketDescriptor, (struct sockaddr *) &options->serverAddress, sizeof(options->serverAddress));
-    }
-    else    // IPv6
-    {
-        status = connect(socketDescriptor, (struct sockaddr *) &options->serverAddress6, sizeof(options->serverAddress6));
-    }
+    status = tcpConnectSocket(socketDescriptor, options, errmsg, BUFFERSIZE);
 
     if(status < 0)
     {
-        printf_error("Could not open a connection to host %s (%s) on port %d.", options->host, options->addrstr, options->port);
+        printf_error("Could not open a connection to host %s (%s) on port %d (%s).", options->host, options->addrstr,
+                options->port, errmsg);
         close(socketDescriptor);
         return 0;
     }
@@ -383,7 +503,7 @@ int tcpConnect(struct sslCheckOptions *options)
         tlsStarted = 1;
         // Taken from https://github.com/tetlowgm/sslscan/blob/master/sslscan.c
 
-        const char mysqlssl[] = { 0x20, 0x00, 0x00, 0x01, 0x85, 0xae, 0x7f, 0x00, 
+        const char mysqlssl[] = { 0x20, 0x00, 0x00, 0x01, 0x85, 0xae, 0x7f, 0x00,
             0x00, 0x00, 0x00, 0x01, 0x21, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -2029,7 +2149,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                     ASN1_STRING *d;
                                     const char *subject;
                                     const char *issuer;
-                                    
+
                                     // Get SSL cert CN
                                     cnindex = -1;
                                     subj = X509_get_subject_name(x509Cert);
@@ -3635,6 +3755,8 @@ int main(int argc, char *argv[])
     // Default socket timeout 3s
     sslOptions.timeout.tv_sec = 3;
     sslOptions.timeout.tv_usec = 0;
+    // Default connect timeout 75s
+    sslOptions.connect_timeout = 75;
     sslOptions.sleep = 0;
 
     sslOptions.sslVersion = ssl_all;
@@ -3870,9 +3992,13 @@ int main(int argc, char *argv[])
         else if (strcmp("--bugs", argv[argLoop]) == 0)
             options->sslbugs = 1;
 
-        // Socket Timeout
+        // Socket Timeout (both send and receive)
         else if (strncmp("--timeout=", argv[argLoop], 10) == 0)
             options->timeout.tv_sec = atoi(argv[argLoop] + 10);
+
+        // Connect Timeout
+        else if (strncmp("--connect-timeout=", argv[argLoop], 18) == 0)
+            options->connect_timeout = atoi(argv[argLoop] + 18);
 
         // Sleep between requests (ms)
         else if (strncmp("--sleep=", argv[argLoop], 8) == 0)
@@ -4108,6 +4234,7 @@ int main(int argc, char *argv[])
             printf("  %s--no-colour%s          Disable coloured output\n", COL_GREEN, RESET);
             printf("  %s--sleep=<msec>%s       Pause between connection request. Default is disabled\n", COL_GREEN, RESET);
             printf("  %s--timeout=<sec>%s      Set socket timeout. Default is 3s\n", COL_GREEN, RESET);
+            printf("  %s--connect-timeout=<sec>%s  Set connect timeout. Default is 75s\n", COL_GREEN, RESET);
             printf("  %s--verbose%s            Display verbose output\n", COL_GREEN, RESET);
             printf("  %s--version%s            Display the program version\n", COL_GREEN, RESET);
             printf("  %s--xml=<file>%s         Output results to an XML file. Use - for STDOUT.\n", COL_GREEN, RESET);
