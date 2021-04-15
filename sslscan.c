@@ -2404,7 +2404,7 @@ static int ocsp_resp_cb(SSL *s, void *unused) {
 
     len = SSL_get_tlsext_status_ocsp_resp(s, &p);
     if (p == NULL) {
-        BIO_puts(bp, "No OCSP response recieved.\n\n");
+        BIO_puts(bp, "No OCSP response received.\n\n");
         goto err;
     }
 
