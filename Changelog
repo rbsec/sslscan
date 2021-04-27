@@ -1,5 +1,12 @@
 Changelog
 =========
+Version: 2.0.10
+Date   : 27/04/2021
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Add the --connect-timeout option (credit alkalim)
+		 > Fix a typo in output
+
 Version: 2.0.9
 Date   : 24/03/2021
 Author : rbsec <robin@rbsec.net>

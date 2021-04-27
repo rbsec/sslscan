@@ -172,6 +172,10 @@ Enables workarounds for SSL bugs
 .br
 Set socket timeout. Useful for hosts that fail to respond to ciphers they don't understand. Default is 3s.
 .TP
+.B \-\-connect\-timeout=<sec>
+.br
+Set initial connection timeout. Useful for hosts that are slow to respond to the initial connect(). Default is 75s.
+.TP
 .B \-\-sleep=<msec>
 .br
 Pause between connections. Useful on STARTTLS SMTP services, or anything else that's performing rate limiting. Default is disabled.
