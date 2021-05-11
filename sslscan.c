@@ -5850,7 +5850,7 @@ int testSignatureAlgorithms(struct sslCheckOptions *options) {
       if (sig_id == BOGUS_SIG_ALG_ID) {
         printf("%s%s  Server accepts all signature algorithms.%s\n", getPrintableTLSName(tls_version), COL_RED, RESET);
         printf_xml("  <connection-signature-algorithm sslversion=\"%s\" name=\"ANY\" id=\"0xfdff\" />\n", getPrintableTLSName(tls_version));
-        goto done;
+        break;
       } else {
         printf("%s  %s%s%s\n", getPrintableTLSName(tls_version), color, sig_name, RESET);
         printf_xml("  <connection-signature-algorithm sslversion=\"%s\" name=\"%s\" id=\"0x%04x\" />\n", getPrintableTLSName(tls_version), sig_name, sig_id);
