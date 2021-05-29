@@ -73,7 +73,7 @@ TLSv1.0  [32m128[0m bits  secp256r1 (NIST P-256)[0m
 
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m
-RSA Key Strength:    32m30720m
+RSA Key Strength:    [32m3072[0m
 
 Subject:  lmgtfy.com
 Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere[0m
