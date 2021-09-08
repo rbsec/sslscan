@@ -9,6 +9,7 @@ endif
 
 # Detect OS
 OS := $(shell uname)
+ARCH := $(shell uname -m)
 
 # Handle different version of Make
 ifeq ($(OS), SunOS)
@@ -61,7 +62,11 @@ ifeq ($(STATIC_BUILD), TRUE)
 PWD          = $(shell pwd)/openssl
 LDFLAGS      += -L${PWD}/
 CFLAGS       += -I${PWD}/include/ -I${PWD}/
+ifeq ($(OS), Darwin)
+LIBS	     = ./openssl/libssl.a ./openssl/libcrypto.a -lz -lpthread
+else
 LIBS         = -lssl -lcrypto -lz -lpthread
+endif
 ifneq ($(OS), FreeBSD)
 	LIBS += -ldl
 endif
@@ -129,8 +134,13 @@ opensslpull:
 
 # Need to build OpenSSL differently on OSX
 ifeq ($(OS), Darwin)
+ifeq ($(ARCH), arm64)
+OSSL_TARGET=darwin64-arm64-cc
+else
+OSSL_TARGET=darwin64-x86_64-cc
+endif
 openssl/Makefile: .openssl.is.fresh
-	cd ./openssl; ./Configure -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC enable-weak-ssl-ciphers zlib darwin64-x86_64-cc
+	cd ./openssl; ./Configure -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC enable-weak-ssl-ciphers zlib $(OSSL_TARGET)
 # Any other *NIX platform
 else
 openssl/Makefile: .openssl.is.fresh
