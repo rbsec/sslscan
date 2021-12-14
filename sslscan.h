@@ -182,6 +182,7 @@ struct sslCheckOptions
     int ipv4;
     int ipv6;
     int ocspStatus;
+    int rfcNames;
     char cipherstring[65536];
 
     // File Handles...
