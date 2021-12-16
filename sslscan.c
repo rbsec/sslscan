@@ -1746,28 +1746,68 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
 
     printf_xml(" bits=\"%d\" cipher=\"%s\" id=\"%s\"", cipherbits, ciphername, hexCipherId);
     if (strstr(ciphername, "NULL")) {
-        printf("%s%-45s%s", COL_RED_BG, ciphername, RESET);
+        if (options->ianaNames) {
+            printf("%s%-45s%s", COL_RED_BG, ciphername, RESET);
+        }
+        else {
+            printf("%s%-29s%s", COL_RED_BG, ciphername, RESET);
+        }
         strength = "null";
     } else if (strstr(ciphername, "ADH") || strstr(ciphername, "AECDH") || strstr(ciphername, "_anon_")) {
-        printf("%s%-45s%s", COL_PURPLE, ciphername, RESET);
+        if (options->ianaNames) {
+            printf("%s%-45s%s", COL_PURPLE, ciphername, RESET);
+        }
+        else {
+            printf("%s%-29s%s", COL_PURPLE, ciphername, RESET);
+        }
         strength = "anonymous";
     } else if (strstr(ciphername, "EXP")) {
-        printf("%s%-45s%s", COL_RED, ciphername, RESET);
+        if (options->ianaNames) {
+            printf("%s%-45s%s", COL_RED, ciphername, RESET);
+        }
+        else {
+            printf("%s%-29s%s", COL_RED, ciphername, RESET);
+        }
         strength = "weak";
     } else if (strstr(ciphername, "RC4") || strstr(ciphername, "DES")) {
-        printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+        if (options->ianaNames) {
+            printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+        }
+        else {
+            printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        }
         strength = "medium";
     } else if (strstr(ciphername, "_SM4_")) { /* Developed by Chinese government */
-        printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+        if (options->ianaNames) {
+            printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+        }
+        else {
+            printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        }
         strength = "medium";
     } else if (strstr(ciphername, "_GOSTR341112_")) { /* Developed by Russian government */
-        printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+        if (options->ianaNames) {
+            printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+        }
+        else {
+            printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        }
         strength = "medium";
     } else if ((strstr(ciphername, "CHACHA20") || (strstr(ciphername, "GCM"))) && strstr(ciphername, "DHE")) {
-        printf("%s%-45s%s", COL_GREEN, ciphername, RESET);
+        if (options->ianaNames) {
+            printf("%s%-45s%s", COL_GREEN, ciphername, RESET);
+        }
+        else {
+            printf("%s%-29s%s", COL_GREEN, ciphername, RESET);
+        }
         strength = "strong";
     } else {
-        printf("%-45s", ciphername);
+        if (options->ianaNames) {
+            printf("%-45s", ciphername);
+        }
+        else {
+            printf("%-29s", ciphername);
+        }
         strength = "acceptable";
     }
     printf_xml(" strength=\"%s\"", strength);
@@ -1848,7 +1888,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 cipherid = SSL_CIPHER_get_id(sslCipherPointer);
                 cipherid = cipherid & 0x00ffffff;  // remove first byte which is the version (0x03 for TLSv1/SSLv3)
 
-                if (options->rfcNames)
+                if (options->ianaNames)
                 {
                     ciphername = SSL_CIPHER_standard_name(sslCipherPointer);
                 }
@@ -3930,9 +3970,9 @@ int main(int argc, char *argv[])
         else if (strcmp("--show-sigs", argv[argLoop]) == 0)
             options->signature_algorithms = true;
 
-        // Show RFC algorithms names in output
-        else if (strcmp("--show-rfc-names", argv[argLoop]) == 0)
-            options->rfcNames = true;
+        // Show IANA/RFC cipher names in output
+        else if (strcmp("--iana-names", argv[argLoop]) == 0)
+            options->ianaNames = true;
 
         // StartTLS... FTP
         else if (strcmp("--starttls-ftp", argv[argLoop]) == 0)
@@ -4197,7 +4237,6 @@ int main(int argc, char *argv[])
             printf("\n");
             printf("  %s--show-certificate%s   Show full certificate information\n", COL_GREEN, RESET);
             printf("  %s--show-client-cas%s    Show trusted CAs for TLS client auth\n", COL_GREEN, RESET);
-            printf("  %s--show-rfc-names%s   Show RFC cipher names instead of OpenSSL\n", COL_GREEN, RESET);
             printf("  %s--no-check-certificate%s  Don't warn about weak certificate algorithm or keys\n", COL_GREEN, RESET);
             printf("  %s--ocsp%s               Request OCSP response from server\n", COL_GREEN, RESET);
             printf("  %s--pk=<file>%s          A file containing the private key or a PKCS#12 file\n", COL_GREEN, RESET);
@@ -4216,6 +4255,7 @@ int main(int argc, char *argv[])
             printf("  %s--tlsall%s             Only check TLS ciphers (all versions)\n", COL_GREEN, RESET);
             printf("  %s--show-ciphers%s       Show supported client ciphers\n", COL_GREEN, RESET);
             printf("  %s--show-cipher-ids%s    Show cipher ids\n", COL_GREEN, RESET);
+            printf("  %s--iana-names%s         Use IANA/RFC cipher names rather than OpenSSL ones\n", COL_GREEN, RESET);
             printf("  %s--show-times%s         Show handhake times in milliseconds\n", COL_GREEN, RESET);
             printf("\n");
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L

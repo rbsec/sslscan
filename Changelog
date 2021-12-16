@@ -1,5 +1,12 @@
 Changelog
 =========
+Version: 2.0.11
+Date   : 16/12/2021
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Add --iana-names option to use IANA/RFC cipher names
+		 > Improve signature algorithm detection
+
 Version: 2.0.10
 Date   : 27/04/2021
 Author : rbsec <robin@rbsec.net>

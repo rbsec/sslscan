@@ -70,6 +70,7 @@ Key changes are as follows:
 * Support STARTTLS for MySQL (credit bk2017).
 * Check for supported key exchange groups.
 * Check for supported server signature algorithms.
+* Display IANA/RFC cipher names `--iana-names`
 
 ### Building on Linux
 
