@@ -2319,11 +2319,19 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                 ASN1_TIME_print(stdoutBIO, X509_get_notBefore(x509Cert));
                                 printf("%s", RESET);
 
-                                if (options->xmlOutput) {
-                                    printf_xml("   <not-valid-before>");
-                                    ASN1_TIME_print(fileBIO, X509_get_notBefore(x509Cert));
-                                    printf_xml("</not-valid-before>\n");
-                                }
+								if (options->xmlOutput) {
+									printf_xml("   <not-valid-before>");
+									ASN1_TIME_print(fileBIO, X509_get_notBefore(x509Cert));
+									printf_xml("</not-valid-before>\n");
+									if (timediff > 0)
+									{
+										printf_xml("   <not-yet-valid>true</not-yet-valid>\n");
+									}
+									else
+									{
+										printf_xml("   <not-yet-valid>false</not-yet-valid>\n");
+									}
+								}
 
                                 printf("\nNot valid after:  ");
                                 timediff = X509_cmp_time(X509_get_notAfter(x509Cert), ptime);
