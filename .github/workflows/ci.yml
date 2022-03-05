@@ -1,0 +1,19 @@
+name: ci
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [clang, gcc]
+    steps:
+      - uses: actions/checkout@v2
+      - name: build with ${{ matrix.cc }}
+        run: |
+          make sslscan
+          make static
+        env:
+          CC: ${{ matrix.cc }}
