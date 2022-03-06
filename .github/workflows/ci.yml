@@ -1,0 +1,30 @@
+name: ci
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [clang, gcc]
+    steps:
+      - uses: actions/checkout@v2
+      - name: build with ${{ matrix.cc }}
+        run: |
+          make sslscan
+          make static
+        env:
+          CC: ${{ matrix.cc }}
+  build_mingw:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install mingw-w64
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -qq mingw-w64
+      - name: build with mingw-w64
+        run: |
+          make -f Makefile.mingw

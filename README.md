@@ -28,7 +28,7 @@ If you are using the XML output, then you may need to make changes to your parse
 
 # README
 
-[![Build Status](https://travis-ci.org/rbsec/sslscan.svg?branch=master)](https://travis-ci.org/rbsec/sslscan)
+[![ci](https://github.com/rbsec/sslscan/actions/workflows/ci.yml/badge.svg)](https://github.com/rbsec/sslscan/actions/workflows/ci.yml)
 
 This is a fork of ioerror's version of sslscan (the original readme of which is included below).
 Key changes are as follows:
