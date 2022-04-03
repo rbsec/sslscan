@@ -1,5 +1,11 @@
 Changelog
 =========
+Version: 2.0.13
+Date   : 03/04/2022
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Fix TLSv1.3 detection against Server 2022 (credit jtesta)
+
 Version: 2.0.12
 Date   : 23/02/2022
 Author : rbsec <robin@rbsec.net>
