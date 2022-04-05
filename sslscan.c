@@ -5471,7 +5471,7 @@ int testSupportedGroups(struct sslCheckOptions *options) {
   int ret = true, s = -1;
   unsigned int printed_header = 0;
   int test_versions[2] = {-1, -1};
-  bs *client_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL, *server_hello = NULL, *key_exchange = NULL;
+  bs *client_hello = NULL, *ciphersuite_list = NULL, *tls_extensions = NULL, *tls_record = NULL, *key_exchange = NULL;
 
   struct group_key_exchange {
     uint16_t group_id;
@@ -5693,36 +5693,48 @@ int testSupportedGroups(struct sslCheckOptions *options) {
       }
       bs_free(&client_hello);
 
-      server_hello = getServerHello(s);
+      tls_record = getServerHello(s);
 
       /* This group is definitely not supported. */
-      if (server_hello == NULL) {
+      if (tls_record == NULL) {
         CLOSE(s);
         continue;
       }
 
-      bs_free(&server_hello);
-
       /* For TLSv1.2 and below, we need to examine the Server Key Exchange record. */
       if (tls_version < TLSv1_3) {
-        bs *tls_record = getTLSHandshakeRecord(s);
-        unsigned int handshake_type = bs_get_byte(tls_record, 5);
-        if (handshake_type == 14) { /* Server Hello Done */
-          bs_free(&tls_record);
-          CLOSE(s);
-          continue;
-        }
+	unsigned int handshake_type = 0;
+	unsigned int handshake_type_offset = 5;
+	uint32_t handshake_len = 0;
 
-        /* Skip all records that aren't Server Key Exchanges (type 12). */
-        while ((tls_record != NULL) && (bs_get_byte(tls_record, 5) != 12)) {
-          bs_free(&tls_record);
-          tls_record = getTLSHandshakeRecord(s);
-          handshake_type = bs_get_byte(tls_record, 5);
-          if (handshake_type == 14) { /* Server Hello Done */
+	/* Loop through all the handshake protocols inside this TLS record.  Some implementations only include one (such as OpenSSL), and others include several (such as Windows Server 2022). */
+        while (tls_record != NULL) {
+
+	  handshake_type = bs_get_byte(tls_record, handshake_type_offset);
+
+	  /* Handshake type 12 is a Server Key Exchange.  This may have the group information we need, so we can stop searching. */
+	  if (handshake_type == 12) {
+            break;
+	  /* Handshake type 14 is a Server Hello Done.  If we reach this before finding a Server Key Exchange, we know the server does not support this group. */
+	  } else if (handshake_type == 14) {
             bs_free(&tls_record);
             CLOSE(s);
             continue;
           }
+
+	  /* The handshake length is strangely only three bytes... */
+	  handshake_len = bs_get_byte(tls_record, handshake_type_offset + 1) << 16;
+	  handshake_len |= bs_get_byte(tls_record, handshake_type_offset + 2) << 8;
+	  handshake_len |= bs_get_byte(tls_record, handshake_type_offset + 3) << 0;
+
+	  /* If we processed all handshake messages in this TLS record, read the next record. */
+	  if (tls_record->len < handshake_len + handshake_type_offset) {
+	    bs_free(&tls_record);
+	    tls_record = getTLSHandshakeRecord(s);
+	    handshake_type_offset = 5;
+	  } else
+	    handshake_type_offset += (handshake_len + 4);
+
         }
 
         /* Error, so skip this group. */
@@ -5733,22 +5745,22 @@ int testSupportedGroups(struct sslCheckOptions *options) {
         }
 
         /* If this Server Key Exchange does not have a named_curve (3) field, skip this group. */
-        if (bs_get_byte(tls_record, 9) != 3) {
+        if (bs_get_byte(tls_record, handshake_type_offset + 4) != 3) {
           bs_free(&tls_record);
           CLOSE(s);
           continue;
         }
 
         /* Check that the named_curve result is the group we requested. */
-        uint16_t server_group_id = bs_get_byte(tls_record, 10) << 8 | bs_get_byte(tls_record, 11);
+        uint16_t server_group_id = bs_get_byte(tls_record, handshake_type_offset + 5) << 8 | bs_get_byte(tls_record, handshake_type_offset + 6);
         if (server_group_id != group_id) {
           bs_free(&tls_record);
           CLOSE(s);
           continue;
         }
-
-        bs_free(&tls_record);
       }
+
+      bs_free(&tls_record);
       CLOSE(s);
 
       if (!printed_header) {
@@ -5773,7 +5785,7 @@ int testSupportedGroups(struct sslCheckOptions *options) {
   bs_free(&ciphersuite_list);
   bs_free(&tls_extensions);
   bs_free(&client_hello);
-  bs_free(&server_hello);
+  bs_free(&tls_record);
   return ret;
 }
 
