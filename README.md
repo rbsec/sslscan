@@ -39,7 +39,7 @@ Key changes are as follows:
 * Highlight PFS+GCM ciphers as good in output.
 * Highlight NULL (0 bit), weak (<40 bit) and medium (40 < n <= 56) ciphers in output.
 * Highlight anonymous (ADH and AECDH) ciphers in output (purple).
-* Hide certificate information by default (display with `--get-certificate`).
+* Hide certificate information by default (display with `--show-certificate`).
 * Hide rejected ciphers by default (display with `--failed`).
 * Added TLSv1.1, TLSv1.2 and TLSv1.3 support.
 * Supports IPv6  (can be forced with `--ipv6`).
