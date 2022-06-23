@@ -4345,6 +4345,12 @@ int main(int argc, char *argv[])
                         {
                             if (strlen(line) != 0)
                             {
+                                // Strip https:// from the start of the hostname
+                                if (strncmp(line, "https://", 8) == 0)
+                                {
+                                    memmove(line, line + 8, (strlen(line) - 8));
+                                    memset(line + (strlen(line) - 8), 0, 8);
+                                }
                                 // Get host...
                                 tempInt = 0;
                                 while ((line[tempInt] != 0) && (line[tempInt] != ':'))
