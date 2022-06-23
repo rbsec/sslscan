@@ -1,5 +1,11 @@
 Changelog
 =========
+Version: 2.0.14
+Date   : 23/06/2022
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Strip out https:// from lines in a target file
+
 Version: 2.0.13
 Date   : 03/04/2022
 Author : rbsec <robin@rbsec.net>
