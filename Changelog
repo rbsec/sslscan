@@ -1,5 +1,11 @@
 Changelog
 =========
+Version: 2.0.15
+Date   : 03/07/2022
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Obtain certificate info even if we can't connect properly
+
 Version: 2.0.14
 Date   : 23/06/2022
 Author : rbsec <robin@rbsec.net>
