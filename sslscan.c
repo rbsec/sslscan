@@ -2362,13 +2362,13 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                             X509_free(x509Cert);
                             // This is abusing status a bit, but means that we'll only get the cert once
                             status = false;
+
+                            printf_xml("  </certificate>\n");
                         }
 
                         else {
                             printf("    Unable to parse certificate\n");
                         }
-
-                        printf_xml("  </certificate>\n");
 
                         // Free BIO
                         BIO_free(stdoutBIO);
