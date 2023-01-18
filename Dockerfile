@@ -1,15 +1,10 @@
-FROM ubuntu:18.04
+FROM alpine:latest
 
-# Install nginx for some tests.
-# Install strace for potential debugging, and rsyslog to enable system log gathering.
-RUN apt-get update 
-RUN apt-get install -y  ca-certificates build-essential git zlib1g-dev openssl 
-RUN apt-get clean 
+RUN apk update
+RUN apk add gcc make ca-certificates git libc-dev linux-headers openssl perl zlib-dev
 
 RUN update-ca-certificates
-ADD . builddir 
+ADD . builddir
 RUN cd builddir; make static; cp /builddir/sslscan /usr/local/bin
 
 ENTRYPOINT ["sslscan"]
-
-EXPOSE 443

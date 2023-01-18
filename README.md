@@ -91,13 +91,18 @@ This will clone the [OpenSSL repository](https://github.com/openssl/openssl), an
 **Please note:** Out of the box, OpenSSL cannot compiled with `clang` without further customization (which is not done by the provided `Makefile`). For more information on this, see [Modifying Build Settings](http://wiki.openssl.org/index.php/Compilation_and_Installation#Modifying_Build_Settings) in the OpenSSL wiki.
 
 You can verify whether you have a statically linked OpenSSL version, by checking whether the version listed by `sslscan --version` has the `-static` suffix.
-### Building with docker
 
-Install docker on your linux.
+### Building with Docker
+
+Ensure that you local Docker installation is functional, and the build the container with:
+
+    make docker
+
+Or manually with:
 
    docker build -t sslscan:sslscan .
 
-to use it
+You can then run sslscan with:
 
    docker run --rm -ti sslscan:sslscan --help
 
