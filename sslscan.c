@@ -5120,6 +5120,9 @@ bs *makeCiphersuiteListAll(unsigned int tls_version) {
       bs_append_ushort(ciphersuite_list, missing_ciphersuites[i].id);
   }
 
+  /* Append TLS_EMPTY_RENEGOTIATION_INFO_SCSV (0x00ff), otherwise some servers will reject the connection outright. */
+  bs_append_ushort(ciphersuite_list, 255);
+
   return ciphersuite_list;
 }
 
