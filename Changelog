@@ -1,5 +1,12 @@
 Changelog
 =========
+Version: 2.0.16
+Date   : 08/04/2023
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Fix incorret detection of TLSv1.3 on Server 2019 (credit jtesta)
+		 > Fix incorrect XML certificate output
+
 Version: 2.0.15
 Date   : 03/07/2022
 Author : rbsec <robin@rbsec.net>
