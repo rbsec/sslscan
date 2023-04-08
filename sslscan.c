@@ -4901,6 +4901,70 @@ void bs_append_x448_pubkey(bs *b) {
 }
 
 
+/* Returns true if the ServerHello response contains TLSv1.3 in its supported_versions extension. */
+unsigned int checkSupportedVersionsExtensionForTLS13(bs *server_hello) {
+
+  unsigned int handshake_record_len = bs_get_byte(server_hello, 3) << 8 | bs_get_byte(server_hello, 4);
+
+  /* The Server Hello *record* passed into this function can have multiple handshake protocols inside.  We need to find the Server Hello *handshake protocol*, specifically, since that contains the extensions we need to parse. */
+  unsigned int handshake_record_ptr = 5;
+  while (handshake_record_ptr < handshake_record_len) {
+    unsigned int handshake_protocol_type = bs_get_byte(server_hello, handshake_record_ptr);
+    unsigned int handshake_protocol_len = bs_get_byte(server_hello, handshake_record_ptr + 1) << 16 | bs_get_byte(server_hello, handshake_record_ptr + 2) << 8 | bs_get_byte(server_hello, handshake_record_ptr + 3);
+
+    /* We found the Server Hello handshake protocol entry... */
+    if (handshake_protocol_type == 2) {
+
+      /* The session ID field is variable, so we need to find its length first so we can skip over it and get to the extensions section. */
+      unsigned int session_id_len = (unsigned int)bs_get_byte(server_hello, handshake_record_ptr + 5 + 32 + 1);
+
+      /* Get the length of all the extensions. */
+      unsigned int extensions_len_offset = handshake_record_ptr + 5 + 32 + 1 + session_id_len + 4;
+      unsigned int extensions_len = bs_get_byte(server_hello, extensions_len_offset) << 8 | bs_get_byte(server_hello, extensions_len_offset + 1);
+
+      /* Loop through each extension. */
+      unsigned int extensions_base_offset = extensions_len_offset + 2;
+      unsigned int extensions_offset = 0;
+      while (extensions_offset < extensions_len) {
+
+	/* Get the extension type and length. */
+	unsigned int extension_type = bs_get_byte(server_hello, extensions_base_offset + extensions_offset) << 8 | bs_get_byte(server_hello, extensions_base_offset + extensions_offset + 1);
+	unsigned int extension_len = bs_get_byte(server_hello, extensions_base_offset + extensions_offset + 2) << 8 | bs_get_byte(server_hello, extensions_base_offset + extensions_offset + 3);
+
+	/* The supported_version extension is type 43. */
+	if (extension_type == 43) {
+
+	  /* The length of this extension should be divisible by 2, since the TLS versions are each 2 bytes. */
+	  if ((extension_len % 2) != 0) {
+	    fprintf(stderr, "Error in %s: extension length for supported_versions is not even!: %u\n", __func__, extension_len);
+	    return 0;
+	  }
+
+	  /* Loop through all the TLS versions in the supported_versions extension.  Each version uses two bytes. */
+	  for (int i = 0; i < extension_len; i += 2) {
+	    unsigned int tls_high_byte = (unsigned int)bs_get_byte(server_hello, extensions_base_offset + extensions_offset + 4 + i);
+	    unsigned int tls_low_byte = (unsigned int)bs_get_byte(server_hello, extensions_base_offset + extensions_offset + 5 + i);
+
+	    /* If we find TLS version 0x0304 in the supported_versions extension, then the server supports TLSv1.3! */
+	    if ((tls_high_byte == 3) && (tls_low_byte == 4))
+	      return 1;
+	  }
+	}
+
+	extensions_offset += (4 + extension_len);
+      }
+
+      /* We already found the Server Hello protocol handshake and looked through all the extensions.  If we reached here, then there's no point in continuing. */
+      return 0;
+    }
+
+    handshake_record_ptr += (4 + handshake_protocol_len);
+  }
+
+  return 0;
+}
+
+
 /* Returns true if a specific TLS version is supported by the server. */
 unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsigned int tls_version) {
   bs *tls_extensions = NULL, *ciphersuite_list = NULL, *client_hello = NULL, *server_hello = NULL;
@@ -4992,6 +5056,10 @@ unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsig
   if ((server_tls_version_high != 3) || (server_tls_version_low != expected_tls_version_low))
     goto done;
 
+  /* TLSv1.3's ServerHello will be tagged as TLSv1.2 in the header, but will include v1.3 in the supported_versions extension.  Some servers (like Windows Server 2019), when only supporting v1.2, will still respond with a ServerHello to our v1.3 Client Hello.  So to eliminate false positives, we need to check the supported_versions extension and ensure v1.3 is listed there. */
+  if ((tls_version == TLSv1_3) && (!checkSupportedVersionsExtensionForTLS13(server_hello)))
+    goto done;
+
   /* A valid Server Hello was returned, so this TLS version is supported. */
   ret = true;
 
@@ -5051,6 +5119,9 @@ bs *makeCiphersuiteListAll(unsigned int tls_version) {
     if (!strstr(missing_ciphersuites[i].protocol_name, "PRIVATE_CIPHER_"))
       bs_append_ushort(ciphersuite_list, missing_ciphersuites[i].id);
   }
+
+  /* Append TLS_EMPTY_RENEGOTIATION_INFO_SCSV (0x00ff), otherwise some servers will reject the connection outright. */
+  bs_append_ushort(ciphersuite_list, 255);
 
   return ciphersuite_list;
 }
