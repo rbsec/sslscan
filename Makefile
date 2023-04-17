@@ -86,7 +86,9 @@ NUM_PROCS = 1
 ifneq (,$(wildcard /usr/bin/nproc))
 	NUM_PROCS = `/usr/bin/nproc --all`
 endif
-
+ifeq ($(OS), Darwin)
+	NUM_PROCS = `/usr/sbin/system_profiler SPHardwareDataType | /usr/bin/grep "Total Number of Cores" | /usr/bin/awk -F: '{print $$2}'`
+endif
 
 .PHONY: all sslscan clean install uninstall static opensslpull
 
