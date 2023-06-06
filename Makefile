@@ -151,7 +151,7 @@ endif
 
 openssl/libcrypto.a: openssl/Makefile
 	$(MAKE) -j $(NUM_PROCS) -C openssl depend
-	$(MAKE) -j $(NUM_PROCS) -C openssl all
+	$(MAKE) -j $(NUM_PROCS) -C openssl build_libs
 #	$(MAKE) -j $(NUM_PROCS) -C openssl test # Disabled because this takes 45+ minutes for OpenSSL v1.1.1.
 
 static: openssl/libcrypto.a
