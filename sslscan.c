@@ -5295,7 +5295,6 @@ void tlsExtensionAddDefaultKeyShare(bs *tls_extensions) {
 /* Retrieves a TLS Handshake record, or returns NULL on error. */
 bs *getTLSHandshakeRecord(int s) {
   bs *tls_record = NULL;
-  unsigned char type;
   bs_new_size(&tls_record, 512);
 
   while (1) {
@@ -5303,8 +5302,6 @@ bs *getTLSHandshakeRecord(int s) {
       int err = bs_read_socket(tls_record, s, 5);
       if (err != 0)
         goto err;
-
-      type = bs_get_byte(tls_record, 0);
 
       /* Get the length of the record. */
       unsigned short packet_len = (bs_get_byte(tls_record, 3) << 8) | bs_get_byte(tls_record, 4);
@@ -5315,7 +5312,7 @@ bs *getTLSHandshakeRecord(int s) {
         goto err;
 
       /* Find that the Content Type is Handshake (22). */
-      if (type == 0x16)
+      if (bs_get_byte(tls_record, 0) == 0x16)
         break;
 
       bs_reset(tls_record);
