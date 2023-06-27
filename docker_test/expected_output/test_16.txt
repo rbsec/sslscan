@@ -31,7 +31,6 @@ Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA256         DHE 2048 bit
 Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 2048 bits
 Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-CAMELLIA256-SHA       DHE 2048 bits
 Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 2048 bits
-Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-SEED-SHA              DHE 2048 bits
 Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-CAMELLIA128-SHA       DHE 2048 bits
 Accepted  TLSv1.2  [32m112[0m bits  [33mDHE-RSA-DES-CBC3-SHA         [0m DHE 2048 bits
 Accepted  TLSv1.2  [32m256[0m bits  AES256-GCM-SHA384            
@@ -41,11 +40,13 @@ Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA256
 Accepted  TLSv1.2  [32m256[0m bits  AES256-SHA                   
 Accepted  TLSv1.2  [32m256[0m bits  CAMELLIA256-SHA              
 Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA                   
-Accepted  TLSv1.2  [32m128[0m bits  SEED-SHA                     
 Accepted  TLSv1.2  [32m128[0m bits  CAMELLIA128-SHA              
-Accepted  TLSv1.2  [32m128[0m bits  [33mRC4-SHA                      [0m
-Accepted  TLSv1.2  [32m128[0m bits  [33mRC4-MD5                      [0m
 Accepted  TLSv1.2  [32m112[0m bits  [33mDES-CBC3-SHA                 [0m
+Accepted  TLSv1.2  [32m128[0m bits  [33mTLS_RSA_WITH_RC4_128_MD5     [0m
+Accepted  TLSv1.2  [32m128[0m bits  [33mTLS_RSA_WITH_RC4_128_SHA     [0m
+Accepted  TLSv1.2  [32m128[0m bits  TLS_RSA_WITH_IDEA_CBC_SHA    
+Accepted  TLSv1.2  [32m128[0m bits  TLS_RSA_WITH_SEED_CBC_SHA    
+Accepted  TLSv1.2  [32m128[0m bits  TLS_DHE_RSA_WITH_SEED_CBC_SHA
 
   [1;34mServer Key Exchange Group(s):[0m
 TLSv1.2  [31m81[0m bits  [31msect163k1[0m
