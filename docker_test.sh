@@ -53,7 +53,7 @@ fi
 
 # Returns 0 if current docker image exists.
 function check_if_docker_image_exists {
-    images=`docker image ls | egrep "$IMAGE_NAME[[:space:]]+$IMAGE_VERSION"`
+    images=`docker image ls | grep -E "$IMAGE_NAME[[:space:]]+$IMAGE_VERSION"`
 }
 
 
@@ -247,7 +247,7 @@ function create_docker_image {
     compile_gnutls_all
 
     # Now build the docker image!
-    echo -e "${YELLOWB}Creating docker image...${CLR}"
+    echo -e "${YELLOWB}Creating docker image...$IMAGE_NAME:$IMAGE_VERSION ${CLR}"
     docker build --tag $IMAGE_NAME:$IMAGE_VERSION .
     echo -e "${YELLOWB}Docker image creation complete.${CLR}"
 

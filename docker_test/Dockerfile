@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 # Copy OpenSSL's 'openssl' tools.
 COPY openssl_prog_v1.0.0 /openssl_v1.0.0/openssl

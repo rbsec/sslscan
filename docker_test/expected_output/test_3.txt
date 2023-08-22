@@ -23,5 +23,9 @@ Compression [32mdisabled[0m
   [1;34mHeartbleed:[0m
 
   [1;34mSupported Server Cipher(s):[0m
+    Unable to parse certificate
+    Unable to parse certificate
+    Unable to parse certificate
+    Unable to parse certificate
 Certificate information cannot be retrieved.
 

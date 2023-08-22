@@ -25,9 +25,9 @@ TLSv1.3 [32mnot vulnerable[0m to heartbleed
 TLSv1.2 [32mnot vulnerable[0m to heartbleed
 
   [1;34mSupported Server Cipher(s):[0m
-[32mPreferred[0m [32mTLSv1.3[0m  [32m128[0m bits  TLS_AES_128_GCM_SHA256        Curve P-521 DHE 521
-Accepted  [32mTLSv1.3[0m  [32m256[0m bits  TLS_AES_256_GCM_SHA384        Curve P-521 DHE 521
-Accepted  [32mTLSv1.3[0m  [32m256[0m bits  TLS_CHACHA20_POLY1305_SHA256  Curve P-521 DHE 521
+[32mPreferred[0m [32mTLSv1.3[0m  [32m128[0m bits  [32mTLS_AES_128_GCM_SHA256       [0m Curve P-521 DHE 521
+Accepted  [32mTLSv1.3[0m  [32m256[0m bits  [32mTLS_AES_256_GCM_SHA384       [0m Curve P-521 DHE 521
+Accepted  [32mTLSv1.3[0m  [32m256[0m bits  [32mTLS_CHACHA20_POLY1305_SHA256 [0m Curve P-521 DHE 521
 Accepted  [32mTLSv1.3[0m  [32m128[0m bits  TLS_AES_128_CCM_SHA256        Curve P-521 DHE 521
 [32mPreferred[0m TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-AES256-GCM-SHA384  [0m Curve P-521 DHE 521
 Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-AES256-GCM-SHA384    [0m DHE 8192 bits
