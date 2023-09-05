@@ -46,15 +46,10 @@ Accepted  TLSv1.2  [32m256[0m bits  [35mADH-AES256-SHA               [0m DHE
 Accepted  TLSv1.2  [32m256[0m bits  [35mADH-CAMELLIA256-SHA          [0m DHE [33m1024[0m bits
 Accepted  TLSv1.2  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve P-256 DHE 256
 Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE [33m1024[0m bits
-Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-SEED-SHA              DHE [33m1024[0m bits
 Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-CAMELLIA128-SHA       DHE [33m1024[0m bits
 Accepted  TLSv1.2  [32m128[0m bits  [35mAECDH-AES128-SHA             [0m Curve P-256 DHE 256
 Accepted  TLSv1.2  [32m128[0m bits  [35mADH-AES128-SHA               [0m DHE [33m1024[0m bits
-Accepted  TLSv1.2  [32m128[0m bits  [35mADH-SEED-SHA                 [0m DHE [33m1024[0m bits
 Accepted  TLSv1.2  [32m128[0m bits  [35mADH-CAMELLIA128-SHA          [0m DHE [33m1024[0m bits
-Accepted  TLSv1.2  [32m128[0m bits  [33mECDHE-RSA-RC4-SHA            [0m Curve P-256 DHE 256
-Accepted  TLSv1.2  [32m128[0m bits  [35mAECDH-RC4-SHA                [0m Curve P-256 DHE 256
-Accepted  TLSv1.2  [32m128[0m bits  [35mADH-RC4-MD5                  [0m DHE [33m1024[0m bits
 Accepted  TLSv1.2  [32m112[0m bits  [33mECDHE-RSA-DES-CBC3-SHA       [0m Curve P-256 DHE 256
 Accepted  TLSv1.2  [32m112[0m bits  [33mDHE-RSA-DES-CBC3-SHA         [0m DHE [33m1024[0m bits
 Accepted  TLSv1.2  [32m112[0m bits  [35mAECDH-DES-CBC3-SHA           [0m Curve P-256 DHE 256
@@ -66,17 +61,23 @@ Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA256
 Accepted  TLSv1.2  [32m256[0m bits  AES256-SHA                   
 Accepted  TLSv1.2  [32m256[0m bits  CAMELLIA256-SHA              
 Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA                   
-Accepted  TLSv1.2  [32m128[0m bits  SEED-SHA                     
 Accepted  TLSv1.2  [32m128[0m bits  CAMELLIA128-SHA              
-Accepted  TLSv1.2  [32m128[0m bits  [33mRC4-SHA                      [0m
-Accepted  TLSv1.2  [32m128[0m bits  [33mRC4-MD5                      [0m
 Accepted  TLSv1.2  [32m112[0m bits  [33mDES-CBC3-SHA                 [0m
 Accepted  TLSv1.2  [31m40[0m bits   [31mTLS_RSA_EXPORT_WITH_RC4_40_MD5[0m
+Accepted  TLSv1.2  [32m128[0m bits  [33mTLS_RSA_WITH_RC4_128_MD5     [0m
+Accepted  TLSv1.2  [32m128[0m bits  [33mTLS_RSA_WITH_RC4_128_SHA     [0m
 Accepted  TLSv1.2  [31m40[0m bits   [31mTLS_RSA_EXPORT_WITH_RC2_CBC_40_MD5[0m
+Accepted  TLSv1.2  [32m128[0m bits  TLS_RSA_WITH_IDEA_CBC_SHA    
 Accepted  TLSv1.2  [31m40[0m bits   [31mTLS_RSA_EXPORT_WITH_DES40_CBC_SHA[0m
 Accepted  TLSv1.2  [31m56[0m bits   [33mTLS_RSA_WITH_DES_CBC_SHA     [0m
 Accepted  TLSv1.2  [31m56[0m bits   [33mTLS_DHE_RSA_WITH_DES_CBC_SHA [0m
+Accepted  TLSv1.2  [32m128[0m bits  [35mTLS_DH_anon_WITH_RC4_128_MD5 [0m
 Accepted  TLSv1.2  [31m56[0m bits   [35mTLS_DH_anon_WITH_DES_CBC_SHA [0m
+Accepted  TLSv1.2  [32m128[0m bits  TLS_RSA_WITH_SEED_CBC_SHA    
+Accepted  TLSv1.2  [32m128[0m bits  TLS_DHE_RSA_WITH_SEED_CBC_SHA
+Accepted  TLSv1.2  [32m128[0m bits  [35mTLS_DH_anon_WITH_SEED_CBC_SHA[0m
+Accepted  TLSv1.2  [32m128[0m bits  [33mTLS_ECDHE_RSA_WITH_RC4_128_SHA[0m
+Accepted  TLSv1.2  [32m128[0m bits  [35mTLS_ECDH_anon_WITH_RC4_128_SHA[0m
 [32mPreferred[0m [33mTLSv1.1[0m  [32m256[0m bits  ECDHE-RSA-AES256-SHA          Curve P-256 DHE 256
 Accepted  [33mTLSv1.1[0m  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE [33m1024[0m bits
 Accepted  [33mTLSv1.1[0m  [32m256[0m bits  DHE-RSA-CAMELLIA256-SHA       DHE [33m1024[0m bits
@@ -85,15 +86,10 @@ Accepted  [33mTLSv1.1[0m  [32m256[0m bits  [35mADH-AES256-SHA              
 Accepted  [33mTLSv1.1[0m  [32m256[0m bits  [35mADH-CAMELLIA256-SHA          [0m DHE [33m1024[0m bits
 Accepted  [33mTLSv1.1[0m  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve P-256 DHE 256
 Accepted  [33mTLSv1.1[0m  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE [33m1024[0m bits
-Accepted  [33mTLSv1.1[0m  [32m128[0m bits  DHE-RSA-SEED-SHA              DHE [33m1024[0m bits
 Accepted  [33mTLSv1.1[0m  [32m128[0m bits  DHE-RSA-CAMELLIA128-SHA       DHE [33m1024[0m bits
 Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [35mAECDH-AES128-SHA             [0m Curve P-256 DHE 256
 Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [35mADH-AES128-SHA               [0m DHE [33m1024[0m bits
-Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [35mADH-SEED-SHA                 [0m DHE [33m1024[0m bits
 Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [35mADH-CAMELLIA128-SHA          [0m DHE [33m1024[0m bits
-Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [33mECDHE-RSA-RC4-SHA            [0m Curve P-256 DHE 256
-Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [35mAECDH-RC4-SHA                [0m Curve P-256 DHE 256
-Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [35mADH-RC4-MD5                  [0m DHE [33m1024[0m bits
 Accepted  [33mTLSv1.1[0m  [32m112[0m bits  [33mECDHE-RSA-DES-CBC3-SHA       [0m Curve P-256 DHE 256
 Accepted  [33mTLSv1.1[0m  [32m112[0m bits  [33mDHE-RSA-DES-CBC3-SHA         [0m DHE [33m1024[0m bits
 Accepted  [33mTLSv1.1[0m  [32m112[0m bits  [35mAECDH-DES-CBC3-SHA           [0m Curve P-256 DHE 256
@@ -101,18 +97,23 @@ Accepted  [33mTLSv1.1[0m  [32m112[0m bits  [35mADH-DES-CBC3-SHA            
 Accepted  [33mTLSv1.1[0m  [32m256[0m bits  AES256-SHA                   
 Accepted  [33mTLSv1.1[0m  [32m256[0m bits  CAMELLIA256-SHA              
 Accepted  [33mTLSv1.1[0m  [32m128[0m bits  AES128-SHA                   
-Accepted  [33mTLSv1.1[0m  [32m128[0m bits  SEED-SHA                     
 Accepted  [33mTLSv1.1[0m  [32m128[0m bits  CAMELLIA128-SHA              
-Accepted  [33mTLSv1.1[0m  [32m128[0m bits  IDEA-CBC-SHA                 
-Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [33mRC4-SHA                      [0m
-Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [33mRC4-MD5                      [0m
 Accepted  [33mTLSv1.1[0m  [32m112[0m bits  [33mDES-CBC3-SHA                 [0m
 Accepted  [33mTLSv1.1[0m  [31m40[0m bits   [31mTLS_RSA_EXPORT_WITH_RC4_40_MD5[0m
+Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [33mTLS_RSA_WITH_RC4_128_MD5     [0m
+Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [33mTLS_RSA_WITH_RC4_128_SHA     [0m
 Accepted  [33mTLSv1.1[0m  [31m40[0m bits   [31mTLS_RSA_EXPORT_WITH_RC2_CBC_40_MD5[0m
+Accepted  [33mTLSv1.1[0m  [32m128[0m bits  TLS_RSA_WITH_IDEA_CBC_SHA    
 Accepted  [33mTLSv1.1[0m  [31m40[0m bits   [31mTLS_RSA_EXPORT_WITH_DES40_CBC_SHA[0m
 Accepted  [33mTLSv1.1[0m  [31m56[0m bits   [33mTLS_RSA_WITH_DES_CBC_SHA     [0m
 Accepted  [33mTLSv1.1[0m  [31m56[0m bits   [33mTLS_DHE_RSA_WITH_DES_CBC_SHA [0m
+Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [35mTLS_DH_anon_WITH_RC4_128_MD5 [0m
 Accepted  [33mTLSv1.1[0m  [31m56[0m bits   [35mTLS_DH_anon_WITH_DES_CBC_SHA [0m
+Accepted  [33mTLSv1.1[0m  [32m128[0m bits  TLS_RSA_WITH_SEED_CBC_SHA    
+Accepted  [33mTLSv1.1[0m  [32m128[0m bits  TLS_DHE_RSA_WITH_SEED_CBC_SHA
+Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [35mTLS_DH_anon_WITH_SEED_CBC_SHA[0m
+Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [33mTLS_ECDHE_RSA_WITH_RC4_128_SHA[0m
+Accepted  [33mTLSv1.1[0m  [32m128[0m bits  [35mTLS_ECDH_anon_WITH_RC4_128_SHA[0m
 [32mPreferred[0m [33mTLSv1.0[0m  [32m256[0m bits  ECDHE-RSA-AES256-SHA          Curve P-256 DHE 256
 Accepted  [33mTLSv1.0[0m  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE [33m1024[0m bits
 Accepted  [33mTLSv1.0[0m  [32m256[0m bits  DHE-RSA-CAMELLIA256-SHA       DHE [33m1024[0m bits
@@ -121,15 +122,10 @@ Accepted  [33mTLSv1.0[0m  [32m256[0m bits  [35mADH-AES256-SHA              
 Accepted  [33mTLSv1.0[0m  [32m256[0m bits  [35mADH-CAMELLIA256-SHA          [0m DHE [33m1024[0m bits
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve P-256 DHE 256
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE [33m1024[0m bits
-Accepted  [33mTLSv1.0[0m  [32m128[0m bits  DHE-RSA-SEED-SHA              DHE [33m1024[0m bits
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  DHE-RSA-CAMELLIA128-SHA       DHE [33m1024[0m bits
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [35mAECDH-AES128-SHA             [0m Curve P-256 DHE 256
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [35mADH-AES128-SHA               [0m DHE [33m1024[0m bits
-Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [35mADH-SEED-SHA                 [0m DHE [33m1024[0m bits
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [35mADH-CAMELLIA128-SHA          [0m DHE [33m1024[0m bits
-Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mECDHE-RSA-RC4-SHA            [0m Curve P-256 DHE 256
-Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [35mAECDH-RC4-SHA                [0m Curve P-256 DHE 256
-Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [35mADH-RC4-MD5                  [0m DHE [33m1024[0m bits
 Accepted  [33mTLSv1.0[0m  [32m112[0m bits  [33mECDHE-RSA-DES-CBC3-SHA       [0m Curve P-256 DHE 256
 Accepted  [33mTLSv1.0[0m  [32m112[0m bits  [33mDHE-RSA-DES-CBC3-SHA         [0m DHE [33m1024[0m bits
 Accepted  [33mTLSv1.0[0m  [32m112[0m bits  [35mAECDH-DES-CBC3-SHA           [0m Curve P-256 DHE 256
@@ -137,18 +133,23 @@ Accepted  [33mTLSv1.0[0m  [32m112[0m bits  [35mADH-DES-CBC3-SHA            
 Accepted  [33mTLSv1.0[0m  [32m256[0m bits  AES256-SHA                   
 Accepted  [33mTLSv1.0[0m  [32m256[0m bits  CAMELLIA256-SHA              
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  AES128-SHA                   
-Accepted  [33mTLSv1.0[0m  [32m128[0m bits  SEED-SHA                     
 Accepted  [33mTLSv1.0[0m  [32m128[0m bits  CAMELLIA128-SHA              
-Accepted  [33mTLSv1.0[0m  [32m128[0m bits  IDEA-CBC-SHA                 
-Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mRC4-SHA                      [0m
-Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mRC4-MD5                      [0m
 Accepted  [33mTLSv1.0[0m  [32m112[0m bits  [33mDES-CBC3-SHA                 [0m
 Accepted  [33mTLSv1.0[0m  [31m40[0m bits   [31mTLS_RSA_EXPORT_WITH_RC4_40_MD5[0m
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mTLS_RSA_WITH_RC4_128_MD5     [0m
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mTLS_RSA_WITH_RC4_128_SHA     [0m
 Accepted  [33mTLSv1.0[0m  [31m40[0m bits   [31mTLS_RSA_EXPORT_WITH_RC2_CBC_40_MD5[0m
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  TLS_RSA_WITH_IDEA_CBC_SHA    
 Accepted  [33mTLSv1.0[0m  [31m40[0m bits   [31mTLS_RSA_EXPORT_WITH_DES40_CBC_SHA[0m
 Accepted  [33mTLSv1.0[0m  [31m56[0m bits   [33mTLS_RSA_WITH_DES_CBC_SHA     [0m
 Accepted  [33mTLSv1.0[0m  [31m56[0m bits   [33mTLS_DHE_RSA_WITH_DES_CBC_SHA [0m
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [35mTLS_DH_anon_WITH_RC4_128_MD5 [0m
 Accepted  [33mTLSv1.0[0m  [31m56[0m bits   [35mTLS_DH_anon_WITH_DES_CBC_SHA [0m
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  TLS_RSA_WITH_SEED_CBC_SHA    
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  TLS_DHE_RSA_WITH_SEED_CBC_SHA
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [35mTLS_DH_anon_WITH_SEED_CBC_SHA[0m
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [33mTLS_ECDHE_RSA_WITH_RC4_128_SHA[0m
+Accepted  [33mTLSv1.0[0m  [32m128[0m bits  [35mTLS_ECDH_anon_WITH_RC4_128_SHA[0m
 
   [1;34mServer Key Exchange Group(s):[0m
 TLSv1.2  [32m128[0m bits  secp256r1 (NIST P-256)[0m

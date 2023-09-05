@@ -1793,7 +1793,7 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
             printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
         }
         strength = "medium";
-    } else if ((strstr(ciphername, "CHACHA20") || (strstr(ciphername, "GCM"))) && strstr(ciphername, "DHE")) {
+    } else if ((strstr(ciphername, "CHACHA20") || (strstr(ciphername, "GCM"))) && (strstr(ciphername, "DHE") || (strcmp(cleanSslMethod, "TLSv1.3") == 0))) {
         if (options->ianaNames) {
             printf("%s%-45s%s", COL_GREEN, ciphername, RESET);
         }

@@ -87,7 +87,7 @@ ifneq (,$(wildcard /usr/bin/nproc))
 	NUM_PROCS = `/usr/bin/nproc --all`
 endif
 ifeq ($(OS), Darwin)
-	NUM_PROCS = `/usr/sbin/system_profiler SPHardwareDataType | /usr/bin/grep "Total Number of Cores" | /usr/bin/awk -F: '{print $$2}'`
+	NUM_PROCS = `sysctl -n hw.ncpu`
 endif
 
 .PHONY: all sslscan clean install uninstall static opensslpull
@@ -129,9 +129,9 @@ uninstall:
 	true
 opensslpull:
 	if [ -d openssl -a -d openssl/.git ]; then \
-		cd ./openssl && git checkout OpenSSL_1_1_1-stable && git pull | grep -q "Already up-to-date." && [ -e ../.openssl.is.fresh ] || touch ../.openssl.is.fresh ; \
+		cd ./openssl && git checkout `git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.0\.[0-9]+)' | sort --version-sort | tail -n 1` && git pull | grep -q "Already up-to-date." && [ -e ../.openssl.is.fresh ] || touch ../.openssl.is.fresh ; \
 	else \
-		git clone --depth 1 -b OpenSSL_1_1_1-stable https://github.com/openssl/openssl ./openssl && cd ./openssl && touch ../.openssl.is.fresh ; \
+	git clone --depth 1 -b `git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.0\.[0-9]+)' | sort --version-sort | tail -n 1` https://github.com/openssl/openssl ./openssl && cd ./openssl && touch ../.openssl.is.fresh ; \
 	fi
 
 # Need to build OpenSSL differently on OSX
@@ -151,7 +151,7 @@ endif
 
 openssl/libcrypto.a: openssl/Makefile
 	$(MAKE) -j $(NUM_PROCS) -C openssl depend
-	$(MAKE) -j $(NUM_PROCS) -C openssl all
+	$(MAKE) -j $(NUM_PROCS) -C openssl build_libs
 #	$(MAKE) -j $(NUM_PROCS) -C openssl test # Disabled because this takes 45+ minutes for OpenSSL v1.1.1.
 
 static: openssl/libcrypto.a
