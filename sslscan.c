@@ -5364,8 +5364,14 @@ bs *makeClientHello(struct sslCheckOptions *options, unsigned int tls_version, b
     bs_append_uint32_t(client_hello, rand);
   }
 
-  /* Session ID Length: 0 */
-  bs_append_bytes(client_hello, (unsigned char []) { 0x00 }, 1);
+  /* Session ID Length: 32 */
+  bs_append_bytes(client_hello, (unsigned char []) { 32 }, 1);
+
+  /* A "random" 32-byte session ID. */
+  for (int i = 0; i < 8; i++) {
+    rand += (time_now ^ (uint32_t)((~(i + 0) << 24) | (~(i + 1) << 16) | (~(i + 2) << 8) | (~(i + 3) << 0)));
+    bs_append_uint32_t(client_hello, rand);
+  }
 
   /* Add the length (in bytes) of the ciphersuites list to the Client Hello. */
   bs_append_ushort(client_hello, bs_get_len(ciphersuite_list));
