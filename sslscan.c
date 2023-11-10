@@ -2033,6 +2033,9 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                         SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
 
+                        // Against some servers, this is required for a successful SSL_connect(), below.
+                        SSL_set_options(ssl, SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
+
                         // Connect SSL over socket
                         SSL_connect(ssl);
                         // Setup BIO's
