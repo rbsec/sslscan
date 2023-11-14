@@ -1,5 +1,12 @@
 Changelog
 =========
+Version: 2.1.2
+Date   : 14/11/2023
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Fix certificate and cipher enumeration when unsafe renegotiation is
+		 required(credit jtesta)
+
 Version: 2.1.1
 Date   : 19/09/2023
 Author : rbsec <robin@rbsec.net>
