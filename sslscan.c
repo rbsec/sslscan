@@ -1869,6 +1869,9 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 // This enables TLS SNI
                 SSL_set_tlsext_host_name (ssl, options->sniname);
 
+                // Against some servers, this is required for a successful SSL_connect(), below.
+                SSL_set_options(ssl, SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
+
                 // Connect SSL over socket
                 cipherStatus = SSL_connect(ssl);
                 printf_verbose("SSL_connect() returned: %d\n", cipherStatus);
@@ -2032,6 +2035,9 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                         // or HTTP usage.
                         SSL_set_tlsext_host_name (ssl, options->sniname);
 #endif
+
+                        // Against some servers, this is required for a successful SSL_connect(), below.
+                        SSL_set_options(ssl, SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
 
                         // Connect SSL over socket
                         SSL_connect(ssl);
