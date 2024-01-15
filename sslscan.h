@@ -38,6 +38,7 @@
 #define HAVE_SSLSCAN_H_
 
 #include "missing_ciphersuites.h"
+#include <signal.h>
 
 // Defines...
 #define false 0
@@ -92,6 +93,11 @@
 
 /* Frees a SSL_CTX pointer, and explicitly sets it to NULL to avoid use-after-free. */
 #define FREE_CTX(ctx) { if ((ctx) != NULL) { SSL_CTX_free((ctx)); (ctx) = NULL; } }
+
+/* Wraps the SSL_shutdown to allow ignoring SIGPIPE signal when calling shutdown on already closed connections. */
+#define HANDLE_SSL_SHUTDOWN(ssl) { if (options->ignoreErrorsOnConnectionClose) { signal(SIGPIPE, SIG_IGN); } SSL_shutdown(ssl); if (options->ignoreErrorsOnConnectionClose) { signal(SIGPIPE, SIG_DFL); } }
+
+
 
 // Colour Console Output...
 // Always better to do "const char RESET[] = " because it saves relocation records.
@@ -183,6 +189,7 @@ struct sslCheckOptions
     int ipv6;
     int ocspStatus;
     int ianaNames;
+    int ignoreErrorsOnConnectionClose;
     char cipherstring[65536];
 
     // File Handles...

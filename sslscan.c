@@ -1041,7 +1041,7 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         }
 
                         // Disconnect SSL over socket
-                        SSL_shutdown(ssl);
+                        HANDLE_SSL_SHUTDOWN(ssl);
 
                         // Free SSL object
                         FREE_SSL(ssl);
@@ -1211,7 +1211,7 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                         }
 
                         // Disconnect SSL over socket
-                        SSL_shutdown(ssl);
+                        HANDLE_SSL_SHUTDOWN(ssl);
 
                         // Free SSL object
                         FREE_SSL(ssl);
@@ -1393,7 +1393,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                             }
 #endif
                             // Disconnect SSL over socket
-                            SSL_shutdown(ssl);
+                            HANDLE_SSL_SHUTDOWN(ssl);
                         }
 
                         // Free SSL object
@@ -1879,7 +1879,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                 sslCipherPointer = SSL_get_current_cipher(ssl);
                 if (sslCipherPointer == NULL) {
                   printf_verbose("SSL_get_current_cipher() returned NULL; this indicates that the server did not choose a cipher from our list (%s)\n", options->cipherstring);
-                  SSL_shutdown(ssl);
+                  HANDLE_SSL_SHUTDOWN(ssl);
                   FREE_SSL(ssl);
                   CLOSE(socketDescriptor);
                   return false;
@@ -1919,7 +1919,7 @@ int testCipher(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
                   strcat(options->cipherstring, ":!");
                   strncat(options->cipherstring, usedcipher, strlen(usedcipher));
                 }
-                SSL_shutdown(ssl);
+                HANDLE_SSL_SHUTDOWN(ssl);
 
                 // Free SSL object
                 FREE_SSL(ssl);
@@ -2374,7 +2374,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                             BIO_free(fileBIO);
 
                         // Disconnect SSL over socket
-                        SSL_shutdown(ssl);
+                        HANDLE_SSL_SHUTDOWN(ssl);
                         // Free SSL object
                         FREE_SSL(ssl);
                     }
@@ -2511,7 +2511,7 @@ int ocspRequest(struct sslCheckOptions *options)
                                 BIO_free(fileBIO);
 
                             // Disconnect SSL over socket
-                            SSL_shutdown(ssl);
+                            HANDLE_SSL_SHUTDOWN(ssl);
                         }
                         else
                         {
@@ -3125,7 +3125,7 @@ int showCertificate(struct sslCheckOptions *options)
                                 BIO_free(fileBIO);
 
                             // Disconnect SSL over socket
-                            SSL_shutdown(ssl);
+                            HANDLE_SSL_SHUTDOWN(ssl);
                         }
 
                         // Free SSL object
@@ -3293,7 +3293,7 @@ int showTrustedCAs(struct sslCheckOptions *options)
                                 BIO_free(fileBIO);
 
                             // Disconnect SSL over socket
-                            SSL_shutdown(ssl);
+                            HANDLE_SSL_SHUTDOWN(ssl);
                         }
 
                         // Free SSL object
@@ -3811,6 +3811,8 @@ int main(int argc, char *argv[])
 
     sslOptions.sslVersion = ssl_all;
 
+    sslOptions.ignoreErrorsOnConnectionClose = false;
+
     struct sslCheckOptions *options = &sslOptions;
 
 #ifdef _WIN32
@@ -4086,6 +4088,8 @@ int main(int argc, char *argv[])
             options->sni_set = 1;
         }
 
+        else if (strcmp("--ignore-errors-on-con-close", argv[argLoop]) == 0)
+            options->ignoreErrorsOnConnectionClose = true;
 
         // Host (maybe port too)...
         else if (argLoop + 1 == argc)
@@ -4259,6 +4263,7 @@ int main(int argc, char *argv[])
             printf("  %s--show-cipher-ids%s    Show cipher ids\n", COL_GREEN, RESET);
             printf("  %s--iana-names%s         Use IANA/RFC cipher names rather than OpenSSL ones\n", COL_GREEN, RESET);
             printf("  %s--show-times%s         Show handhake times in milliseconds\n", COL_GREEN, RESET);
+            printf("  %s--ignore-errors-on-con-close%s  Ignore SIGPIPE errors when closing TLS connections\n", COL_GREEN, RESET);
             printf("\n");
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
             printf("  %s--no-cipher-details%s  Disable EC curve names and EDH/RSA key lengths output\n", COL_GREEN, RESET);
