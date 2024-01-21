@@ -30,7 +30,8 @@ If you are using the XML output, then you may need to make changes to your parse
 
 [![ci](https://github.com/rbsec/sslscan/actions/workflows/ci.yml/badge.svg)](https://github.com/rbsec/sslscan/actions/workflows/ci.yml)
 
-This is a fork of ioerror's version of sslscan (the original readme of which is included below).
+This is a fork of ioerror's version of sslscan (the original readme of which is included below) by rbsec (robin@rbsec.net).
+
 Key changes are as follows:
 
 * Highlight SSLv2 and SSLv3 ciphers in output.
