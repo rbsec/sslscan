@@ -171,6 +171,7 @@ SSL_CTX *new_CTX(const SSL_METHOD *method) {
   SSL_CTX *ret = SSL_CTX_new(method);
   SSL_CTX_set_security_level(ret, 0);
   SSL_CTX_set_security_callback(ret, security_callback_allow_all);
+  SSL_CTX_set_quiet_shutdown(ret, 1);
   return ret;
 }
 
