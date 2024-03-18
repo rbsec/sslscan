@@ -35,7 +35,11 @@ DEFINES   = -DVERSION=\"$(GIT_VERSION)\"
 # for dynamic linking
 LIBS      = -lssl -lcrypto
 ifneq ($(OS), FreeBSD)
+ifneq ($(findstring MINGW64,$(OS)),MINGW64)
 	LIBS += -ldl
+else
+	LIBS += -lwsock32 -lWs2_32
+endif
 endif
 ifeq ($(OS), SunOS)
 	CFLAGS += -m64
@@ -51,7 +55,11 @@ CFLAGS  += -D_FORTIFY_SOURCE=2 -fstack-protector-all -fPIE
 ifneq ($(OS), Darwin)
 ifneq ($(OS), SunOS)
 ifneq ($(findstring CYGWIN,$(OS)),CYGWIN)
+ifneq ($(findstring MINGW64,$(OS)),MINGW64)
 	LDFLAGS += -pie -z relro -z now
+else
+	LDFLAGS += -pie
+endif
 endif
 endif
 endif
@@ -70,7 +78,9 @@ else
 LIBS         = -lssl -lcrypto -lz -lpthread
 endif
 ifneq ($(OS), FreeBSD)
+ifneq ($(findstring CYGWIN,$(OS)),CYGWIN)
 	LIBS += -ldl
+endif
 endif
 ifeq ($(OS), SunOS)
 	LIBS += -lsocket -lnsl
