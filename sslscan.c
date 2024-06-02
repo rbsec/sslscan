@@ -2814,186 +2814,204 @@ int showCertificate(struct sslCheckOptions *options)
                                 BIO_set_fp(fileBIO, options->xmlOutput, BIO_NOCLOSE);
                             }
 
-                            // Get Certificate...
-                            printf("\n  %sSSL Certificate:%s\n", COL_BLUE, RESET);
-                            printf_xml("  <certificate type=\"full\">\n");
-                            x509Cert = SSL_get_peer_certificate(ssl);
-                            if (x509Cert != NULL)
+                            // Get certificate(s) chain
+                            STACK_OF(X509) *certificatesChain;
+
+                            if (options->showCertificates == true)
                             {
+                                certificatesChain = SSL_get_peer_cert_chain(ssl);   
+                            }
+                            else
+                            {                                
+                                X509 *peerCertificate = SSL_get_peer_certificate(ssl);
+                                certificatesChain = sk_X509_new_null();
+                                sk_X509_push(certificatesChain, peerCertificate);
+                            }
 
-                                // Print a base64 blob version of the cert
-                                printf("    Certificate blob:\n");
-                                PEM_write_bio_X509(stdoutBIO,x509Cert);
-                                if (options->xmlOutput)
+                            for (int cert_index = 0; cert_index < sk_X509_num(certificatesChain); cert_index++)
+                            {
+                                // Get Certificate...
+                                printf("\n  %sSSL Certificate: %s\n", COL_BLUE, RESET);
+                                printf_xml("  <certificate type=\"full\">\n");
+
+                                x509Cert = sk_X509_value(certificatesChain, cert_index);
+
+                                if (x509Cert != NULL)
                                 {
-                                    printf_xml("   <certificate-blob>\n");
-                                    PEM_write_bio_X509(fileBIO,x509Cert);
-                                    printf_xml("   </certificate-blob>\n");
-                                }
 
-                                //SSL_set_verify(ssl, SSL_VERIFY_NONE|SSL_VERIFY_CLIENT_ONCE, NULL);
-
-				//X509_print_ex(bp, x509Cert, 0, 0);
-
-                                // Cert Version
-                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_VERSION))
-                                {
-                                    tempLong = X509_get_version(x509Cert);
-                                    printf("    Version: %lu\n", tempLong);
-                                    printf_xml("   <version>%lu</version>\n", tempLong);
-                                }
-
-                                // Cert Serial No. - Code adapted from OpenSSL's crypto/asn1/t_x509.c
-                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
-                                {
-                                    ASN1_INTEGER *bs;
-                                    BIO *bp;
-                                    BIO *xml_bp;
-                                    bp = BIO_new_fp(stdout, BIO_NOCLOSE);
+                                    // Print a base64 blob version of the cert
+                                    printf("    Certificate blob:\n");
+                                    PEM_write_bio_X509(stdoutBIO,x509Cert);
                                     if (options->xmlOutput)
-                                        xml_bp = BIO_new_fp(options->xmlOutput, BIO_NOCLOSE);
-                                    long l;
-                                    int i;
-                                    const char *neg;
-                                    bs=X509_get_serialNumber(x509Cert);
-
-                                    if (BIO_write(bp,"    Serial Number:",18) <= 0)
-                                        return(1);
-
-                                    if (bs->length <= 4)
                                     {
-                                        l=ASN1_INTEGER_get(bs);
-                                        if (l < 0)
+                                        printf_xml("   <certificate-blob>\n");
+                                        PEM_write_bio_X509(fileBIO,x509Cert);
+                                        printf_xml("   </certificate-blob>\n");
+                                    }
+
+                                    // SSL_set_verify(ssl, SSL_VERIFY_NONE|SSL_VERIFY_CLIENT_ONCE, NULL);
+
+                                    // X509_print_ex(bp, x509Cert, 0, 0);
+
+                                    // Cert Version
+                                    if (!(X509_FLAG_COMPAT & X509_FLAG_NO_VERSION))
+                                    {
+                                        tempLong = X509_get_version(x509Cert);
+                                        printf("    Version: %lu\n", tempLong);
+                                        printf_xml("   <version>%lu</version>\n", tempLong);
+                                    }
+
+                                    // Cert Serial No. - Code adapted from OpenSSL's crypto/asn1/t_x509.c
+                                    if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SERIAL))
+                                    {
+                                        ASN1_INTEGER *bs;
+                                        BIO *bp;
+                                        BIO *xml_bp;
+                                        bp = BIO_new_fp(stdout, BIO_NOCLOSE);
+                                        if (options->xmlOutput)
+                                            xml_bp = BIO_new_fp(options->xmlOutput, BIO_NOCLOSE);
+                                        long l;
+                                        int i;
+                                        const char *neg;
+                                        bs=X509_get_serialNumber(x509Cert);
+
+                                        if (BIO_write(bp,"    Serial Number:",18) <= 0)
+                                            return(1);
+
+                                        if (bs->length <= 4)
                                         {
-                                            l= -l;
-                                            neg="-";
+                                            l=ASN1_INTEGER_get(bs);
+                                            if (l < 0)
+                                            {
+                                                l= -l;
+                                                neg="-";
+                                            }
+                                            else
+                                                neg="";
+                                            if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
+                                                return(1);
+                                            if (options->xmlOutput)
+                                                if (BIO_printf(xml_bp,"   <serial>%s%lu (%s0x%lx)</serial>\n",neg,l,neg,l) <= 0)
+                                                    return(1);
                                         }
                                         else
-                                            neg="";
-                                        if (BIO_printf(bp," %s%lu (%s0x%lx)\n",neg,l,neg,l) <= 0)
-                                            return(1);
-                                        if (options->xmlOutput)
-                                            if (BIO_printf(xml_bp,"   <serial>%s%lu (%s0x%lx)</serial>\n",neg,l,neg,l) <= 0)
-                                                return(1);
-                                    }
-                                    else
-                                    {
-                                        neg=(bs->type == V_ASN1_NEG_INTEGER)?" (Negative)":"";
-                                        if (BIO_printf(bp,"%1s%s","",neg) <= 0)
-                                            return(1);
-
-                                        if (options->xmlOutput)
-                                            if (BIO_printf(xml_bp,"   <serial>") <= 0)
-                                                return(1);
-
-                                        for (i=0; i<bs->length; i++)
                                         {
-                                            if (BIO_printf(bp,"%02x%c",bs->data[i],
-                                                        ((i+1 == bs->length)?'\n':':')) <= 0)
+                                            neg=(bs->type == V_ASN1_NEG_INTEGER)?" (Negative)":"";
+                                            if (BIO_printf(bp,"%1s%s","",neg) <= 0)
                                                 return(1);
-                                            if (options->xmlOutput) {
-                                                if (i+1 == bs->length)
-                                                {
-                                                    if (BIO_printf(xml_bp,"%02x",bs->data[i]) <= 0)
-                                                        return(1);
-                                                }
-                                                else
-                                                {
-                                                    if (BIO_printf(xml_bp,"%02x%c",bs->data[i], ':') <= 0)
-                                                        return(1);
+
+                                            if (options->xmlOutput)
+                                                if (BIO_printf(xml_bp,"   <serial>") <= 0)
+                                                    return(1);
+
+                                            for (i=0; i<bs->length; i++)
+                                            {
+                                                if (BIO_printf(bp,"%02x%c",bs->data[i],
+                                                               ((i+1 == bs->length)?'\n':':')) <= 0)
+                                                    return(1);
+                                                if (options->xmlOutput) {
+                                                    if (i+1 == bs->length)
+                                                    {
+                                                        if (BIO_printf(xml_bp,"%02x",bs->data[i]) <= 0)
+                                                            return(1);
+                                                    }
+                                                    else
+                                                    {
+                                                        if (BIO_printf(xml_bp,"%02x%c",bs->data[i], ':') <= 0)
+                                                            return(1);
+                                                    }
                                                 }
                                             }
+
+                                            if (options->xmlOutput)
+                                                if (BIO_printf(xml_bp,"</serial>\n") <= 0)
+                                                    return(1);
+
+                                        }
+                                        if(NULL != bp)
+                                            BIO_free(bp);
+                                        // We don't free the xml_bp because it will be used in the future
+                                    }
+
+                                    // Signature Algo...
+                                    if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SIGNAME))
+                                    {
+                                        X509_signature_print(stdoutBIO, X509_get0_tbs_sigalg(x509Cert), NULL);
+                                        /*                                    printf("    Signature Algorithm: ");
+                                                                            i2a_ASN1_OBJECT(stdoutBIO, X509_get0_tbs_sigalg(x509Cert));
+                                                                            printf("\n");
+                                        */
+                                        if (options->xmlOutput)
+                                        {
+                                            printf_xml("   <signature-algorithm>");
+                                            X509_signature_print(fileBIO, X509_get0_tbs_sigalg(x509Cert), NULL);
+                                            printf_xml("</signature-algorithm>\n");
+                                        }
+                                    }
+
+                                    // SSL Certificate Issuer...
+                                    if (!(X509_FLAG_COMPAT & X509_FLAG_NO_ISSUER))
+                                    {
+                                        X509_NAME_oneline(X509_get_issuer_name(x509Cert), buffer, sizeof(buffer) - 1);
+                                        printf("    Issuer: %s\n", buffer);
+                                        printf_xml("   <issuer><![CDATA[%s]]></issuer>\n", buffer);
+                                    }
+
+                                    // Validity...
+                                    if (!(X509_FLAG_COMPAT & X509_FLAG_NO_VALIDITY))
+                                    {
+                                        printf("    Not valid before: ");
+                                        ASN1_TIME_print(stdoutBIO, X509_get_notBefore(x509Cert));
+                                        if (options->xmlOutput)
+                                        {
+                                            printf_xml("   <not-valid-before>");
+                                            ASN1_TIME_print(fileBIO, X509_get_notBefore(x509Cert));
+                                            printf_xml("</not-valid-before>\n");
+                                        }
+                                        printf("\n    Not valid after: ");
+                                        ASN1_TIME_print(stdoutBIO, X509_get_notAfter(x509Cert));
+                                        printf("\n");
+                                        if (options->xmlOutput)
+                                        {
+                                            printf_xml("   <not-valid-after>");
+                                            ASN1_TIME_print(fileBIO, X509_get_notAfter(x509Cert));
+                                            printf_xml("</not-valid-after>\n");
+                                        }
+                                    }
+
+                                    // SSL Certificate Subject...
+                                    if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SUBJECT))
+                                    {
+                                        X509_NAME_oneline(X509_get_subject_name(x509Cert), buffer, sizeof(buffer) - 1);
+                                        printf("    Subject: %s\n", buffer);
+                                        printf_xml("   <subject><![CDATA[%s]]></subject>\n", buffer);
+                                    }
+
+                                    // Public Key Algo...
+                                    if (!(X509_FLAG_COMPAT & X509_FLAG_NO_PUBKEY))
+                                    {
+                                        printf("    Public Key Algorithm: ");
+                                        ASN1_OBJECT *xpoid = NULL;
+                                        i2a_ASN1_OBJECT(stdoutBIO, xpoid);
+                                        printf("\n");
+                                        if (options->xmlOutput)
+                                        {
+                                            printf_xml("   <pk-algorithm>");
+                                            i2a_ASN1_OBJECT(fileBIO, xpoid);
+                                            printf_xml("</pk-algorithm>\n");
                                         }
 
-                                        if (options->xmlOutput)
-                                            if (BIO_printf(xml_bp,"</serial>\n") <= 0)
-                                                return(1);
-
-                                    }
-                                    if(NULL != bp)
-                                        BIO_free(bp);
-                                    // We don't free the xml_bp because it will be used in the future
-                                }
-
-                                // Signature Algo...
-                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SIGNAME))
-                                {
-				    X509_signature_print(stdoutBIO, X509_get0_tbs_sigalg(x509Cert), NULL);
-/*                                    printf("    Signature Algorithm: ");
-                                    i2a_ASN1_OBJECT(stdoutBIO, X509_get0_tbs_sigalg(x509Cert));
-                                    printf("\n");
-*/
-                                    if (options->xmlOutput)
-                                    {
-                                        printf_xml("   <signature-algorithm>");
-                                        X509_signature_print(fileBIO, X509_get0_tbs_sigalg(x509Cert), NULL);
-                                        printf_xml("</signature-algorithm>\n");
-                                    }
-                                }
-
-                                // SSL Certificate Issuer...
-                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_ISSUER))
-                                {
-                                    X509_NAME_oneline(X509_get_issuer_name(x509Cert), buffer, sizeof(buffer) - 1);
-                                    printf("    Issuer: %s\n", buffer);
-                                    printf_xml("   <issuer><![CDATA[%s]]></issuer>\n", buffer);
-                                }
-
-                                // Validity...
-                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_VALIDITY))
-                                {
-                                    printf("    Not valid before: ");
-                                    ASN1_TIME_print(stdoutBIO, X509_get_notBefore(x509Cert));
-                                    if (options->xmlOutput)
-                                    {
-                                        printf_xml("   <not-valid-before>");
-                                        ASN1_TIME_print(fileBIO, X509_get_notBefore(x509Cert));
-                                        printf_xml("</not-valid-before>\n");
-                                    }
-                                    printf("\n    Not valid after: ");
-                                    ASN1_TIME_print(stdoutBIO, X509_get_notAfter(x509Cert));
-                                    printf("\n");
-                                    if (options->xmlOutput)
-                                    {
-                                        printf_xml("   <not-valid-after>");
-                                        ASN1_TIME_print(fileBIO, X509_get_notAfter(x509Cert));
-                                        printf_xml("</not-valid-after>\n");
-                                    }
-                                }
-
-                                // SSL Certificate Subject...
-                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_SUBJECT))
-                                {
-                                    X509_NAME_oneline(X509_get_subject_name(x509Cert), buffer, sizeof(buffer) - 1);
-                                    printf("    Subject: %s\n", buffer);
-                                    printf_xml("   <subject><![CDATA[%s]]></subject>\n", buffer);
-                                }
-
-                                // Public Key Algo...
-                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_PUBKEY))
-                                {
-                                    printf("    Public Key Algorithm: ");
-                                   ASN1_OBJECT *xpoid = NULL;
-                                    i2a_ASN1_OBJECT(stdoutBIO, xpoid);
-                                    printf("\n");
-                                    if (options->xmlOutput)
-                                    {
-                                        printf_xml("   <pk-algorithm>");
-                                        i2a_ASN1_OBJECT(fileBIO, xpoid);
-                                        printf_xml("</pk-algorithm>\n");
-                                    }
-
-                                    // Public Key...
-                                    publicKey = X509_get_pubkey(x509Cert);
-                                    if (publicKey == NULL)
-                                    {
-                                        printf("    Public Key: Could not load\n");
-                                        printf_xml("   <pk error=\"true\" />\n");
-                                    }
-                                    else
-                                    {
-                                        switch (EVP_PKEY_id(publicKey))
+                                        // Public Key...
+                                        publicKey = X509_get_pubkey(x509Cert);
+                                        if (publicKey == NULL)
                                         {
+                                            printf("    Public Key: Could not load\n");
+                                            printf_xml("   <pk error=\"true\" />\n");
+                                        }
+                                        else
+                                        {
+                                            switch (EVP_PKEY_id(publicKey))
+                                            {
                                             case EVP_PKEY_RSA:
                                                 if (EVP_PKEY_get1_RSA(publicKey)!=NULL)
                                                 {
@@ -3049,76 +3067,78 @@ int showCertificate(struct sslCheckOptions *options)
                                                 printf("    Public Key: Unknown\n");
                                                 printf_xml("   <pk error=\"true\" type=\"unknown\" />\n");
                                                 break;
+                                            }
+
+                                            EVP_PKEY_free(publicKey);
                                         }
-
-                                        EVP_PKEY_free(publicKey);
                                     }
-                                }
 
-                                // X509 v3...
-                                if (!(X509_FLAG_COMPAT & X509_FLAG_NO_EXTENSIONS))
-                                {
-                                    if (sk_X509_EXTENSION_num(X509_get0_extensions(x509Cert)) > 0)
+                                    // X509 v3...
+                                    if (!(X509_FLAG_COMPAT & X509_FLAG_NO_EXTENSIONS))
                                     {
-                                        printf("    X509v3 Extensions:\n");
-                                        printf_xml("   <X509v3-Extensions>\n");
-                                        for (tempInt = 0; tempInt < sk_X509_EXTENSION_num(X509_get0_extensions(x509Cert)); tempInt++)
+                                        if (sk_X509_EXTENSION_num(X509_get0_extensions(x509Cert)) > 0)
                                         {
-                                            // Get Extension...
-                                            extension = sk_X509_EXTENSION_value(X509_get0_extensions(x509Cert), tempInt);
+                                            printf("    X509v3 Extensions:\n");
+                                            printf_xml("   <X509v3-Extensions>\n");
+                                            for (tempInt = 0; tempInt < sk_X509_EXTENSION_num(X509_get0_extensions(x509Cert)); tempInt++)
+                                            {
+                                                // Get Extension...
+                                                extension = sk_X509_EXTENSION_value(X509_get0_extensions(x509Cert), tempInt);
 
-                                            // Print Extension name...
-                                            printf("      ");
-                                            asn1Object = X509_EXTENSION_get_object(extension);
-                                            i2a_ASN1_OBJECT(stdoutBIO, asn1Object);
-                                            tempInt2 = X509_EXTENSION_get_critical(extension);
-                                            BIO_printf(stdoutBIO, ": %s\n", tempInt2 ? "critical" : "");
-                                            if (options->xmlOutput)
-                                            {
-                                                printf_xml("    <extension name=\"");
-                                                i2a_ASN1_OBJECT(fileBIO, asn1Object);
-                                                BIO_printf(fileBIO, "\"%s><![CDATA[", tempInt2 ? " level=\"critical\"" : "");
-                                            }
+                                                // Print Extension name...
+                                                printf("      ");
+                                                asn1Object = X509_EXTENSION_get_object(extension);
+                                                i2a_ASN1_OBJECT(stdoutBIO, asn1Object);
+                                                tempInt2 = X509_EXTENSION_get_critical(extension);
+                                                BIO_printf(stdoutBIO, ": %s\n", tempInt2 ? "critical" : "");
+                                                if (options->xmlOutput)
+                                                {
+                                                    printf_xml("    <extension name=\"");
+                                                    i2a_ASN1_OBJECT(fileBIO, asn1Object);
+                                                    BIO_printf(fileBIO, "\"%s><![CDATA[", tempInt2 ? " level=\"critical\"" : "");
+                                                }
 
-                                            // Print Extension value...
-                                            if (!X509V3_EXT_print(stdoutBIO, extension, X509_FLAG_COMPAT, 8))
-                                            {
-                                                printf("        ");
-						ASN1_STRING_print(stdoutBIO, X509_EXTENSION_get_data(extension));
+                                                // Print Extension value...
+                                                if (!X509V3_EXT_print(stdoutBIO, extension, X509_FLAG_COMPAT, 8))
+                                                {
+                                                    printf("        ");
+                                                    ASN1_STRING_print(stdoutBIO, X509_EXTENSION_get_data(extension));
+                                                }
+                                                if (options->xmlOutput)
+                                                {
+                                                    if (!X509V3_EXT_print(fileBIO, extension, X509_FLAG_COMPAT, 0))
+                                                        ASN1_STRING_print(stdoutBIO, X509_EXTENSION_get_data(extension));
+                                                    printf_xml("]]></extension>\n");
+                                                }
+                                                printf("\n");
                                             }
-                                            if (options->xmlOutput)
-                                            {
-                                                if (!X509V3_EXT_print(fileBIO, extension, X509_FLAG_COMPAT, 0))
-						    ASN1_STRING_print(stdoutBIO, X509_EXTENSION_get_data(extension));
-                                                printf_xml("]]></extension>\n");
-                                            }
-                                            printf("\n");
+                                            printf_xml("   </X509v3-Extensions>\n");
                                         }
-                                        printf_xml("   </X509v3-Extensions>\n");
                                     }
+
+                                    // Verify Certificate...
+                                    printf("  Verify m:\n");
+                                    verifyError = SSL_get_verify_result(ssl);
+                                    if (verifyError == X509_V_OK)
+                                    {
+                                        printf("    Certificate passed verification\n");
+                                    }
+                                    else
+                                    {
+                                        printf("    %s\n", X509_verify_cert_error_string(verifyError));
+                                    }
+
+                                    // Free X509 Certificate...
+                                    X509_free(x509Cert);
                                 }
 
-                                // Verify Certificate...
-                                printf("  Verify Certificate:\n");
-                                verifyError = SSL_get_verify_result(ssl);
-                                if (verifyError == X509_V_OK)
-                                {
-                                    printf("    Certificate passed verification\n");
-                                }
                                 else
                                 {
-                                    printf("    %s\n", X509_verify_cert_error_string(verifyError));
+                                    printf("    Unable to parse certificate\n");
                                 }
 
-                                // Free X509 Certificate...
-                                X509_free(x509Cert);
+                                printf_xml("  </certificate>\n");
                             }
-
-                            else {
-                                printf("    Unable to parse certificate\n");
-                            }
-
-                            printf_xml("  </certificate>\n");
 
                             // Free BIO
                             BIO_free(stdoutBIO);
@@ -3710,8 +3730,9 @@ int testHost(struct sslCheckOptions *options)
     if (status == true && (options->showCertificate == true || options->checkCertificate == true))
     {
         printf_xml(" <certificates>\n");
-        // Full certificate details (--show-certificates)
-        if (status == true && options->showCertificate == true)
+
+        // Full certificate details
+        if (status == true && (options->showCertificate == true || options->showCertificates == true))
         {
             status = showCertificate(options);
         }
@@ -3874,9 +3895,13 @@ int main(int argc, char *argv[])
             options->targets = argLoop;
         }
 
-        // Show certificate
+        // Show certificate (only one)
         else if (strcmp("--show-certificate", argv[argLoop]) == 0)
             options->showCertificate = true;
+
+        // Show certificates (all)
+        else if (strcmp("--show-certificates", argv[argLoop]) == 0)
+            options->showCertificates = true;
 
         // Don't check certificate strength
         else if (strcmp("--no-check-certificate", argv[argLoop]) == 0)
@@ -4239,6 +4264,7 @@ int main(int argc, char *argv[])
             printf("  %s--ipv6, -6%s           Only use IPv6\n", COL_GREEN, RESET);
             printf("\n");
             printf("  %s--show-certificate%s   Show full certificate information\n", COL_GREEN, RESET);
+            printf("  %s--show-certificates%s  Show chain full certificates information\n", COL_GREEN, RESET);
             printf("  %s--show-client-cas%s    Show trusted CAs for TLS client auth\n", COL_GREEN, RESET);
             printf("  %s--no-check-certificate%s  Don't warn about weak certificate algorithm or keys\n", COL_GREEN, RESET);
             printf("  %s--ocsp%s               Request OCSP response from server\n", COL_GREEN, RESET);

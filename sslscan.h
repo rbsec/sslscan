@@ -151,6 +151,7 @@ struct sslCheckOptions
     char addrstr[INET6_ADDRSTRLEN];
     int port;
     int showCertificate;
+    int showCertificates;
     int checkCertificate;
     int showTrustedCAs;
     int showClientCiphers;
