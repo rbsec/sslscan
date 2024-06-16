@@ -72,6 +72,7 @@ Key changes are as follows:
 * Check for supported key exchange groups.
 * Check for supported server signature algorithms.
 * Display IANA/RFC cipher names `--iana-names`
+* Display the full certifiate chain `--show-certificates`
 
 ### Building on Linux
 
