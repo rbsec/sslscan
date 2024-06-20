@@ -102,7 +102,7 @@ ifeq ($(OS), Darwin)
 	NUM_PROCS = `sysctl -n hw.ncpu`
 endif
 
-.PHONY: all sslscan clean install uninstall static opensslpull
+.PHONY: all sslscan clean realclean install uninstall static opensslpull
 
 all: sslscan
 	@echo
@@ -176,6 +176,8 @@ test:	static
 	./docker_test.sh
 
 clean:
-	if [ -d openssl ]; then ( rm -rf openssl ); fi;
 	rm -f sslscan
+
+realclean: clean
+	if [ -d openssl ]; then ( rm -rf openssl ); fi;
 	rm -f .openssl.is.fresh
