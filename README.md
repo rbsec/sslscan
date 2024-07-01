@@ -102,11 +102,11 @@ Ensure that you local Docker installation is functional, and the build the conta
 
 Or manually with:
 
-   docker build -t sslscan:sslscan .
+    docker build -t sslscan:sslscan .
 
 You can then run sslscan with:
 
-   docker run --rm -ti sslscan:sslscan --help
+    docker run --rm -ti sslscan:sslscan --help
 
 ### Building on Windows
 
