@@ -80,7 +80,7 @@ It is possible to ignore the OpenSSL system installation and ship your own versi
 
 To compile your own OpenSSL version, you'll probably need to install the OpenSSL build dependencies. The commands below can be used to do this on Debian.
 
-    apt install git zlib1g-dev make
+    apt install git zlib1g-dev make gcc
 
 Then run
 
@@ -88,7 +88,11 @@ Then run
 
 This will clone the [OpenSSL repository](https://github.com/openssl/openssl), and configure/compile/test OpenSSL prior to compiling `sslscan`.
 
-**Please note:** By default, OpenSSL is compiled with `gcc` without further customization. To compile with `clang`, run
+**Please note:** By default, OpenSSL is compiled with `gcc` without further customization. To compile with `clang`, install build dependencies using the commands below.
+
+    apt install git zlib1g-dev make clang
+
+Then run
 
     make static CC=clang
 
