@@ -16,7 +16,7 @@ from datetime import date
 # <https://www.iana.org/assignments/tls-parameters/tls-parameters.xml>.
 if len(sys.argv) != 2:
     print("\nUsage: %s tls_ciphers.csv\n\nHint: copy the TLS table in CSV format from <https://www.iana.org/assignments/tls-parameters/tls-parameters.xml>.\n" % sys.argv[0])
-    exit(0)
+    exit()
 
 csv_file = sys.argv[1]
 
@@ -99,4 +99,3 @@ with open(csv_file, 'r') as f:
         print('  {%s, "%s", %d, VALL, 0},' % (parsed_id, cipher_name, bits))
 
 print("};")
-exit 0
