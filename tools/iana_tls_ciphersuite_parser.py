@@ -58,6 +58,12 @@ with open(csv_file, 'r') as f:
             bits = 128
         elif 'ARIA_256' in cipher_name:
             bits = 256
+        elif 'AEGIS_128' in cipher_name:
+            bits = 128
+        elif 'AEGIS_256' in cipher_name:
+            bits = 256
+        elif 'SEED' in cipher_name:
+            bits = 128
         elif '3DES' in cipher_name:
             bits = 112
         elif 'DES40' in cipher_name:
