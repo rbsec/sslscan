@@ -78,11 +78,9 @@ Key changes are as follows:
 
 It is possible to ignore the OpenSSL system installation and ship your own version. Although this results in a more resource-heavy `sslscan` binary (file size, memory consumption, etc.), this allows some additional checks such as TLS compression.
 
-To compile your own OpenSSL version, you'll probably need to install the OpenSSL build dependencies. The commands below can be used to do this on Debian.  If you don't have them already, you will need to enable the `deb-src` repos in your apt config. sslscan was primarily developed on Debian, so if you are
-compiling on other distributions your mileage may vary.
+To compile your own OpenSSL version, you'll probably need to install the OpenSSL build dependencies. The commands below can be used to do this on Debian.
 
-    apt-get install build-essential git zlib1g-dev
-    apt-get build-dep openssl
+    apt install git zlib1g-dev make gcc
 
 Then run
 
@@ -90,7 +88,13 @@ Then run
 
 This will clone the [OpenSSL repository](https://github.com/openssl/openssl), and configure/compile/test OpenSSL prior to compiling `sslscan`.
 
-**Please note:** Out of the box, OpenSSL cannot compiled with `clang` without further customization (which is not done by the provided `Makefile`). For more information on this, see [Modifying Build Settings](http://wiki.openssl.org/index.php/Compilation_and_Installation#Modifying_Build_Settings) in the OpenSSL wiki.
+**Please note:** By default, OpenSSL is compiled with `gcc` without further customization. To compile with `clang`, install build dependencies using the commands below.
+
+    apt install git zlib1g-dev make clang
+
+Then run
+
+    make static CC=clang
 
 You can verify whether you have a statically linked OpenSSL version, by checking whether the version listed by `sslscan --version` has the `-static` suffix.
 
