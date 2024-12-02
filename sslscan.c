@@ -1720,6 +1720,14 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
     } else
       printf("%s  ", cleanSslMethod);
 
+    // Short authentication tag length
+    // These are flagged as 64 bit strength in newer versions of OpenSSL
+    // But in older versions they'll still show as 256 bits, so override that here
+    // See https://github.com/openssl/openssl/pull/16652
+    if (strstr(ciphername, "CCM8")) {
+        cipherbits = 64;
+    }
+
     if (cipherbits < 10)
       tempInt = 2;
     else if (cipherbits < 100)
@@ -1771,6 +1779,18 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
         }
         strength = "weak";
     } else if (strstr(ciphername, "RC4") || strstr(ciphername, "DES")) {
+        if (options->ianaNames) {
+            printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+        }
+        else {
+            printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        }
+        strength = "medium";
+    } else if (strstr(ciphername, "CCM8")) {
+        // Short authentication tag length
+        // These are flagged as 64 bit strength in newer versions of OpenSSL
+        // But in older versions they'll still show as 256 bits, so manually flag them here
+        // See https://github.com/openssl/openssl/pull/16652
         if (options->ianaNames) {
             printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
         }
