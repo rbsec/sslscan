@@ -138,7 +138,8 @@ uninstall:
 	rm -f $(DESTDIR)$(MAN1DIR)/sslscan.1
 
 .openssl.is.fresh: opensslpull
-	true
+	@true
+
 opensslpull:
 	upstream=`git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.0\.[0-9]+)' | sort -V | tail -n 1` ; \
 	if [ -d openssl -a -d openssl/.git ]; then \
