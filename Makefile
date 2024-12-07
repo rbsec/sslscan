@@ -138,12 +138,16 @@ uninstall:
 	rm -f $(DESTDIR)$(MAN1DIR)/sslscan.1
 
 .openssl.is.fresh: opensslpull
-	true
+	@true
+
 opensslpull:
+	upstream=`git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.0\.[0-9]+)' | sort -V | tail -n 1` ; \
 	if [ -d openssl -a -d openssl/.git ]; then \
-		cd ./openssl && git checkout `git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.0\.[0-9]+)' | sort --version-sort | tail -n 1` && git pull | grep -q "Already up to date." && [ -e ../.openssl.is.fresh ] || touch ../.openssl.is.fresh ; \
+		if [ "$$upstream" != "`cd ./openssl && git describe --exact-match --tags`" ]; then \
+			cd ./openssl && git fetch --depth 1 origin refs/tags/$$upstream:refs/tags/$$upstream && git checkout $$upstream && touch ../.openssl.is.fresh ; \
+		fi \
 	else \
-	git clone --depth 1 -b `git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.0\.[0-9]+)' | sort -V | tail -n 1` https://github.com/openssl/openssl ./openssl && cd ./openssl && touch ../.openssl.is.fresh ; \
+		git clone --depth 1 -b $$upstream https://github.com/openssl/openssl ./openssl && cd ./openssl && touch ../.openssl.is.fresh ; \
 	fi
 
 openssl/Makefile: .openssl.is.fresh
