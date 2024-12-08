@@ -4138,14 +4138,14 @@ int main(int argc, char *argv[])
     {
         case mode_version:
             printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, VERSION,
-                    SSLeay_version(SSLEAY_VERSION), RESET);
+                    OpenSSL_version(OPENSSL_VERSION), RESET);
             break;
 
         case mode_help:
             // Program version banner...
             printf("%s%s%s\n", COL_BLUE, program_banner, RESET);
             printf("%s\t\t%s\n\t\t%s\n%s\n\n", COL_BLUE, VERSION,
-                    SSLeay_version(SSLEAY_VERSION), RESET);
+                    OpenSSL_version(OPENSSL_VERSION), RESET);
             printf("%sCommand:%s\n", COL_BLUE, RESET);
             printf("  %s%s [options] [host:port | host]%s\n\n", COL_GREEN, argv[0], RESET);
             printf("%sOptions:%s\n", COL_BLUE, RESET);
@@ -4216,7 +4216,7 @@ int main(int argc, char *argv[])
         case mode_single:
         case mode_multiple:
             printf("Version: %s%s%s\n%s\n%s\n", COL_GREEN, VERSION, RESET,
-                    SSLeay_version(SSLEAY_VERSION), RESET);
+                    OpenSSL_version(OPENSSL_VERSION), RESET);
 
             ERR_load_crypto_strings();
 
