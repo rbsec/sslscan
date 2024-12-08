@@ -128,8 +128,8 @@
 
 #include "sslscan.h"
 
-#if OPENSSL_VERSION_NUMBER < 0x1010100fL
-#error "OpenSSL v1.1.1 or later is required!"
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#error "OpenSSL 3.0 or later is required!"
 #endif
 
 /* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
@@ -144,10 +144,6 @@ static int use_unsafe_renegotiation_flag = 0;
 
 /** Does output xml to stdout? */
 static int xml_to_stdout = 0;
-
-#if OPENSSL_VERSION_NUMBER < 0x1000100L
-unsigned long SSL_CIPHER_get_id(const SSL_CIPHER* cipher) { return cipher->id; }
-#endif
 
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
 
@@ -989,11 +985,9 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                     // Create SSL object...
                     ssl = new_SSL(options->ctx);
 
-#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                     // Make sure we can connect to insecure servers
                     // OpenSSL is going to change the default at a later date
                     SSL_set_options(ssl, SSL_OP_LEGACY_SERVER_CONNECT);
-#endif
 
 #ifdef SSL_OP_NO_COMPRESSION
                     // Make sure to clear the no compression flag
@@ -1008,10 +1002,8 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
                         // Connect SSL and BIO
                         SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // This enables TLS SNI
                         SSL_set_tlsext_host_name(ssl, options->sniname);
-#endif
 
                         // Connect SSL over socket
                         SSL_connect(ssl);
@@ -1082,7 +1074,6 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     return status;
 }
 
-#ifdef SSL_MODE_SEND_FALLBACK_SCSV
 // Check for TLS_FALLBACK_SCSV
 int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
 {
@@ -1128,11 +1119,9 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                     // Create SSL object...
                     ssl = new_SSL(options->ctx);
 
-#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                     // Make sure we can connect to insecure servers
                     // OpenSSL is going to change the default at a later date
                     SSL_set_options(ssl, SSL_OP_LEGACY_SERVER_CONNECT);
-#endif
 
 #ifdef SSL_OP_NO_COMPRESSION
                     // Make sure to clear the no compression flag
@@ -1147,10 +1136,8 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
                         // Connect SSL and BIO
                         SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // This enables TLS SNI
                         SSL_set_tlsext_host_name(ssl, options->sniname);
-#endif
 
                         // Connect SSL over socket
                         connStatus = SSL_connect(ssl);
@@ -1256,7 +1243,6 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
     }
     return status;
 }
-#endif
 
 
 // Check if the server supports renegotiation
@@ -1294,11 +1280,9 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                     // Create SSL object...
                     ssl = new_SSL(options->ctx);
 
-#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                     // Make sure we can connect to insecure servers
                     // OpenSSL is going to change the default at a later date
                     SSL_set_options(ssl, SSL_OP_LEGACY_SERVER_CONNECT);
-#endif
 
                    if (ssl != NULL)
                     {
@@ -1308,7 +1292,6 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                         // Connect SSL and BIO
                         SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // This enables TLS SNI
                         // Based on http://does-not-exist.org/mail-archives/mutt-dev/msg13045.html
                         // TLS Virtual-hosting requires that the server present the correct
@@ -1322,7 +1305,6 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
                         SSL_set_tlsext_host_name(ssl, options->sniname);
-#endif
 
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
@@ -1344,7 +1326,6 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                         if (cipherStatus == 1)
                         {
 
-#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                             // SSL_get_secure_renegotiation_support() appeared first in OpenSSL 0.9.8m
                             printf_verbose("Attempting secure_renegotiation_support()\n");
                             renOut->secure = SSL_get_secure_renegotiation_support(ssl);
@@ -1357,7 +1338,6 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                             }
                             else
                             {
-#endif
                                 // We can't assume that just because the secure renegotiation
                                 // support failed the server doesn't support insecure renegotiations
 
@@ -1390,9 +1370,7 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
                                     status = false;
                                     renOut->secure = false;
                                 }
-#if ( OPENSSL_VERSION_NUMBER > 0x009080cfL )
                             }
-#endif
                             // Disconnect SSL over socket
                             SSL_shutdown(ssl);
                         }
@@ -1447,12 +1425,10 @@ const char* printableSslMethod(const SSL_METHOD *sslMethod)
 {
     if (sslMethod == TLSv1_client_method())
         return "TLSv1.0";
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
     if (sslMethod == TLSv1_1_client_method())
         return "TLSv1.1";
     if (sslMethod == TLSv1_2_client_method())
         return "TLSv1.2";
-#endif
     if (sslMethod == TLSv1_3_client_method())
         return "TLSv1.3";
     return "unknown SSL_METHOD";
@@ -1479,7 +1455,6 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         {
             hello[10] = 0x01;
         }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if (sslMethod == TLSv1_1_client_method())
         {
             hello[10] = 0x02;
@@ -1488,7 +1463,6 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         {
             hello[10] = 0x03;
         }
-#endif
         else if (sslMethod == TLSv1_3_client_method())
         {
             hello[10] = 0x03;
@@ -1504,7 +1478,6 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         {
             hb[2] = 0x01;
         }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if (sslMethod == TLSv1_1_client_method())
         {
             hb[2] = 0x02;
@@ -1513,7 +1486,6 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
         {
             hb[2] = 0x03;
         }
-#endif
         else if (sslMethod == TLSv1_3_client_method())
         {
             hb[2] = 0x03;
@@ -1589,7 +1561,7 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 
 int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
 {
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(LIBRESSL_VERSION_NUMBER)
+#ifndef LIBRESSL_VERSION_NUMBER
     EVP_PKEY *key;
     if (!SSL_get_server_tmp_key(s, &key))
         return 1;
@@ -1651,8 +1623,9 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
     }
     EVP_PKEY_free(key);
     return 1;
-#endif
+#else
     return 0;
+#endif
 }
 
 int setCipherSuite(struct sslCheckOptions *options, const SSL_METHOD *sslMethod, const char *str)
@@ -2042,7 +2015,6 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                         // Connect SSL and BIO
                         SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // Based on http://does-not-exist.org/mail-archives/mutt-dev/msg13045.html
                         // TLS Virtual-hosting requires that the server present the correct
                         // certificate; to do this, the ServerNameIndication TLS extension is used.
@@ -2055,7 +2027,6 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
                         SSL_set_tlsext_host_name (ssl, options->sniname);
-#endif
 
                         // Against some servers, this is required for a successful SSL_connect(), below.
                         SSL_set_options(ssl, SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
@@ -2454,7 +2425,6 @@ int ocspRequest(struct sslCheckOptions *options)
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
         }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if( options->sslVersion == tls_v11) {
             printf_verbose("sslMethod = TLSv1_1_method()");
             sslMethod = TLSv1_1_method();
@@ -2463,7 +2433,6 @@ int ocspRequest(struct sslCheckOptions *options)
             printf_verbose("sslMethod = TLSv1_2_method()");
             sslMethod = TLSv1_2_method();
         }
-#endif
         else if( options->sslVersion == tls_v13) {
             printf_verbose("sslMethod = TLSv1_3_method()");
             sslMethod = TLSv1_3_method();
@@ -2494,7 +2463,6 @@ int ocspRequest(struct sslCheckOptions *options)
                         // Connect SSL and BIO
                         SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // Based on http://does-not-exist.org/mail-archives/mutt-dev/msg13045.html
                         // TLS Virtual-hosting requires that the server present the correct
                         // certificate; to do this, the ServerNameIndication TLS extension is used.
@@ -2507,11 +2475,10 @@ int ocspRequest(struct sslCheckOptions *options)
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
                         SSL_set_tlsext_host_name (ssl, options->sniname);
-#endif
-						SSL_set_tlsext_status_type(ssl, TLSEXT_STATUSTYPE_ocsp);
-						SSL_CTX_set_tlsext_status_cb(options->ctx, ocsp_resp_cb);
+			SSL_set_tlsext_status_type(ssl, TLSEXT_STATUSTYPE_ocsp);
+			SSL_CTX_set_tlsext_status_cb(options->ctx, ocsp_resp_cb);
                         
-						// Connect SSL over socket
+			// Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
                         if (cipherStatus == 1)
                         {
@@ -2765,7 +2732,6 @@ int showCertificate(struct sslCheckOptions *options)
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
         }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if( options->sslVersion == tls_v11) {
             printf_verbose("sslMethod = TLSv1_1_method()");
             sslMethod = TLSv1_1_method();
@@ -2778,7 +2744,6 @@ int showCertificate(struct sslCheckOptions *options)
             printf_verbose("sslMethod = TLSv1_3_method()");
             sslMethod = TLSv1_3_method();
         }
-#endif
         else {
             printf_verbose("sslMethod = TLS_method()\n");
             sslMethod = TLS_method();
@@ -2804,7 +2769,6 @@ int showCertificate(struct sslCheckOptions *options)
                         // Connect SSL and BIO
                         SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // Based on http://does-not-exist.org/mail-archives/mutt-dev/msg13045.html
                         // TLS Virtual-hosting requires that the server present the correct
                         // certificate; to do this, the ServerNameIndication TLS extension is used.
@@ -2817,7 +2781,6 @@ int showCertificate(struct sslCheckOptions *options)
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
                         SSL_set_tlsext_host_name (ssl, options->sniname);
-#endif
 
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
@@ -3235,7 +3198,6 @@ int showTrustedCAs(struct sslCheckOptions *options)
             printf_verbose("sslMethod = SSLv23_method()");
             sslMethod = SSLv23_method();
         }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         else if( options->sslVersion == tls_v11) {
             printf_verbose("sslMethod = TLSv1_1_method()");
             sslMethod = TLSv1_1_method();
@@ -3248,7 +3210,6 @@ int showTrustedCAs(struct sslCheckOptions *options)
             printf_verbose("sslMethod = TLSv1_3_method()");
             sslMethod = TLSv1_3_method();
         }
-#endif
         else {
             printf_verbose("sslMethod = TLS_method()\n");
             sslMethod = TLS_method();
@@ -3274,7 +3235,6 @@ int showTrustedCAs(struct sslCheckOptions *options)
                         // Connect SSL and BIO
                         SSL_set_bio(ssl, cipherConnectionBio, cipherConnectionBio);
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
                         // Based on http://does-not-exist.org/mail-archives/mutt-dev/msg13045.html
                         // TLS Virtual-hosting requires that the server present the correct
                         // certificate; to do this, the ServerNameIndication TLS extension is used.
@@ -3287,7 +3247,6 @@ int showTrustedCAs(struct sslCheckOptions *options)
                         // has worked fine in other projects to which the contributor has added it,
                         // or HTTP usage.
                         SSL_set_tlsext_host_name (ssl, options->sniname);
-#endif
 
                         // Connect SSL over socket
                         cipherStatus = SSL_connect(ssl);
@@ -3593,32 +3552,21 @@ int testHost(struct sslCheckOptions *options)
         switch (options->sslVersion)
         {
             case ssl_all:
-                populateCipherList(options, TLSv1_3_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-                populateCipherList(options, TLSv1_2_client_method());
-                populateCipherList(options, TLSv1_1_client_method());
-#endif
-                populateCipherList(options, TLSv1_client_method());
-                break;
             case tls_all:
                 populateCipherList(options, TLSv1_3_client_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
                 populateCipherList(options, TLSv1_2_client_method());
                 populateCipherList(options, TLSv1_1_client_method());
-#endif
                 populateCipherList(options, TLSv1_client_method());
                 break;
             case tls_v13:
                 populateCipherList(options, TLSv1_3_client_method());
                 break;
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
             case tls_v12:
                 populateCipherList(options, TLSv1_2_client_method());
                 break;
             case tls_v11:
                 populateCipherList(options, TLSv1_1_client_method());
                 break;
-#endif
             case tls_v10:
                 populateCipherList(options, TLSv1_client_method());
                 break;
@@ -3642,12 +3590,7 @@ int testHost(struct sslCheckOptions *options)
     if (status == true && options->fallback )
     {
         printf("  %sTLS Fallback SCSV:%s\n", COL_BLUE, RESET);
-#ifdef SSL_MODE_SEND_FALLBACK_SCSV
         testFallback(options, NULL);
-#else
-        printf("%sOpenSSL version does not support SCSV fallback%s\n\n", COL_RED, RESET);
-
-#endif
     }
     if (status == true && options->reneg )
     {
@@ -3664,7 +3607,6 @@ int testHost(struct sslCheckOptions *options)
     if (status == true && options->heartbleed )
     {
         printf("  %sHeartbleed:%s\n", COL_BLUE, RESET);
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
         if ((options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v13) && options->tls13_supported)
         {
             printf("TLSv1.3 ");
@@ -3680,7 +3622,6 @@ int testHost(struct sslCheckOptions *options)
             printf("TLSv1.1 ");
             status = testHeartbleed(options, TLSv1_1_client_method());
         }
-#endif
         if ((options->sslVersion == ssl_all || options->sslVersion == tls_all || options->sslVersion == tls_v10) && options->tls10_supported)
         {
             printf("TLSv1.0 ");
@@ -3697,9 +3638,7 @@ int testHost(struct sslCheckOptions *options)
 	if (status == true && options->ocspStatus == true)
 	{
 		printf("  %sOCSP Stapling Request:%s\n", COL_BLUE, RESET);
-#if OPENSSL_VERSION_NUMBER > 0x00908000L && !defined(OPENSSL_NO_TLSEXT)
 		status = ocspRequest(options);
-#endif
 	}
 
     if (options->ciphersuites)
@@ -3959,11 +3898,9 @@ int main(int argc, char *argv[])
         else if (strcmp("--verbose", argv[argLoop]) == 0)
             options->verbose = true;
 
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
         // Cipher details (curve names and EDH key lengths)
         else if (strcmp("--no-cipher-details", argv[argLoop]) == 0)
             options->cipher_details = false;
-#endif
 
         // Disable coloured output
         else if ((strcmp("--no-colour", argv[argLoop]) == 0) || (strcmp("--no-color", argv[argLoop]) == 0))
@@ -4068,7 +4005,7 @@ int main(int argc, char *argv[])
         // TLS v1 only...
         else if (strcmp("--tls10", argv[argLoop]) == 0)
             options->sslVersion = tls_v10;
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+
         // TLS v11 only...
         else if (strcmp("--tls11", argv[argLoop]) == 0)
             options->sslVersion = tls_v11;
@@ -4076,10 +4013,11 @@ int main(int argc, char *argv[])
         // TLS v12 only...
         else if (strcmp("--tls12", argv[argLoop]) == 0)
             options->sslVersion = tls_v12;
+
         // TLS v13 only...
         else if (strcmp("--tls13", argv[argLoop]) == 0)
             options->sslVersion = tls_v13;
-#endif
+
         // TLS (all versions)...
         else if (strcmp("--tlsall", argv[argLoop]) == 0)
             options->sslVersion = tls_all;
@@ -4261,12 +4199,6 @@ int main(int argc, char *argv[])
         case mode_version:
             printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, VERSION,
                     SSLeay_version(SSLEAY_VERSION), RESET);
-#if OPENSSL_VERSION_NUMBER < 0x10001000L
-            printf("\t\t%sOpenSSL version does not support TLSv1.1%s\n", COL_RED, RESET);
-            printf("\t\t%sTLSv1.1 ciphers will not be detected%s\n", COL_RED, RESET);
-            printf("\t\t%sOpenSSL version does not support TLSv1.2%s\n", COL_RED, RESET);
-            printf("\t\t%sTLSv1.2 ciphers will not be detected%s\n", COL_RED, RESET);
-#endif
             break;
 
         case mode_help:
@@ -4296,25 +4228,19 @@ int main(int argc, char *argv[])
             printf("  %s--ssl2%s               Only check if SSLv2 is enabled\n", COL_GREEN, RESET);
             printf("  %s--ssl3%s               Only check if SSLv3 is enabled\n", COL_GREEN, RESET);
             printf("  %s--tls10%s              Only check TLSv1.0 ciphers\n", COL_GREEN, RESET);
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
             printf("  %s--tls11%s              Only check TLSv1.1 ciphers\n", COL_GREEN, RESET);
             printf("  %s--tls12%s              Only check TLSv1.2 ciphers\n", COL_GREEN, RESET);
             printf("  %s--tls13%s              Only check TLSv1.3 ciphers\n", COL_GREEN, RESET);
-#endif
             printf("  %s--tlsall%s             Only check TLS ciphers (all versions)\n", COL_GREEN, RESET);
             printf("  %s--show-ciphers%s       Show supported client ciphers\n", COL_GREEN, RESET);
             printf("  %s--show-cipher-ids%s    Show cipher ids\n", COL_GREEN, RESET);
             printf("  %s--iana-names%s         Use IANA/RFC cipher names rather than OpenSSL ones\n", COL_GREEN, RESET);
             printf("  %s--show-times%s         Show handhake times in milliseconds\n", COL_GREEN, RESET);
             printf("\n");
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
             printf("  %s--no-cipher-details%s  Disable EC curve names and EDH/RSA key lengths output\n", COL_GREEN, RESET);
-#endif
             printf("  %s--no-ciphersuites%s    Do not check for supported ciphersuites\n", COL_GREEN, RESET);
             printf("  %s--no-compression%s     Do not check for TLS compression (CRIME)\n", COL_GREEN, RESET);
-#ifdef SSL_MODE_SEND_FALLBACK_SCSV
             printf("  %s--no-fallback%s        Do not check for TLS Fallback SCSV\n", COL_GREEN, RESET);
-#endif
             printf("  %s--no-groups%s          Do not enumerate key exchange groups\n", COL_GREEN, RESET);
             printf("  %s--no-heartbleed%s      Do not check for OpenSSL Heartbleed (CVE-2014-0160)\n", COL_GREEN, RESET);
             printf("  %s--no-renegotiation%s   Do not check for TLS renegotiation\n", COL_GREEN, RESET);
@@ -4351,14 +4277,7 @@ int main(int argc, char *argv[])
         case mode_multiple:
             printf("Version: %s%s%s\n%s\n%s\n", COL_GREEN, VERSION, RESET,
                     SSLeay_version(SSLEAY_VERSION), RESET);
-#if OPENSSL_VERSION_NUMBER < 0x10001000L
-            printf("\t\t%sOpenSSL version does not support TLSv1.1%s\n", COL_RED, RESET);
-            printf("\t\t%sTLSv1.1 ciphers will not be detected%s\n", COL_RED, RESET);
-            printf("\t\t%sOpenSSL version does not support TLSv1.2%s\n", COL_RED, RESET);
-            printf("\t\t%sTLSv1.2 ciphers will not be detected%s\n", COL_RED, RESET);
-#endif
 
-            //SSLeay_add_all_algorithms();
             ERR_load_crypto_strings();
 
             // Do the testing...
