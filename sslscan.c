@@ -132,16 +132,6 @@
 #error "OpenSSL 3.0 or later is required!"
 #endif
 
-/* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
- * many versions and releases of OpenSSL. */
-/** Does the run-time openssl version look like we need
- * SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION? */
-static int use_unsafe_renegotiation_op = 0;
-
-/** Does the run-time openssl version look like we need
- * SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION? */
-static int use_unsafe_renegotiation_flag = 0;
-
 /** Does output xml to stdout? */
 static int xml_to_stdout = 0;
 
@@ -916,44 +906,6 @@ int freeRenegotiationOutput( struct renegotiationOutput *myRenOut )
     return true;
 }
 
-void tls_reneg_init(struct sslCheckOptions *options)
-{
-    /* Borrowed from tortls.c to dance with OpenSSL on many platforms, with
-     * many versions and release of OpenSSL. */
-    SSL_library_init();
-    SSL_load_error_strings();
-
-    long version = SSLeay();
-    if (version >= 0x009080c0L && version < 0x009080d0L) {
-        printf_verbose("OpenSSL %s looks like version 0.9.8l; I will try SSL3_FLAGS to enable renegotiation.\n",
-            SSLeay_version(SSLEAY_VERSION));
-        use_unsafe_renegotiation_flag = 1;
-        use_unsafe_renegotiation_op = 1;
-    } else if (version >= 0x009080d0L) {
-        printf_verbose("OpenSSL %s looks like version 0.9.8m or later; "
-            "I will try SSL_OP to enable renegotiation\n",
-        SSLeay_version(SSLEAY_VERSION));
-        use_unsafe_renegotiation_op = 1;
-    } else if (version < 0x009080c0L) {
-        printf_verbose("OpenSSL %s [%lx] looks like it's older than "
-            "0.9.8l, but some vendors have backported 0.9.8l's "
-            "renegotiation code to earlier versions, and some have "
-            "backported the code from 0.9.8m or 0.9.8n.  I'll set both "
-            "SSL3_FLAGS and SSL_OP just to be safe.\n",
-            SSLeay_version(SSLEAY_VERSION), version);
-        use_unsafe_renegotiation_flag = 1;
-        use_unsafe_renegotiation_op = 1;
-    } else {
-        printf_verbose("OpenSSL %s has version %lx\n",
-            SSLeay_version(SSLEAY_VERSION), version);
-    }
-
-#ifdef SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
-  SSL_CTX_set_options(options->ctx,
-                      SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
-#endif
-}
-
 // Check if the server supports compression
 int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 {
@@ -970,7 +922,6 @@ int testCompression(struct sslCheckOptions *options, const SSL_METHOD *sslMethod
     {
         // Setup Context Object...
         options->ctx = new_CTX(sslMethod);
-        tls_reneg_init(options);
         if (options->ctx != NULL)
         {
             if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
@@ -1100,7 +1051,6 @@ int testFallback(struct sslCheckOptions *options,  const SSL_METHOD *sslMethod)
     {
         // Setup Context Object...
         options->ctx = new_CTX(sslMethod);
-        tls_reneg_init(options);
         if (options->ctx != NULL)
         {
             if (downgraded)
@@ -1265,7 +1215,6 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
         // Setup Context Object...
         options->ctx = new_CTX(sslMethod);
-        tls_reneg_init(options);
         if (options->ctx != NULL)
         {
             if (SSL_CTX_set_cipher_list(options->ctx, CIPHERSUITE_LIST_ALL) != 0)
@@ -1311,17 +1260,8 @@ int testRenegotiation(struct sslCheckOptions *options, const SSL_METHOD *sslMeth
 
                       /* Yes, we know what we are doing here.  No, we do not treat a renegotiation
                        * as authenticating any earlier-received data. */
-/*                      if (use_unsafe_renegotiation_flag) {
-                        printf_verbose("use_unsafe_renegotiation_flag\n");
-			SSL_CTX_set_options(ssl,SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
-			SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION??
-                      } */
-                      if (use_unsafe_renegotiation_op) {
-                        printf_verbose("use_unsafe_renegotiation_op\n");
                         SSL_set_options(ssl,
                                         SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
-                      }
-
 
                         if (cipherStatus == 1)
                         {
