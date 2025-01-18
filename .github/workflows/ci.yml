@@ -10,7 +10,7 @@ jobs:
       matrix:
         cc: [clang, gcc]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: build with ${{ matrix.cc }}
         run: |
           make sslscan
@@ -20,7 +20,7 @@ jobs:
   build_mingw:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: install mingw-w64
         run: |
           sudo apt-get update -qq
