@@ -794,16 +794,8 @@ int loadCerts(struct sslCheckOptions *options)
             {
                 if (!SSL_CTX_use_PrivateKey_file(options->ctx, options->privateKeyFile, SSL_FILETYPE_ASN1))
                 {
-                    // Why would the more specific functions succeed if the generic functions failed?
-                    // -- I'm guessing that the original author was hopeful? - io
-                    if (!SSL_CTX_use_RSAPrivateKey_file(options->ctx, options->privateKeyFile, SSL_FILETYPE_PEM))
-                    {
-                        if (!SSL_CTX_use_RSAPrivateKey_file(options->ctx, options->privateKeyFile, SSL_FILETYPE_ASN1))
-                        {
-                            printf("%s    Could not configure private key.%s\n", COL_RED, RESET);
-                            status = 0;
-                        }
-                    }
+                    printf("%s    Could not configure private key.%s\n", COL_RED, RESET);
+                    status = 0;
                 }
             }
         }
