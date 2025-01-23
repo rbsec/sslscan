@@ -1977,7 +1977,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                         }
 
                         // Get Certificate...
-                        x509Cert = SSL_get_peer_certificate(ssl);
+                        x509Cert = SSL_get1_peer_certificate(ssl);
                         if (x509Cert != NULL)
                         {
                             printf("\n  %sSSL Certificate:%s\n", COL_BLUE, RESET);
@@ -2134,7 +2134,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                 {
                                     e = X509_NAME_get_entry(subj, cnindex);
                                     d = X509_NAME_ENTRY_get_data(e);
-                                    subject = (char *) ASN1_STRING_data(d);
+                                    subject = (const char *) ASN1_STRING_get0_data(d);
                                     printf("Subject:  %s\n", subject);
                                     printf_xml("   <subject><![CDATA[%s]]></subject>\n", subject);
                                 }
@@ -2196,7 +2196,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                 {
                                     e = X509_NAME_get_entry(subj, cnindex);
                                     d = X509_NAME_ENTRY_get_data(e);
-                                    issuer = (char *) ASN1_STRING_data(d);
+                                    issuer = (const char *) ASN1_STRING_get0_data(d);
 
                                     // If issuer is same as hostname we scanned or is *, flag as self-signed
                                     if (
@@ -2225,7 +2225,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                             ptime = NULL;
 
                             printf("\nNot valid before: ");
-                            timediff = X509_cmp_time(X509_get_notBefore(x509Cert), ptime);
+                            timediff = X509_cmp_time(X509_get0_notBefore(x509Cert), ptime);
                             // Certificate isn't valid yet
                             if (timediff > 0)
                             {
@@ -2235,12 +2235,12 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                             {
                                 printf("%s", COL_GREEN);
                             }
-                            ASN1_TIME_print(stdoutBIO, X509_get_notBefore(x509Cert));
+                            ASN1_TIME_print(stdoutBIO, X509_get0_notBefore(x509Cert));
                             printf("%s", RESET);
 
                             if (options->xmlOutput) {
                                 printf_xml("   <not-valid-before>");
-                                ASN1_TIME_print(fileBIO, X509_get_notBefore(x509Cert));
+                                ASN1_TIME_print(fileBIO, X509_get0_notBefore(x509Cert));
                                 printf_xml("</not-valid-before>\n");
                                 if (timediff > 0)
                                 {
@@ -2253,7 +2253,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                             }
 
                             printf("\nNot valid after:  ");
-                            timediff = X509_cmp_time(X509_get_notAfter(x509Cert), ptime);
+                            timediff = X509_cmp_time(X509_get0_notAfter(x509Cert), ptime);
                             // Certificate has expired
                             if (timediff < 0)
                             {
@@ -2263,11 +2263,11 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                             {
                                 printf("%s", COL_GREEN);
                             }
-                            ASN1_TIME_print(stdoutBIO, X509_get_notAfter(x509Cert));
+                            ASN1_TIME_print(stdoutBIO, X509_get0_notAfter(x509Cert));
                             printf("%s", RESET);
                             if (options->xmlOutput) {
                                 printf_xml("   <not-valid-after>");
-                                ASN1_TIME_print(fileBIO, X509_get_notAfter(x509Cert));
+                                ASN1_TIME_print(fileBIO, X509_get0_notAfter(x509Cert));
                                 printf_xml("</not-valid-after>\n");
                                 if (timediff < 0)
                                 {
@@ -2738,7 +2738,7 @@ int showCertificate(struct sslCheckOptions *options)
                             }
                             else
                             {                                
-                                X509 *peerCertificate = SSL_get_peer_certificate(ssl);
+                                X509 *peerCertificate = SSL_get1_peer_certificate(ssl);
                                 certificatesChain = sk_X509_new_null();
                                 sk_X509_push(certificatesChain, peerCertificate);
                             }
@@ -2876,20 +2876,20 @@ int showCertificate(struct sslCheckOptions *options)
                                     if (!(X509_FLAG_COMPAT & X509_FLAG_NO_VALIDITY))
                                     {
                                         printf("    Not valid before: ");
-                                        ASN1_TIME_print(stdoutBIO, X509_get_notBefore(x509Cert));
+                                        ASN1_TIME_print(stdoutBIO, X509_get0_notBefore(x509Cert));
                                         if (options->xmlOutput)
                                         {
                                             printf_xml("   <not-valid-before>");
-                                            ASN1_TIME_print(fileBIO, X509_get_notBefore(x509Cert));
+                                            ASN1_TIME_print(fileBIO, X509_get0_notBefore(x509Cert));
                                             printf_xml("</not-valid-before>\n");
                                         }
                                         printf("\n    Not valid after: ");
-                                        ASN1_TIME_print(stdoutBIO, X509_get_notAfter(x509Cert));
+                                        ASN1_TIME_print(stdoutBIO, X509_get0_notAfter(x509Cert));
                                         printf("\n");
                                         if (options->xmlOutput)
                                         {
                                             printf_xml("   <not-valid-after>");
-                                            ASN1_TIME_print(fileBIO, X509_get_notAfter(x509Cert));
+                                            ASN1_TIME_print(fileBIO, X509_get0_notAfter(x509Cert));
                                             printf_xml("</not-valid-after>\n");
                                         }
                                     }
@@ -3770,7 +3770,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 #endif
-    SSL_library_init();
 
     // Get program parameters
     for (argLoop = 1; argLoop < argc; argLoop++)
@@ -4209,8 +4208,6 @@ int main(int argc, char *argv[])
         case mode_multiple:
             printf("Version: %s%s%s\n%s\n%s\n", COL_GREEN, VERSION, RESET,
                     OpenSSL_version(OPENSSL_VERSION), RESET);
-
-            ERR_load_crypto_strings();
 
             // Do the testing...
             if (mode == mode_single)
