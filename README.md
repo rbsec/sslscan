@@ -120,8 +120,8 @@ Note that sslscan was originally written for Linux, and has not been extensively
 
 Pre-build cross-compiled Windows binaries are available on the [GitHub Releases Page](https://github.com/rbsec/sslscan/releases).
 
-### Building on OS X
-There is experimental support for statically building on OS X, however this should be considered unsupported. You may need to install any dependencies required to compile OpenSSL from source on OS X. Once you have, just run:
+### Building on macOS (formerly named OS X)
+There is experimental support for statically building on macOS (formerly named OS X), however this should be considered unsupported. You may need to install any dependencies required to compile OpenSSL from source on macOS (formerly named OS X). Once you have, just run:
 
     make static
 
