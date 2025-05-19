@@ -141,7 +141,7 @@ uninstall:
 	@true
 
 opensslpull:
-	upstream=`git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.0\.[0-9]+)' | sort -V | tail -n 1` ; \
+	upstream=`git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.5\.[0-9]+)' | sort -V | tail -n 1` ; \
 	if [ -d openssl -a -d openssl/.git ]; then \
 		if [ "$$upstream" != "`cd ./openssl && git describe --exact-match --tags`" ]; then \
 			cd ./openssl && git fetch --depth 1 origin refs/tags/$$upstream:refs/tags/$$upstream && git checkout $$upstream && touch ../.openssl.is.fresh ; \

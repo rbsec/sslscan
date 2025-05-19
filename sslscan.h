@@ -339,6 +339,7 @@ const char *printableSslMethod(const SSL_METHOD *);
 ssize_t sendString(int, const char[]);
 int ssl_print_tmp_key(struct sslCheckOptions *, SSL *s);
 void tlsExtensionAddDefaultKeyShare(bs *tls_extensions);
+void tlsExtensionAddSupportedGroups(unsigned int tls_version, bs *tls_extensions);
 void tlsExtensionAddTLSv1_3(bs *tls_extensions);
 void tlsExtensionUpdateLength(bs *tls_extensions);
 int tcpConnect(struct sslCheckOptions *);

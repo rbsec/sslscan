@@ -4909,6 +4909,49 @@ err:
 }
 
 
+/* Generates a MLKEM encapsulation key and appends it to the string.  variant field must be 512, 768, or 1024. */
+int bs_append_mlkem(unsigned int variant, bs *b) {
+
+  char *mlkem_str = NULL;
+  if (variant == 512)
+    mlkem_str = "ML-KEM-512";
+  else if (variant == 768)
+    mlkem_str = "ML-KEM-768";
+  else if (variant == 1024)
+    mlkem_str = "ML-KEM-1024";
+  else {
+    fprintf(stderr, "Unimplemented MLKEM variant: %u\n", variant);
+    return 0;
+  }
+
+  /* Generate the key. */
+  EVP_PKEY *mlkem_key = EVP_PKEY_Q_keygen(NULL, NULL, mlkem_str);
+  if (!mlkem_key) {
+    fprintf(stderr, "Failed to generate MLKEM%u key.\n", variant);
+    return 0;
+  }
+
+  /* Extract the encapsulation key. */
+  unsigned char *encap_key = NULL;
+  size_t encap_key_len = EVP_PKEY_get1_encoded_public_key(mlkem_key, &encap_key);
+
+  if ((encap_key_len == 0) || (encap_key == NULL)) {
+    fprintf(stderr, "Failed to extract encapsulation key for MLKEM%u.\n", variant);
+    EVP_PKEY_free(mlkem_key);
+    return 0;
+  }
+
+  /* Append it to the string. */
+  bs_append_bytes(b, encap_key, encap_key_len);
+
+  /* Free the keys. */
+  EVP_PKEY_free(mlkem_key);
+  OPENSSL_free(encap_key);
+
+  return 1;
+}
+
+
 /* Internal function.  Use  bs_append_x25519_pubkey() and bs_append_x448_pubkey() instead. */
 void __bs_append_xstar_pubkey(bs *b, unsigned int gen_x25519) {
   unsigned char public_key[64] = {0};  /* X25519 requires 32 bytes minimum, and X448 requires 56 bytes minimum. */
@@ -5017,56 +5060,21 @@ unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsig
 
 
   tls_extensions = makeTLSExtensions(options, 1);
-  if (tls_version == TLSv1_3) {
-    /* Extension: supported_groups */
-    bs_append_bytes(tls_extensions, (unsigned char []) {
-      0x00, 0x0a, // Extension: supported_groups (10)
-      0x00, 0x16, // Extension Length (22)
-      0x00, 0x14, // Supported Groups List Length (20)
-      0x00, 0x17, // secp256r1
-      0x00, 0x19, // secp521r1
-      0x00, 0x18, // secp384r1
-      0x00, 0x1d, // X25519
-      0x00, 0x1e, // X448
-      0x01, 0x00, // FFDHE2048
-      0x01, 0x01, // FFDHE3072
-      0x01, 0x02, // FFDHE4096
-      0x01, 0x03, // FFDHE6144
-      0x01, 0x04, // FFDHE8192
-    }, 26);
 
-    /* Add key share for X25519. */
+  /* Add the supported_groups extension. */
+  tlsExtensionAddSupportedGroups(tls_version, tls_extensions);
+
+  if (tls_version == TLSv1_3) {
+    /* Add key share for X25519 & X25519MLKEM768. */
     tlsExtensionAddDefaultKeyShare(tls_extensions);
 
     /* Explicitly mark that this is a TLSv1.3 Client Hello. */
     tlsExtensionAddTLSv1_3(tls_extensions);
-
-    /* Update the length of the extensions. */
-    tlsExtensionUpdateLength(tls_extensions);
-  } else {
-    /* Extension: supported_groups */
-    bs_append_bytes(tls_extensions, (unsigned char []) {
-      0x00, 0x0a, // Extension: supported_groups (10)
-      0x00, 0x1c, // Extension Length (28)
-      0x00, 0x1a, // Supported Groups List Length (26)
-      0x00, 0x17, // secp256r1
-      0x00, 0x19, // secp521r1
-      0x00, 0x1c, // brainpoolP512r1
-      0x00, 0x1b, // brainpoolP384r1
-      0x00, 0x18, // secp384r1
-      0x00, 0x1a, // brainpoolP256r1
-      0x00, 0x16, // secp256k1
-      0x00, 0x0e, // sect571r1
-      0x00, 0x0d, // sect571k1
-      0x00, 0x0b, // sect409k1
-      0x00, 0x0c, // sect409r1
-      0x00, 0x09, // sect283k1
-      0x00, 0x0a, // sect283r1
-    }, 32);
-
-    /* Update the length of the extensions. */
-    tlsExtensionUpdateLength(tls_extensions);
   }
+
+  /* Update the length of the extensions. */
+  tlsExtensionUpdateLength(tls_extensions);
+
 
   ciphersuite_list = makeCiphersuiteListAll(tls_version);
   client_hello = makeClientHello(options, tls_version, ciphersuite_list, tls_extensions);
@@ -5314,14 +5322,69 @@ void tlsExtensionAddDefaultKeyShare(bs *tls_extensions) {
 
   bs_append_bytes(tls_extensions, (unsigned char []) {
     0x00, 0x33, // key_share (51)
-    0x00, 0x26, // Length (38)
-    0x00, 0x24, // Key Share List Length (36)
+    0x04, 0xea, // Length (1258)
+    0x04, 0xe8, // Key Share List Length (1256)
     0x00, 0x1d, // Group ID (X25519)
     0x00, 0x20, // Key Exchange Length (32)
   }, 10);
 
   /* Append a random X25519 public key. */
   bs_append_x25519_pubkey(tls_extensions);
+
+  bs_append_bytes(tls_extensions, (unsigned char []) {
+    0x11, 0xec, // Group ID (X25519MLKEM768)
+    0x04, 0xc0, // Length (1216)
+  }, 4);
+
+  /* Append the MLKEM768 encapsulation key with an X25519 key concatenated. */
+  bs_append_mlkem(768, tls_extensions);
+  bs_append_x25519_pubkey(tls_extensions);
+
+  /* Update the length of the extensions. */
+  tlsExtensionUpdateLength(tls_extensions);
+}
+
+/* Adds the supported_groups extension, depending on the version of TLS we're speaking. */
+void tlsExtensionAddSupportedGroups(unsigned int tls_version, bs *tls_extensions) {
+
+  /* The supported groups we send is dependent on what version of TLS we're speaking.  Some groups are only defined for TLS v1.3. */
+  if (tls_version == TLSv1_3) {
+    bs_append_bytes(tls_extensions, (unsigned char []) {
+      0x00, 0x0a, // Extension: supported_groups (10)
+      0x00, 0x18, // Extension Length (24)
+      0x00, 0x16, // Supported Groups List Length (22)
+      0x00, 0x17, // secp256r1
+      0x00, 0x19, // secp521r1
+      0x00, 0x18, // secp384r1
+      0x00, 0x1d, // X25519
+      0x00, 0x1e, // X448
+      0x01, 0x00, // FFDHE2048
+      0x01, 0x01, // FFDHE3072
+      0x01, 0x02, // FFDHE4096
+      0x01, 0x03, // FFDHE6144
+      0x01, 0x04, // FFDHE8192
+      0x11, 0xec, // X25519MLKEM768
+    }, 28);
+  } else {
+    bs_append_bytes(tls_extensions, (unsigned char []) {
+      0x00, 0x0a, // Extension: supported_groups (10)
+      0x00, 0x1c, // Extension Length (28)
+      0x00, 0x1a, // Supported Groups List Length (26)
+      0x00, 0x17, // secp256r1
+      0x00, 0x19, // secp521r1
+      0x00, 0x1c, // brainpoolP512r1
+      0x00, 0x1b, // brainpoolP384r1
+      0x00, 0x18, // secp384r1
+      0x00, 0x1a, // brainpoolP256r1
+      0x00, 0x16, // secp256k1
+      0x00, 0x0e, // sect571r1
+      0x00, 0x0d, // sect571k1
+      0x00, 0x0b, // sect409k1
+      0x00, 0x0c, // sect409r1
+      0x00, 0x09, // sect283k1
+      0x00, 0x0a, // sect283r1
+    }, 32);
+  }
 
   /* Update the length of the extensions. */
   tlsExtensionUpdateLength(tls_extensions);
@@ -5608,13 +5671,20 @@ int testSupportedGroups(struct sslCheckOptions *options) {
   };
 
 
-  /* Auto-generated by ./tools/iana_tls_supported_groups_parser.py on December 24, 2019. */
 #define COL_PLAIN ""
 #define NID_TYPE_UNUSED 0
 #define NID_TYPE_ECDHE 1 /* For ECDHE curves (sec*, P-256/384-521) */
 #define NID_TYPE_DHE 2   /* For ffdhe* */
 #define NID_TYPE_X25519 3
 #define NID_TYPE_X448 4
+#define NID_TYPE_MLKEM512 5
+#define NID_TYPE_MLKEM768 6
+#define NID_TYPE_MLKEM1024 7
+#define NID_TYPE_X25519MLKEM768 8
+#define NID_TYPE_SECP256R1MLKEM768 9
+#define NID_TYPE_SECP384R1MLKEM1024 10
+#define NID_TYPE_BRAINPOOL_TLS13 11
+
   /* Bit strength of DHE 2048 and 3072-bit moduli is taken directly from NIST SP 800-57 pt.1, rev4., pg. 53; DHE 4096, 6144, and 8192 are estimated using that document. */
   struct group_key_exchange group_key_exchanges[] = {
     {0x0001, "sect163k1", 81, COL_RED, NID_sect163k1, NID_TYPE_ECDHE, 0},
@@ -5647,11 +5717,21 @@ int testSupportedGroups(struct sslCheckOptions *options) {
     {0x001c, "brainpoolP512r1", 256, COL_PLAIN, NID_brainpoolP512r1, NID_TYPE_ECDHE, 0},
     {0x001d, "x25519", 128, COL_GREEN, -1, NID_TYPE_X25519, 32},
     {0x001e, "x448", 224, COL_GREEN, -1, NID_TYPE_X448, 56},
+    {0x001f, "brainpoolP256r1tls13", 128, COL_PLAIN, -1, NID_TYPE_BRAINPOOL_TLS13, 0},
+    {0x0020, "brainpoolP384r1tls13", 192, COL_PLAIN, -1, NID_TYPE_BRAINPOOL_TLS13, 0},
+    {0x0021, "brainpoolP512r1tls13", 256, COL_PLAIN, -1, NID_TYPE_BRAINPOOL_TLS13, 0},
+    {0x0029, "curveSM2", 128, COL_RED, NID_sm2, NID_TYPE_ECDHE, 0},
     {0x0100, "ffdhe2048", 112, COL_PLAIN, NID_ffdhe2048, NID_TYPE_DHE, 256},
     {0x0101, "ffdhe3072", 128, COL_PLAIN, NID_ffdhe3072, NID_TYPE_DHE, 384},
     {0x0102, "ffdhe4096", 150, COL_PLAIN, NID_ffdhe4096, NID_TYPE_DHE, 512},
     {0x0103, "ffdhe6144", 175, COL_PLAIN, NID_ffdhe6144, NID_TYPE_DHE, 768},
     {0x0104, "ffdhe8192", 192, COL_PLAIN, NID_ffdhe8192, NID_TYPE_DHE, 1024},
+    {0x0200, "MLKEM512", 128, COL_YELLOW, -1, NID_TYPE_MLKEM512, 800},
+    {0x0201, "MLKEM768", 192, COL_YELLOW, -1, NID_TYPE_MLKEM768, 1184},
+    {0x0202, "MLKEM1024", 256, COL_YELLOW, -1, NID_TYPE_MLKEM1024, 1568},
+    {0x11eb, "SecP256r1MLKEM768", 192, COL_PLAIN, -1, NID_TYPE_SECP256R1MLKEM768, 1249},
+    {0x11ec, "X25519MLKEM768", 192, COL_GREEN, -1, NID_TYPE_X25519MLKEM768, 1216},
+    {0x11ed, "SecP384r1MLKEM1024", 256, COL_PLAIN, -1, NID_TYPE_SECP384R1MLKEM1024, 1665},
   };
 
 
@@ -5704,7 +5784,111 @@ int testSupportedGroups(struct sslCheckOptions *options) {
 	bs_append_x25519_pubkey(key_exchange);
       else if (nid_type == NID_TYPE_X448)
         bs_append_x448_pubkey(key_exchange);
-      else if (nid_type == NID_TYPE_ECDHE) {
+      else if (nid_type == NID_TYPE_MLKEM512) {
+        /* Only defined for TLS v1.3. */
+        if (tls_version != TLSv1_3)
+          continue;
+
+        bs_append_mlkem(512, key_exchange);
+
+      } else if (nid_type == NID_TYPE_MLKEM768) {
+        /* Only defined for TLS v1.3. */
+        if (tls_version != TLSv1_3)
+          continue;
+
+        bs_append_mlkem(768, key_exchange);
+
+      } else if (nid_type == NID_TYPE_MLKEM1024) {
+        /* Only defined for TLS v1.3. */
+        if (tls_version != TLSv1_3)
+          continue;
+
+        bs_append_mlkem(1024, key_exchange);
+
+      } else if (nid_type == NID_TYPE_X25519MLKEM768) {
+        /* Only defined for TLS v1.3. */
+        if (tls_version != TLSv1_3)
+          continue;
+
+        bs_append_mlkem(768, key_exchange);
+        bs_append_x25519_pubkey(key_exchange);
+
+      } else if ((nid_type == NID_TYPE_SECP256R1MLKEM768) || (nid_type == NID_TYPE_SECP384R1MLKEM1024)) {
+        /* Only defined for TLS v1.3. */
+        if (tls_version != TLSv1_3)
+          continue;
+
+        /* Set the curve and MLKEM variable appropriately. */
+        char *curve = "P-256";
+        int mlkem_variant = 768;
+        if (nid_type == NID_TYPE_SECP384R1MLKEM1024) {
+          curve = "SecP384r1";
+          mlkem_variant = 1024;
+        }
+
+        /* Generate the key. */
+        EVP_PKEY *key = EVP_EC_gen(curve);
+        if (key == NULL) {
+          fprintf(stderr, "Failed to generate %s key.\n", curve);
+          continue;
+        }
+
+        /* Extract the public key. */
+        unsigned char *pubkey_bytes = NULL;
+        size_t pubkey_bytes_len = EVP_PKEY_get1_encoded_public_key(key, &pubkey_bytes);
+        if ((pubkey_bytes == NULL) || (pubkey_bytes_len <= 0)) {
+          EVP_PKEY_free(key); key = NULL;
+          fprintf(stderr, "Failed to get public key bytes for %s key.\n", curve);
+          continue;
+        }
+
+        bs_append_bytes(key_exchange, pubkey_bytes, pubkey_bytes_len);
+        bs_append_mlkem(mlkem_variant, key_exchange);
+
+        OPENSSL_free(pubkey_bytes); pubkey_bytes = NULL;
+        EVP_PKEY_free(key); key = NULL;
+
+      } else if (nid_type == NID_TYPE_BRAINPOOL_TLS13) {
+        /* Only defined for TLS v1.3. */
+        if (tls_version != TLSv1_3)
+          continue;
+
+        /* Copy the group name, since we'll be modifying it.*/
+        char *my_group_name = strdup(group_name);
+        if (my_group_name == NULL) {
+          fprintf(stderr, "strdup2 failed.\n");
+          continue;
+        }
+
+        /* Strip the trailing "tls13" string from "brainpoolP256r1tls13". */
+        if (strlen(my_group_name) >= 16)
+          my_group_name[15] = '\0';
+
+        /* Generate the braintree public key. */
+        EVP_PKEY *key = EVP_EC_gen(my_group_name);
+        if (key == NULL) {
+          fprintf(stderr, "Failed to generate %s key.\n", my_group_name);
+          free(my_group_name); my_group_name = NULL;
+          continue;
+        }
+
+        /* Get the public key bytes. */
+        unsigned char *pubkey_bytes = NULL;
+        size_t pubkey_bytes_len = EVP_PKEY_get1_encoded_public_key(key, &pubkey_bytes);
+        if ((pubkey_bytes == NULL) || (pubkey_bytes_len <= 0)) {
+          fprintf(stderr, "Failed to get public key bytes for %s key.\n", my_group_name);
+          free(my_group_name); my_group_name = NULL;
+          EVP_PKEY_free(key); key = NULL;
+          continue;
+        }
+
+        bs_append_bytes(key_exchange, pubkey_bytes, pubkey_bytes_len);
+
+        free(my_group_name); my_group_name = NULL;
+        OPENSSL_free(pubkey_bytes); pubkey_bytes = NULL;
+        EVP_PKEY_free(key); key = NULL;
+
+      } else if (nid_type == NID_TYPE_ECDHE) {
 
         /* Generate the ECDHE key. */
         EC_KEY *key = EC_KEY_new_by_curve_name(nid);
@@ -5717,7 +5901,7 @@ int testSupportedGroups(struct sslCheckOptions *options) {
         /* Allocate a *new* byte array and put the key into it. */
         unsigned char *kex_buf = NULL;
         key_exchange_len = EC_KEY_key2buf(key, POINT_CONVERSION_UNCOMPRESSED, &kex_buf, NULL);
-        if (kex_buf == NULL) {
+        if ((key_exchange_len == 0) || (kex_buf == NULL)) {
           EC_KEY_free(key); key = NULL;
           fprintf(stderr, "Failed to obtain ECDHE public key bytes.\n");
           continue;
@@ -6003,24 +6187,11 @@ int testSignatureAlgorithms(struct sslCheckOptions *options) {
       tls_extensions = makeTLSExtensions(options, 0);
 
       if (tls_version == TLSv1_3) {
-        /* Extension: supported_groups */
-        bs_append_bytes(tls_extensions, (unsigned char []) {
-          0x00, 0x0a, // Extension: supported_groups (10)
-          0x00, 0x16, // Extension Length (22)
-          0x00, 0x14, // Supported Groups List Length (20)
-          0x00, 0x17, // secp256r1
-          0x00, 0x19, // secp521r1
-          0x00, 0x18, // secp384r1
-          0x00, 0x1d, // X25519
-          0x00, 0x1e, // X448
-          0x01, 0x00, // FFDHE2048
-          0x01, 0x01, // FFDHE3072
-          0x01, 0x02, // FFDHE4096
-          0x01, 0x03, // FFDHE6144
-          0x01, 0x04, // FFDHE8192
-        }, 26);
 
-        /* Add key shares for X25519. */
+        /* Add the supported_groups extension. */
+        tlsExtensionAddSupportedGroups(tls_version, tls_extensions);
+
+        /* Add key shares for X25519 & X25519MLKEM768. */
         tlsExtensionAddDefaultKeyShare(tls_extensions);
 
         /* Add the supported_versions extension to signify we are using TLS v1.3. */
