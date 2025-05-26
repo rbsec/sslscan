@@ -70,10 +70,13 @@ zlibpull:
 	fi
 
 opensslpull:
+	upstream=`git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.5\.[0-9]+)' | sort -V | tail -n 1` ; \
 	if [ -d openssl_mingw -a -d openssl_mingw/.git ]; then \
-		cd ./openssl_mingw && git checkout `git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.0\.[0-9]+)' | sort --version-sort | tail -n 1` && git pull | grep -q "Already up-to-date." && [ -e ../.openssl_mingw.is.fresh ] || touch ../.openssl_mingw.is.fresh ; \
+		if [ "$$upstream" != "`cd ./openssl_mingw && git describe --exact-match --tags`" ]; then \
+			cd ./openssl_mingw && git fetch --depth 1 origin refs/tags/$$upstream:refs/tags/$$upstream && git checkout $$upstream && touch ../.openssl_mingw.is.fresh ; \
+		fi \
 	else \
-	git clone --depth 1 -b `git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.0\.[0-9]+)' | sort --version-sort | tail -n 1` https://github.com/openssl/openssl ./openssl_mingw && cd ./openssl_mingw && touch ../.openssl_mingw.is.fresh ; \
+		git clone --depth 1 -b $$upstream https://github.com/openssl/openssl ./openssl_mingw && cd ./openssl_mingw && touch ../.openssl_mingw.is.fresh ; \
 	fi
 
 zlib_mingw/libz.a: zlibpull
