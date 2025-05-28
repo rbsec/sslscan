@@ -128,9 +128,10 @@
 
 #include "sslscan.h"
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
-#error "OpenSSL 3.0 or later is required!"
+#if OPENSSL_VERSION_NUMBER < 0x30500000L
+#error "OpenSSL 3.5 or later is required!"
 #endif
+
 
 /** Does output xml to stdout? */
 static int xml_to_stdout = 0;
