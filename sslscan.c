@@ -5698,12 +5698,9 @@ int testSupportedGroups(struct sslCheckOptions *options) {
         if (tls_version != TLSv1_3)
           continue;
 
-        /* Copy the group name, since we'll be modifying it.*/
-        char *my_group_name = strdup(group_name);
-        if (my_group_name == NULL) {
-          fprintf(stderr, "strdup2 failed.\n");
-          continue;
-        }
+        /* Copy the group name since we will be modifying it. */
+        char my_group_name[32] = {0};
+        strncpy(my_group_name, group_name, sizeof(my_group_name) - 1);
 
         /* Strip the trailing "tls13" string from "brainpoolP256r1tls13". */
         if (strlen(my_group_name) >= 16)
@@ -5713,7 +5710,6 @@ int testSupportedGroups(struct sslCheckOptions *options) {
         EVP_PKEY *key = EVP_EC_gen(my_group_name);
         if (key == NULL) {
           fprintf(stderr, "Failed to generate %s key.\n", my_group_name);
-          free(my_group_name); my_group_name = NULL;
           continue;
         }
 
@@ -5722,14 +5718,12 @@ int testSupportedGroups(struct sslCheckOptions *options) {
         size_t pubkey_bytes_len = EVP_PKEY_get1_encoded_public_key(key, &pubkey_bytes);
         if ((pubkey_bytes == NULL) || (pubkey_bytes_len <= 0)) {
           fprintf(stderr, "Failed to get public key bytes for %s key.\n", my_group_name);
-          free(my_group_name); my_group_name = NULL;
           EVP_PKEY_free(key); key = NULL;
           continue;
         }
 
         bs_append_bytes(key_exchange, pubkey_bytes, pubkey_bytes_len);
 
-        free(my_group_name); my_group_name = NULL;
         OPENSSL_free(pubkey_bytes); pubkey_bytes = NULL;
         EVP_PKEY_free(key); key = NULL;
 
