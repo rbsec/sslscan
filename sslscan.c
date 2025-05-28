@@ -1629,10 +1629,6 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
     // Short authentication tag length
     // These are flagged as 64 bit strength in newer versions of OpenSSL
     // But in older versions they'll still show as 256 bits, so override that here
-    // See https://github.com/openssl/openssl/pull/16652
-    if (strstr(ciphername, "CCM8")) {
-        cipherbits = 64;
-    }
 
     if (cipherbits < 10)
       tempInt = 2;
