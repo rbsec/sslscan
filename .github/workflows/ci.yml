@@ -13,7 +13,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: build with ${{ matrix.cc }}
         run: |
-          make sslscan
+          # Since ubuntu-latest does not ship with OpenSSL >= v3.5, dynamic linking will fail unless we build and install it.
+          git clone -b openssl-3.5 https://github.com/openssl/openssl
+          pushd openssl
+          git fetch --tags
+          git checkout openssl-3.5.0
+          ./config --prefix=/opt/openssl35 shared
+          make -j $(nproc --all)
+          make install
+          popd
+
+          make sslscan LDFLAGS=-L/opt/openssl35 CFLAGS=-I/opt/openssl35/include
           make static
         env:
           CC: ${{ matrix.cc }}
