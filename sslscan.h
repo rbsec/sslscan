@@ -318,6 +318,7 @@ void bs_set_byte(bs *, size_t, unsigned char);
 void bs_set_ushort(bs *b, size_t offset, unsigned short length);
 int bs_read_socket(bs *b, int s, size_t num_bytes);
 unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsigned int tls_version);
+unsigned int checkIfTLSVersionIsSupported_Backup(struct sslCheckOptions *options, unsigned int tls_version);
 SSL_CTX *CTX_new(const SSL_METHOD *method);
 int fileExists(char *);
 void findMissingCiphers();
