@@ -4962,6 +4962,109 @@ unsigned int checkIfTLSVersionIsSupported(struct sslCheckOptions *options, unsig
   bs_free(&tls_extensions);
   bs_free(&client_hello);
   bs_free(&server_hello);
+
+  /* If we're about to return false, let's make one last attempt using OpenSSL's built-in functions to test the protocol. Some non-standard TLS stacks don't like our ClientHello because it includes "too many" ciphersuite options (even though it is perfectly valid per the specs). */
+  if (ret == false)
+    ret = checkIfTLSVersionIsSupported_Backup(options, tls_version);
+
+  return ret;
+}
+
+/* Makes a fallback attempt to check if a TLS version is supported.  Uses OpenSSL's functions instead of building our own ClientHello.  Useful in odd cases where non-standard TLS stacks reject our valid ClientHellos. */
+unsigned int checkIfTLSVersionIsSupported_Backup(struct sslCheckOptions *options, unsigned int tls_version) {
+
+  int ret = false;
+  int version = -1;
+  const SSL_METHOD *sslMethod = NULL;
+
+  /* Determine the right client method, ciphersuite list, and TLS version we need to work with. */
+  strncpy(options->cipherstring, CIPHERSUITE_LIST_ALL, sizeof(options->cipherstring) - 1);
+  if (tls_version == TLSv1_0) {
+    sslMethod = TLSv1_client_method();
+    version = TLS1_VERSION;
+  } else if (tls_version == TLSv1_1) {
+    sslMethod = TLSv1_1_client_method();
+    version = TLS1_1_VERSION;
+  } else if (tls_version == TLSv1_2) {
+    sslMethod = TLSv1_2_client_method();
+    version = TLS1_2_VERSION;
+  } else if (tls_version == TLSv1_3) {
+    sslMethod = TLSv1_3_client_method();
+    version = TLS1_3_VERSION;
+    strncpy(options->cipherstring, TLSV13_CIPHERSUITES, sizeof(options->cipherstring) - 1);
+  }
+
+  if (sslMethod == NULL)
+    goto done;
+
+  printf_verbose("Using fallback method for checking if %s is supported.\n", getPrintableTLSName(tls_version));
+
+  /* Connect to the target host. */
+  int socketDescriptor = tcpConnect(options);
+  if (socketDescriptor == 0) {
+    printf_verbose("%s: failed to connect to target.\n", __func__);
+    goto done;
+  }
+
+  /* Create a new context. */
+  options->ctx = new_CTX(sslMethod);
+  if (options->ctx == NULL) {
+    printf_verbose("%s: failed to create context.\n", __func__);
+    goto done;
+  }
+
+  /* Set the minimum and maximum protocol versions to the same thing.  This ensures that if we connect, we're only connected with this exact TLS version. */
+  if (!SSL_CTX_set_min_proto_version(options->ctx, version)) {
+    printf_verbose("%s: failed to set minimum protocol version.\n", __func__);
+    goto done;
+  }
+
+  if (!SSL_CTX_set_max_proto_version(options->ctx, version)) {
+    printf_verbose("%s: failed to set maximum protocol version.\n", __func__);
+    goto done;
+  }
+
+  /* Set the ciphersuite string in the context. */
+  if (!setCipherSuite(options, sslMethod, options->cipherstring)) {
+    printf_verbose("%s: failed to set the ciphersuite list: [%s]\n", __func__, options->cipherstring);
+    goto done;
+  }
+
+  /* Create the SSL object. */
+  SSL *ssl = new_SSL(options->ctx);
+  if (ssl == NULL) {
+    printf_verbose("%s: failed to create SSL object.\n", __func__);
+    goto done;
+  }
+
+  /* Set the SNI. */
+  if (!SSL_set_tlsext_host_name(ssl, options->sniname)) {
+    printf_verbose("%s: failed to set SNI.\n", __func__);
+    goto done;
+  }
+
+  /* Wrap the raw socket with a new BIO. */
+  BIO *bio = BIO_new_socket(socketDescriptor, BIO_NOCLOSE);
+  if (bio == NULL) {
+    printf_verbose("%s: failed to create BIO socket.\n", __func__);
+    goto done;
+  }
+
+  SSL_set_bio(ssl, bio, bio);
+
+  /* Start the TLS handshake. */
+  int connStatus = SSL_connect(ssl);
+  if (connStatus == 1) {
+    ret = true;
+    printf_verbose("Backup connection succeeded for %s!\n", getPrintableTLSName(tls_version));
+  } else {
+    printf_verbose("%s: backup connection failed: %d\n", __func__, SSL_get_error(ssl, connStatus));
+  }
+
+ done:
+  CLOSE(socketDescriptor);
+  FREE_CTX(options->ctx);
+  FREE_SSL(ssl);
   return ret;
 }
 
