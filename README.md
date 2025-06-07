@@ -11,6 +11,7 @@ Other key changes include:
 * SSLv2 and SSLv3 protocol support is scanned, but individual ciphers are not.
 * A test suite is included using Docker, to verify that sslscan is functionality correctly.
 * Removed the `--http` option, as it was broken and had very little use in the first place.
+* Support for new post-quantum groups.
 
 ## XML Output Changes
 A potentially breaking change has been made to the XML output in version **2.0.0-beta4**. Previously, multiple `<certificate>` elements could be returned (one by default, and a second one if `--show-certificate` was used).
@@ -76,7 +77,7 @@ Key changes are as follows:
 
 ### Building on Linux
 
-It is possible to ignore the OpenSSL system installation and ship your own version. Although this results in a more resource-heavy `sslscan` binary (file size, memory consumption, etc.), this allows some additional checks such as TLS compression.
+It is recommended to ignore the OpenSSL system installation and statically build against your own version. Although this results in a more resource-heavy `sslscan` binary (file size, memory consumption, etc.), this allows some additional checks such as TLS compression. Note that the minimum OpenSSL version required by sslscan is 3.5.0 (LTS), so if your distro ships an older version then building against it will not work, and you will have to do a static build.
 
 To compile your own OpenSSL version, you'll probably need to install the OpenSSL build dependencies. The commands below can be used to do this on Debian.
 

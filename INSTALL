@@ -1,13 +1,13 @@
 Requirements:
-   OpenSSL 0.9.8o or better
+   OpenSSL 3.5.0 (LTS) or better
 
 Makefile build:
-      make
+      make static
       make install        (as root)
 
+
 Manual Build:
-   sslscan can be built manually using the following
-   commands:
+   sslscan can be built manually using the following commands:
 
       gcc -lssl -o sslscan sslscan.c
       clang -lssl -o sslscan sslscan.c

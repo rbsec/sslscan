@@ -10,13 +10,15 @@ sslscan \- Fast SSL/TLS scanner
 
 Terminal output is thus colour-coded as follows:
 
-Red Background  NULL cipher (no encryption)
+.B Red Background
+NULL ciphers (no encryption) or anonymous ciphers (no verification of peer)
 .br
-Red             Broken cipher (<= 40 bit), broken protocol (SSLv2 or SSLv3) or broken certificate signing algorithm (MD5)
+.B Red
+Ciphers and algorithms with demonstrated vulnerabilities, or that are generally considered to be untrusted.
 .br
-Yellow          Weak cipher (<= 56 bit or RC4) or weak certificate signing algorithm (SHA-1)
+.B Yellow
+Ciphers and algorithms with known weaknesses or that are still too new to widely trusted, but that are not generally considered exploitable (even by the standards of TLS vulnerabilities).
 .br
-Purple          Anonymous cipher (ADH or AECDH)
 
 \fBsslscan\fP can also output results into an XML file for easy consumption by external programs.
 
