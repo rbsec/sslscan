@@ -5674,6 +5674,13 @@ int testSupportedGroups(struct sslCheckOptions *options) {
     {0x0102, "ffdhe4096", 150, COL_PLAIN, NID_ffdhe4096, NID_TYPE_DHE, 512},
     {0x0103, "ffdhe6144", 175, COL_PLAIN, NID_ffdhe6144, NID_TYPE_DHE, 768},
     {0x0104, "ffdhe8192", 192, COL_PLAIN, NID_ffdhe8192, NID_TYPE_DHE, 1024},
+    /* There are no demonstrated weaknesses with the pure MLKEM groups.
+     * But they've only very recently been standardised, and the implemenations
+     * haven't really been battle-proved to the extent of other groups.
+     * As such, they've flagged in yellow for now, but this should be reconsidered:
+     * - In a couple of years (2027)
+     * - If any significant weaknesses are identified
+     * - If they're considered robust by projects like OpenSSH or OpenSSL */
     {0x0200, "MLKEM512", 128, COL_YELLOW, -1, NID_TYPE_MLKEM512, 800},
     {0x0201, "MLKEM768", 192, COL_YELLOW, -1, NID_TYPE_MLKEM768, 1184},
     {0x0202, "MLKEM1024", 256, COL_YELLOW, -1, NID_TYPE_MLKEM1024, 1568},
