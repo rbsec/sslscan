@@ -1500,11 +1500,11 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
         return 1;
     switch (EVP_PKEY_id(key)) {
     case EVP_PKEY_RSA:
-        if (EVP_PKEY_bits(key) <= 768)
+        if (EVP_PKEY_bits(key) <= 1024)
         {
             printf(" RSA %s%d%s bits", COL_RED, EVP_PKEY_bits(key), RESET);
         }
-        else if (EVP_PKEY_bits(key) <= 1024)
+        else if (EVP_PKEY_bits(key) <= 2048)
         {
             printf(" RSA %s%d%s bits", COL_YELLOW, EVP_PKEY_bits(key), RESET);
         }
@@ -1515,11 +1515,11 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
         break;
 
     case EVP_PKEY_DH:
-        if (EVP_PKEY_bits(key) <= 768)
+        if (EVP_PKEY_bits(key) <= 1024)
         {
             printf(" DHE %s%d%s bits", COL_RED, EVP_PKEY_bits(key), RESET);
         }
-        else if (EVP_PKEY_bits(key) <= 1024)
+        else if (EVP_PKEY_bits(key) < 2048)
         {
             printf(" DHE %s%d%s bits", COL_YELLOW, EVP_PKEY_bits(key), RESET);
         }
@@ -1639,10 +1639,10 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
       printf("%s??%s bits  ", COL_YELLOW, RESET);
     } else if (cipherbits == 0) {
       printf("%s%d%s bits  ", COL_RED_BG, cipherbits, RESET);
+    } else if (cipherbits == 112) {
+      printf("%s%d%s bits  ", COL_YELLOW, cipherbits, RESET);
     } else if (cipherbits >= 112) {
       printf("%s%d%s bits  ", COL_GREEN, cipherbits, RESET);
-    } else if (cipherbits > 56) {
-      printf("%s%d%s bits  ", COL_YELLOW, cipherbits, RESET);
     } else
       printf("%s%d%s bits  ", COL_RED, cipherbits, RESET);
 
@@ -1666,10 +1666,10 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
         strength = "null";
     } else if (strstr(ciphername, "ADH") || strstr(ciphername, "AECDH") || strstr(ciphername, "_anon_")) {
         if (options->ianaNames) {
-            printf("%s%-45s%s", COL_PURPLE, ciphername, RESET);
+            printf("%s%-45s%s", COL_RED_BG, ciphername, RESET);
         }
         else {
-            printf("%s%-29s%s", COL_PURPLE, ciphername, RESET);
+            printf("%s%-29s%s", COL_RED_BG, ciphername, RESET);
         }
         strength = "anonymous";
     } else if (strstr(ciphername, "EXP")) {
@@ -1680,6 +1680,15 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
             printf("%s%-29s%s", COL_RED, ciphername, RESET);
         }
         strength = "weak";
+    } else if (strstr(ciphername, "MD5")) {
+        /* SHA-1 isn't really exploitable in the contxt of TLS, but there's no reason to be using it any more */
+        if (options->ianaNames) {
+            printf("%s%-45s%s", COL_RED, ciphername, RESET);
+        }
+        else {
+            printf("%s%-29s%s", COL_RED, ciphername, RESET);
+        }
+        strength = "medium";
     } else if (strstr(ciphername, "RC4") || strstr(ciphername, "DES")) {
         if (options->ianaNames) {
             printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
@@ -1702,18 +1711,18 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
         strength = "medium";
     } else if (strstr(ciphername, "_SM4_")) { /* Developed by Chinese government */
         if (options->ianaNames) {
-            printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+            printf("%s%-45s%s", COL_RED, ciphername, RESET);
         }
         else {
-            printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+            printf("%s%-29s%s", COL_RED, ciphername, RESET);
         }
         strength = "medium";
     } else if (strstr(ciphername, "_GOSTR341112_")) { /* Developed by Russian government */
         if (options->ianaNames) {
-            printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+            printf("%s%-45s%s", COL_RED, ciphername, RESET);
         }
         else {
-            printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+            printf("%s%-29s%s", COL_RED, ciphername, RESET);
         }
         strength = "medium";
     } else if ((strstr(ciphername, "CHACHA20") || (strstr(ciphername, "GCM"))) && (strstr(ciphername, "DHE") || (strcmp(cleanSslMethod, "TLSv1.3") == 0))) {
@@ -1724,6 +1733,15 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
             printf("%s%-29s%s", COL_GREEN, ciphername, RESET);
         }
         strength = "strong";
+    } else if (strstr(ciphername, "SHA") && !(strstr(ciphername, "SHA256") || strstr(ciphername, "SHA384"))) {
+        /* SHA-1 isn't really exploitable in the contxt of TLS, but there's no reason to be using it any more */
+        if (options->ianaNames) {
+            printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+        }
+        else {
+            printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+        }
+        strength = "medium";
     } else {
         if (options->ianaNames) {
             printf("%-45s", ciphername);
@@ -2082,7 +2100,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
 
                                                     if (keyBits < 112)
                                                         color = COL_RED;
-                                                    else if (keyBits < 128)
+                                                    else if (keyBits <= 128)
                                                         color = COL_YELLOW;
 
                                                     printf("ECC Curve Name:      %s\n", ec_group_name);
