@@ -2100,7 +2100,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
 
                                                     if (keyBits < 112)
                                                         color = COL_RED;
-                                                    else if (keyBits <= 128)
+                                                    else if (keyBits < 128)
                                                         color = COL_YELLOW;
 
                                                     printf("ECC Curve Name:      %s\n", ec_group_name);
