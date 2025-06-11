@@ -78,6 +78,7 @@ function run_tests {
     run_test_16 "0"
     run_test_17 "0"
     run_test_18 "0"
+    #run_test_19 "0"  # Unique GnuTLS algorithms that sslscan does not currently detect.  Disabled until they are implemented.
 }
 
 
@@ -186,6 +187,12 @@ function run_test_17 {
 # TLSv1.2 with ECDSA-SHA1 signature only.
 function run_test_18 {
     run_test $1 '18' "/gnutls-3.6.11.1/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem --priority=NONE:-VERS-TLS1.0:-VERS-TLS1.1:+VERS-TLS1.2:-VERS-TLS1.3:+MAC-ALL:+GROUP-ALL:+SIGN-ECDSA-SHA1:+COMP-NULL:+CTYPE-SRV-ALL:+KX-ALL:+CHACHA20-POLY1305:+CAMELLIA-128-GCM:+AES-128-GCM" ""
+}
+
+
+# Many unique algorithms only present in GnuTLS.
+function run_test_19 {
+    run_test $1 '19' "/gnutls-3.8.9/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem --priority=NORMAL:+GOST28147-TC26Z-CFB:+GOST28147-CPA-CFB:+GOST28147-CPB-CFB:+GOST28147-CPC-CFB:+GOST28147-CPD-CFB:+AES-128-XTS:+AES-256-XTS:+AES-128-SIV:+AES-256-SIV:+AES-128-SIV-GCM:+AES-256-SIV-GCM:+GOST28147-TC26Z-CNT:+MAGMA-CTR-ACPKM:+KUZNYECHIK-CTR-ACPKM:+GOSTR341194:+STREEBOG-256:+STREEBOG-512:+VKO-GOST-12:+RSA-EXPORT:+GROUP-GC256B:+GROUP-GC512A:+SIGN-ECDSA-SHA3-224:+SIGN-ECDSA-SHA3-256:+SIGN-ECDSA-SHA3-384:+SIGN-ECDSA-SHA3-512:+SIGN-RSA-SHA3-224:+SIGN-RSA-SHA3-256:+SIGN-RSA-SHA3-384:+SIGN-RSA-SHA3-512:+SIGN-DSA-SHA3-224:+SIGN-DSA-SHA3-256:+SIGN-DSA-SHA3-384:+SIGN-DSA-SHA3-512:+SIGN-RSA-RAW:+SIGN-GOSTR341012-512:+SIGN-GOSTR341012-256:+SIGN-GOSTR341001:+SIGN-DSA-SHA384:+SIGN-DSA-SHA512" ""
 }
 
 
