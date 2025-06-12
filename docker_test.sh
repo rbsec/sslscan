@@ -78,7 +78,8 @@ function run_tests {
     run_test_16 "0"
     run_test_17 "0"
     run_test_18 "0"
-    #run_test_19 "0"  # Unique GnuTLS algorithms that sslscan does not currently detect.  Disabled until they are implemented.
+    run_test_19 "0"
+    #run_test_20 "0"  # Unique GnuTLS algorithms that sslscan does not currently detect.  Disabled until they are implemented.
 }
 
 
@@ -190,9 +191,15 @@ function run_test_18 {
 }
 
 
-# Many unique algorithms only present in GnuTLS.
+# Mbed TLS, default settings.
 function run_test_19 {
-    run_test $1 '19' "/gnutls-3.8.9/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem --priority=NORMAL:+GOST28147-TC26Z-CFB:+GOST28147-CPA-CFB:+GOST28147-CPB-CFB:+GOST28147-CPC-CFB:+GOST28147-CPD-CFB:+AES-128-XTS:+AES-256-XTS:+AES-128-SIV:+AES-256-SIV:+AES-128-SIV-GCM:+AES-256-SIV-GCM:+GOST28147-TC26Z-CNT:+MAGMA-CTR-ACPKM:+KUZNYECHIK-CTR-ACPKM:+GOSTR341194:+STREEBOG-256:+STREEBOG-512:+VKO-GOST-12:+RSA-EXPORT:+GROUP-GC256B:+GROUP-GC512A:+SIGN-ECDSA-SHA3-224:+SIGN-ECDSA-SHA3-256:+SIGN-ECDSA-SHA3-384:+SIGN-ECDSA-SHA3-512:+SIGN-RSA-SHA3-224:+SIGN-RSA-SHA3-256:+SIGN-RSA-SHA3-384:+SIGN-RSA-SHA3-512:+SIGN-DSA-SHA3-224:+SIGN-DSA-SHA3-256:+SIGN-DSA-SHA3-384:+SIGN-DSA-SHA3-512:+SIGN-RSA-RAW:+SIGN-GOSTR341012-512:+SIGN-GOSTR341012-256:+SIGN-GOSTR341001:+SIGN-DSA-SHA384:+SIGN-DSA-SHA512" ""
+    run_test $1 '19' "/mbedtls_v3.6.3.1/ssl_server2 server_port=443 crt_file=/etc/ssl/cert_3072.crt key_file=/etc/ssl/key_3072.pem" ""
+}
+
+
+# Many unique algorithms only present in GnuTLS.
+function run_test_20 {
+    run_test $1 '20' "/gnutls-3.8.9/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem --priority=NORMAL:+GOST28147-TC26Z-CFB:+GOST28147-CPA-CFB:+GOST28147-CPB-CFB:+GOST28147-CPC-CFB:+GOST28147-CPD-CFB:+AES-128-XTS:+AES-256-XTS:+AES-128-SIV:+AES-256-SIV:+AES-128-SIV-GCM:+AES-256-SIV-GCM:+GOST28147-TC26Z-CNT:+MAGMA-CTR-ACPKM:+KUZNYECHIK-CTR-ACPKM:+GOSTR341194:+STREEBOG-256:+STREEBOG-512:+VKO-GOST-12:+RSA-EXPORT:+GROUP-GC256B:+GROUP-GC512A:+SIGN-ECDSA-SHA3-224:+SIGN-ECDSA-SHA3-256:+SIGN-ECDSA-SHA3-384:+SIGN-ECDSA-SHA3-512:+SIGN-RSA-SHA3-224:+SIGN-RSA-SHA3-256:+SIGN-RSA-SHA3-384:+SIGN-RSA-SHA3-512:+SIGN-DSA-SHA3-224:+SIGN-DSA-SHA3-256:+SIGN-DSA-SHA3-384:+SIGN-DSA-SHA3-512:+SIGN-RSA-RAW:+SIGN-GOSTR341012-512:+SIGN-GOSTR341012-256:+SIGN-GOSTR341001:+SIGN-DSA-SHA384:+SIGN-DSA-SHA512" ""
 }
 
 

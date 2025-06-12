@@ -5,7 +5,7 @@ FROM ubuntu:24.04 AS builder
 COPY build_test_apps.sh /build/build_test_apps.sh
 
 # Update base image and install prerequisites for building.
-RUN apt update; apt install -y build-essential zlib1g zlib1g-dev nettle-dev git wget m4 pkg-config
+RUN apt update; apt install -y build-essential zlib1g zlib1g-dev nettle-dev git wget m4 pkg-config python3 python3-pip python3-virtualenv python3-venv
 
 # Build all applications.
 RUN /bin/bash /build/build_test_apps.sh
@@ -27,6 +27,8 @@ COPY --from=builder /build/openssl_prog_v1.0.0 /openssl_v1.0.0/openssl
 COPY --from=builder /build/openssl_prog_v1.0.2 /openssl_v1.0.2/openssl
 COPY --from=builder /build/openssl_prog_v1.1.1 /openssl_v1.1.1/openssl
 COPY --from=builder /build/openssl_prog_v3.5.0 /openssl_v3.5.0/openssl
+
+COPY --from=builder /build/mbedtls_ssl_server2_v3.6.3.1 /mbedtls_v3.6.3.1/ssl_server2
 
 # Copy certificates, keys, and DH parameters.
 COPY *.pem /etc/ssl/

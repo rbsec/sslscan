@@ -29,6 +29,13 @@ function compile_gnutls_all {
     compile_gnutls '3.8.9'
 }
 
+
+# Compile all versions of Mbed TLS.
+function compile_mbedtls_all {
+    compile_mbedtls '3.6.3.1'
+}
+
+
 # Compile all versions of OpenSSL.
 function compile_openssl_all {
     compile_openssl '1.0.0'
@@ -36,6 +43,51 @@ function compile_openssl_all {
     compile_openssl '1.1.1'
     compile_openssl '3.5.0'
 }
+
+
+# Compile a specific version of Mbed TLS (https://github.com/Mbed-TLS/mbedtls).
+function compile_mbedtls {
+    version=$1
+
+    git_tag=
+    output_dir=
+    if [[ $version == '3.6.3.1' ]]; then
+	git_tag="v3.6.3.1"
+        output_dir="mbedtls_v3.6.3.1_dir"
+    else
+	echo -e "${REDB}Error: Mbed TLS v${version} is unknown!${CLR}"
+	exit 1
+    fi
+
+    echo -e "\n${YELLOWB}Downloading Mbed TLS v${version}...${CLR}\n"
+    git clone --depth 1 -b ${git_tag} https://github.com/Mbed-TLS/mbedtls ${output_dir}
+
+    echo -e "\n${YELLOWB}Compiling Mbed TLS v${version}...${CLR}\n"
+    pushd ${output_dir}
+
+    # Install Python module dependencies for build system.
+    python3 -m venv venv
+    source venv/bin/activate  # Required, otherwise pip fails to install anything.
+    python3 -m pip install -r scripts/basic.requirements.txt
+
+    # Now compile it.
+    make -j ${NUM_PROCS}
+
+    if [[ ! -f programs/ssl/ssl_server2 ]]; then
+        echo -e "${REDB}Error: compilation failed!  ssl_server2 not found.${CLR}"
+        exit 1
+    fi
+
+    # Copy the ssl_server2 program to the build directory.
+    cp "programs/ssl/ssl_server2" "/build/mbedtls_ssl_server2_v${version}"
+
+    popd
+
+    # Delete the source code directory now that we built the 'openssl' tool and moved it out.
+    rm -rf ${output_dir}
+    echo -e "\n\n${YELLOWB}Compilation of Mbed TLS v${version} finished.${CLR}\n\n"
+}
+
 
 # Compile a specific version of OpenSSL.
 function compile_openssl {
@@ -231,11 +283,13 @@ echo -e "\n\nBuilding with ${GREENB}${NUM_PROCS}${CLR} threads.\n"
 cd /build
 compile_openssl_all
 compile_gnutls_all
+compile_mbedtls_all
 
 # Strip all the programs of debugging symbols in order to cut down on storage space.
 strip /build/openssl_prog*
 strip /build/gnutls-cli*
 strip /build/gnutls-serv*
 strip /build/lib*
+strip /build/mbedtls*
 
 echo -e "\n\n${GREENB}Done compiling applications!${CLR}\n"
