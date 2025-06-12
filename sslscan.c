@@ -6046,6 +6046,8 @@ int testSupportedGroups(struct sslCheckOptions *options) {
       char *bits_color = RESET;
       if (group_bit_strength < 112)
         bits_color = COL_RED;
+      else if (group_bit_strength < 128)
+        bits_color = COL_YELLOW;
       else
         bits_color = COL_GREEN;
 
