@@ -67,7 +67,7 @@ TLSv1.3  [32m128[0m bits  secp256r1 (NIST P-256)[0m
 TLSv1.3  [32m192[0m bits  secp384r1 (NIST P-384)[0m
 TLSv1.3  [32m260[0m bits  secp521r1 (NIST P-521)[0m
 TLSv1.3  [32m128[0m bits  [32mx25519[0m
-TLSv1.3  [32m112[0m bits  ffdhe2048[0m
+TLSv1.3  [33m112[0m bits  [33mffdhe2048[0m
 TLSv1.3  [32m128[0m bits  ffdhe3072[0m
 TLSv1.3  [32m150[0m bits  ffdhe4096[0m
 TLSv1.3  [32m175[0m bits  ffdhe6144[0m
