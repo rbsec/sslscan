@@ -1697,16 +1697,16 @@ void outputCipher(struct sslCheckOptions *options, SSL *ssl, const char *cleanSs
             printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
         }
         strength = "medium";
-    } else if (strstr(ciphername, "CCM8")) {
+    } else if (strstr(ciphername, "CCM8") || strstr(ciphername, "CCM_8")) {
         // Short authentication tag length
         // These are flagged as 64 bit strength in newer versions of OpenSSL
         // But in older versions they'll still show as 256 bits, so manually flag them here
         // See https://github.com/openssl/openssl/pull/16652
         if (options->ianaNames) {
-            printf("%s%-45s%s", COL_YELLOW, ciphername, RESET);
+            printf("%s%-45s%s", COL_RED, ciphername, RESET);
         }
         else {
-            printf("%s%-29s%s", COL_YELLOW, ciphername, RESET);
+            printf("%s%-29s%s", COL_RED, ciphername, RESET);
         }
         strength = "medium";
     } else if (strstr(ciphername, "_SM4_")) { /* Developed by Chinese government */
