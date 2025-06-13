@@ -1,34 +1,20 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2019-2020  Joe Testa <jtesta@positronsecurity.com>
+# Copyright (C) 2019-2025  Joe Testa <jtesta@positronsecurity.com>
 #
-# This script (adapted from the ssh-audit project) will set up a docker image with
-# multiple SSL/TLS servers.  They are each executed one at a time, and sslscan is run
-# against them.  The output of sslscan is compared against the expected output.  If
-# they match, the test passes; otherwise the test fails.
+# This script (adapted from the ssh-audit project) will set up a docker image with multiple SSL/TLS servers.  They are each executed one at a time, and sslscan is run against them.  The output of sslscan is compared against the expected output.  If they match, the test passes; otherwise the test fails.
 #
+# Running this script with no arguments causes it to build the docker image (if it doesn't yet exist), then run all tests.
 #
-# For debugging purposes, here is a cheat sheet for manually running the docker image:
-#
-# docker run -p 4443:443 --security-opt seccomp:unconfined -it sslscan-test:3 /bin/bash
-#
-
-#
-# Running this script with no arguments causes it to build the docker image (if it
-# doesn't yet exist), then run all tests.
-#
-# Running the script with a test number argument (i.e.: './docker_test.sh 2') will
-# run the docker image for test #2 only (in the background) and do nothing else.  This
-# allows the test itself to be debugged.
+# Running the script with a test number argument (i.e.: './docker_test.sh 2') will run the docker image for test #2 only (in the background) and do nothing else.  This allows the test itself to be debugged.
 #
 
 
-# This is the docker tag for the image.  If this tag doesn't exist, then we assume the
-# image is out of date, and generate a new one with this tag.
-IMAGE_VERSION=3
+# This is the docker tag for the image.  If this tag doesn't exist, then we assume the image is out of date, and generate a new one with this tag.
+IMAGE_VERSION=4
 
-# This is the name of our docker image.
+# This is the name of our test image.
 IMAGE_NAME=sslscan-test
 
 
@@ -44,187 +30,9 @@ GREENB="\033[1;32m"  # Green + bold
 all_passed=1
 
 
-# Number of processors on this system (used to compile parallel builds).
-NUM_PROCS=`/usr/bin/nproc --all 2> /dev/null`
-if [[ $NUM_PROCS == '' ]]; then
-    NUM_PROCS=4
-fi
-
-
 # Returns 0 if current docker image exists.
 function check_if_docker_image_exists {
     images=`docker image ls | grep -E "$IMAGE_NAME[[:space:]]+$IMAGE_VERSION"`
-}
-
-
-# Compile all version of GnuTLS.
-function compile_gnutls_all {
-    compile_gnutls '3.6.11.1'
-}
-
-
-# Compile all versions of OpenSSL.
-function compile_openssl_all {
-    compile_openssl '1.0.0'
-    compile_openssl '1.0.2'
-    compile_openssl '1.1.1'
-}
-
-
-# Compile a specific version of OpenSSL.
-function compile_openssl {
-    version=$1
-
-    git_tag=
-    compile_args=
-    precompile_command=
-    output_dir=
-    compile_num_procs=$NUM_PROCS
-    if [[ $version == '1.0.0' ]]; then
-	git_tag="OpenSSL_1_0_0-stable"
-	compile_args="enable-weak-ssl-ciphers enable-ssl2 zlib no-shared"
-	precompile_command="make depend"
-	output_dir="openssl_v1.0.0_dir"
-	compile_num_procs=1   # Compilation randomly fails when done in parallel.
-    elif [[ $version == '1.0.2' ]]; then
-	git_tag="OpenSSL_1_0_2-stable"
-	compile_args="enable-weak-ssl-ciphers enable-ssl2 zlib"
-	precompile_command="make depend"
-	output_dir="openssl_v1.0.2_dir"
-    elif [[ $version == '1.1.1' ]]; then
-	git_tag="OpenSSL_1_1_1-stable"
-	compile_args="enable-weak-ssl-ciphers no-shared zlib"
-	output_dir="openssl_v1.1.1_dir"
-    else
-	echo -e "${REDB}Error: OpenSSL v${version} is unknown!${CLR}"
-	exit 1
-    fi
-
-    # Download OpenSSL from github.
-    echo -e "\n${YELLOWB}Downloading OpenSSL v${version}...${CLR}\n"
-    git clone --depth 1 -b $git_tag https://github.com/openssl/openssl/ $output_dir
-
-    # Configure and compile it.
-    echo -e "\n\n${YELLOWB}Compiling OpenSSL v${version} with \"-j ${compile_num_procs}\"...${CLR}"
-    pushd $output_dir
-    ./config $compile_args
-    if [[ $precompile_command != '' ]]; then $precompile_command; fi
-    make -j $compile_num_procs
-
-    # Ensure that the 'openssl' command-line tool was built.
-    if [[ ! -f "apps/openssl" ]]; then
-	echo -e "${REDB}Error: compilation failed!  apps/openssl not found.${CLR}\n\nStrangely, sometimes OpenSSL v1.0.0 fails for no reason; simply running this script again and changing nothing fixes the problem.\n\n"
-	exit 1
-    fi
-
-    # Copy the 'openssl' app to the top-level docker building dir as, e.g. 'openssl_prog_v1.0.0'.  Then we can delete the source code directory and move on.
-    cp "apps/openssl" "../openssl_prog_v${version}"
-    popd
-
-    # Delete the source code directory now that we built the 'openssl' tool and moved it out.
-    rm -rf $output_dir
-    echo -e "\n\n${YELLOWB}Compilation of v${version} finished.${CLR}\n\n"
-}
-
-
-# Compile a specific version of GnuTLS.
-function compile_gnutls {
-    gnutls_version=$1
-
-    gnutls_url=
-    nettle_url=
-    gnutls_expected_sha256=
-    nettle_expected_sha256=
-    gnutls_filename=
-    nettle_filename=
-    gnutls_source_dir=
-    nettle_source_dir=
-    nettle_version=
-    compile_num_procs=$NUM_PROCS
-    compile_nettle=0
-    if [[ $gnutls_version == '3.6.11.1' ]]; then
-	gnutls_url=https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.11.1.tar.xz
-	gnutls_expected_sha256=fbba12f3db9a55dbf027e14111755817ec44b57eabec3e8089aac8ac6f533cf8
-	gnutls_filename=gnutls-3.6.11.1.tar.xz
-	gnutls_source_dir=gnutls-3.6.11.1
-	nettle_version=3.5.1
-	nettle_url=https://ftp.gnu.org/gnu/nettle/nettle-3.5.1.tar.gz
-	nettle_expected_sha256=75cca1998761b02e16f2db56da52992aef622bf55a3b45ec538bc2eedadc9419
-	nettle_filename=nettle-3.5.1.tar.gz
-	nettle_source_dir=nettle-3.5.1
-	compile_nettle=1
-    else
-	echo -e "${REDB}Error: GnuTLS v${gnutls_version} is unknown!${CLR}"
-	exit 1
-    fi
-
-    # Download GnuTLS.
-    echo -e "\n${YELLOWB}Downloading GnuTLS v${gnutls_version}...${CLR}\n"
-    wget $gnutls_url
-
-    # Download nettle.
-    echo -e "\n${YELLOWB}Downloading nettle library v${nettle_version}...${CLR}\n"
-    wget $nettle_url
-
-    # Check the SHA256 hashes.
-    gnutls_actual_sha256=`sha256sum ${gnutls_filename} | cut -f1 -d" "`
-    nettle_actual_sha256=`sha256sum ${nettle_filename} | cut -f1 -d" "`
-
-    if [[ ($gnutls_actual_sha256 != $gnutls_expected_sha256) || ($nettle_actual_sha256 != $nettle_expected_sha256) ]]; then
-	echo -e "${REDB}GnuTLS/nettle actual hashes differ from expected hashes! ${CLR}\n"
-	echo -e "\tGnuTLS expected hash: ${gnutls_expected_sha256}\n"
-	echo -e "\tGnuTLS actual hash:   ${gnutls_actual_sha256}\n"
-	echo -e "\tnettle expected hash: ${nettle_expected_sha256}\n"
-	echo -e "\tnettle actual hash:   ${nettle_actual_sha256}\n\n"
-	exit 1
-    else
-	echo -e "${GREEN}Hashes verified.${CLR}\n"
-    fi
-
-    tar xJf $gnutls_filename
-
-    if [[ $compile_nettle == 1 ]]; then
-	tar xzf $nettle_filename
-	mv $nettle_source_dir nettle
-
-	# Configure and compile nettle.
-	echo -e "\n\n${YELLOWB}Compiling nettle v${nettle_version} with \"-j ${compile_num_procs}\"...${CLR}"
-	pushd nettle
-	./configure && make -j $compile_num_procs
-
-	if [[ ! -f libnettle.so || ! -f libhogweed.so ]]; then
-	    echo -e "${REDB}Error: compilation failed!  libnettle.so and/or libhogweed.so not found.${CLR}"
-	    exit 1
-	fi
-	popd
-    fi
-
-    # Configure and compile GnuTLS.
-    echo -e "\n\n${YELLOWB}Compiling GnuTLS v${gnutls_version} with \"-j ${compile_num_procs}\"...${CLR}"
-    pushd $gnutls_source_dir
-    nettle_source_dir_abs=`readlink -m ../nettle`
-    nettle_parent_dir=`readlink -m ..`
-    NETTLE_CFLAGS=-I${nettle_parent_dir} NETTLE_LIBS="-L${nettle_source_dir_abs} -lnettle" HOGWEED_CFLAGS=-I${nettle_parent_dir} HOGWEED_LIBS="-L${nettle_source_dir_abs} -lhogweed" ./configure --with-included-libtasn1 --with-included-unistring --without-p11-kit --disable-guile
-    make CFLAGS=-I${nettle_parent_dir} LDFLAGS="-L${nettle_source_dir_abs} -lhogweed -lnettle" -j $compile_num_procs
-
-    # Ensure that the gnutls-serv and gnutls-cli tools were built
-    if [[ (! -f "src/.libs/gnutls-cli") || (! -f "src/.libs/gnutls-serv") ]]; then
-	echo -e "${REDB}Error: compilation failed!  gnutls-cli and/or gnutls-serv not found.${CLR}\n"
-	exit 1
-    fi
-
-    # Copy the gnutls-cli and gnutls-serv apps to the top-level docker building dir as, e.g. 'gnutls-cli-v3.6.11.1'.  Then we can delete the source code directory and move on.
-    cp "lib/.libs/libgnutls.so" "../libgnutls.so.30"
-    cp "src/.libs/gnutls-cli" "../gnutls-cli-v${gnutls_version}"
-    cp "src/.libs/gnutls-serv" "../gnutls-serv-v${gnutls_version}"
-    cp "${nettle_source_dir_abs}/libhogweed.so" "../libhogweed.so.5"
-    cp "${nettle_source_dir_abs}/libnettle.so" "../libnettle.so.7"
-    popd
-
-
-    # Delete the source code directory now that we built the tools and moved them out.
-    rm -rf ${gnutls_source_dir}
-    echo -e "\n\n${YELLOWB}Compilation of GnuTLS v${gnutls_version} finished.${CLR}\n\n"
 }
 
 
@@ -239,12 +47,6 @@ function create_docker_image {
     # Make the temp directory our working directory for the duration of the build
     # process.
     pushd $TMP_DIR > /dev/null
-
-    # Compile the versions of OpenSSL.
-    compile_openssl_all
-
-    # Compile the versions of GnuTLS.
-    compile_gnutls_all
 
     # Now build the docker image!
     echo -e "${YELLOWB}Creating docker image...$IMAGE_NAME:$IMAGE_VERSION ${CLR}"
@@ -276,6 +78,8 @@ function run_tests {
     run_test_16 "0"
     run_test_17 "0"
     run_test_18 "0"
+    run_test_19 "0"
+    #run_test_20 "0"  # Unique GnuTLS algorithms that sslscan does not currently detect.  Disabled until they are implemented.
 }
 
 
@@ -327,17 +131,15 @@ function run_test_8 {
 }
 
 
-# Runs nginx with client certificate checking (signed by the CA in docker_test/ca_cert.pem).  sslscan will connect and make an HTTP request (--http).  The HTTP response code should be 200 to signify that the certificate was accepted.  Otherwise, nginx returns HTTP code 400 if no client certificates were presented.
+# OpenSSL v3.5.0, TLSv1.3 only, with all supported groups.
 function run_test_9 {
-    #run_test $1 '9' "/usr/sbin/nginx -c /etc/nginx/nginx_test9.conf" "--no-fallback --no-renegotiation --no-compression --no-heartbleed --certs=docker_test/cert_3072.crt --pk=docker_test/key_3072.pem --http"
-    echo "Test #9 skipped."
+    run_test $1 '9' "/openssl_v3.5.0/openssl s_server -accept 443 -key /etc/ssl/key_3072.pem -cert /etc/ssl/cert_3072.crt -tls1_3 -groups secp256r1:secp384r1:secp521r1:x25519:x448:brainpoolP256r1tls13:brainpoolP384r1tls13:brainpoolP512r1tls13:ffdhe2048:ffdhe3072:ffdhe4096:ffdhe6144:ffdhe8192:MLKEM512:MLKEM768:MLKEM1024:SecP256r1MLKEM768:X25519MLKEM768:SecP384r1MLKEM1024" ""
 }
 
 
-# Runs nginx with client certificate checking, just as above.  Except this time, we connect with no certificate.  The HTTP response code should be "400 Bad Request".
+# GnuTLS v3.8.9, TLSv1.3 only, with all supported groups.
 function run_test_10 {
-    #run_test $1 '10' "/usr/sbin/nginx -c /etc/nginx/nginx_test9.conf" "--no-fallback --no-renegotiation --no-compression --no-heartbleed --http"
-    echo "Test #10 skipped."
+    run_test $1 '10' "/gnutls-3.8.9/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_3072.crt --x509keyfile=/etc/ssl/key_3072.pem --priority=NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+GROUP-SECP192R1:+GROUP-SECP224R1:+GROUP-SECP256R1:+GROUP-SECP384R1:+GROUP-SECP521R1:+GROUP-X25519:+GROUP-GC256B:+GROUP-GC512A:+GROUP-X448:+GROUP-FFDHE2048:+GROUP-FFDHE3072:+GROUP-FFDHE4096:+GROUP-FFDHE6144:+GROUP-FFDHE8192" ""
 }
 
 
@@ -353,7 +155,7 @@ function run_test_12 {
 }
 
 
-# Default GnuTLS.
+# GnuTLS 3.6.11.1, default options.
 function run_test_13 {
     run_test $1 '13' "/gnutls-3.6.11.1/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_3072.crt --x509keyfile=/etc/ssl/key_3072.pem" ""
 }
@@ -389,9 +191,19 @@ function run_test_18 {
 }
 
 
-# Run a test.  Set the first argument to '1' to enable test debugging.
-# Second argument is the test number to run.  Third argument is the executable and
-# its args to be run inside the container..
+# Mbed TLS, default settings.
+function run_test_19 {
+    run_test $1 '19' "/mbedtls_v3.6.3.1/ssl_server2 server_port=443 crt_file=/etc/ssl/cert_3072.crt key_file=/etc/ssl/key_3072.pem" ""
+}
+
+
+# Many unique algorithms only present in GnuTLS.
+function run_test_20 {
+    run_test $1 '20' "/gnutls-3.8.9/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem --priority=NORMAL:+GOST28147-TC26Z-CFB:+GOST28147-CPA-CFB:+GOST28147-CPB-CFB:+GOST28147-CPC-CFB:+GOST28147-CPD-CFB:+AES-128-XTS:+AES-256-XTS:+AES-128-SIV:+AES-256-SIV:+AES-128-SIV-GCM:+AES-256-SIV-GCM:+GOST28147-TC26Z-CNT:+MAGMA-CTR-ACPKM:+KUZNYECHIK-CTR-ACPKM:+GOSTR341194:+STREEBOG-256:+STREEBOG-512:+VKO-GOST-12:+RSA-EXPORT:+GROUP-GC256B:+GROUP-GC512A:+SIGN-ECDSA-SHA3-224:+SIGN-ECDSA-SHA3-256:+SIGN-ECDSA-SHA3-384:+SIGN-ECDSA-SHA3-512:+SIGN-RSA-SHA3-224:+SIGN-RSA-SHA3-256:+SIGN-RSA-SHA3-384:+SIGN-RSA-SHA3-512:+SIGN-DSA-SHA3-224:+SIGN-DSA-SHA3-256:+SIGN-DSA-SHA3-384:+SIGN-DSA-SHA3-512:+SIGN-RSA-RAW:+SIGN-GOSTR341012-512:+SIGN-GOSTR341012-256:+SIGN-GOSTR341001:+SIGN-DSA-SHA384:+SIGN-DSA-SHA512" ""
+}
+
+
+# Run a test.  Set the first argument to '1' to enable test debugging.  Second argument is the test number to run.  Third argument is the executable and its args to be run inside the container.
 function run_test {
     debug=$1
     test_number=$2
@@ -417,9 +229,7 @@ function run_test {
     # Wait 250ms to ensure that the services in the container are fully initialized.
     sleep 0.25
 
-    # Run sslscan and cut out the first two lines.  Those contain the version number
-    # and local version of OpenSSL, which can change over time (and when they do, this
-    # would break the test if they were left in).
+    # Run sslscan and cut out the first two lines.  Those contain the version number and local version of OpenSSL, which can change over time (and when they do, this would break the test if they were left in).
     ./sslscan $sslscan_additional_args 127.0.0.1:4443 | tail -n +3 > $test_result_stdout
     if [[ $? != 0 ]]; then
 	echo -e "${REDB}Failed to run sslscan! (exit code: $?)${CLR}"
@@ -454,8 +264,7 @@ function run_test {
 }
 
 
-# Instead of spinning up a docker instance, this will run a test using a host on the
-# public Internet.
+# Instead of spinning up a docker instance, this will run a test using a host on the public Internet.
 function run_test_internet {
     test_number=$1
     command=$2

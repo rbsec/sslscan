@@ -1,0 +1,117 @@
+[0m
+[32mConnected to 127.0.0.1[0m
+
+Testing SSL server [32m127.0.0.1[0m on port [32m4443[0m using SNI name [32m127.0.0.1[0m
+
+  [1;34mSSL/TLS Protocols:[0m
+SSLv2     [32mdisabled[0m
+SSLv3     [32mdisabled[0m
+TLSv1.0   [32mdisabled[0m
+TLSv1.1   [32mdisabled[0m
+TLSv1.2   enabled
+TLSv1.3   [32menabled[0m
+
+  [1;34mTLS Fallback SCSV:[0m
+Server [31mdoes not[0m support TLS Fallback SCSV
+
+  [1;34mTLS renegotiation:[0m
+Session renegotiation [32mnot supported[0m
+
+  [1;34mTLS Compression:[0m
+Compression [32mdisabled[0m
+
+  [1;34mHeartbleed:[0m
+TLSv1.3 [32mnot vulnerable[0m to heartbleed
+TLSv1.2 [32mnot vulnerable[0m to heartbleed
+
+  [1;34mSupported Server Cipher(s):[0m
+[32mPreferred[0m [32mTLSv1.3[0m  [32m128[0m bits  [32mTLS_AES_128_GCM_SHA256       [0m Curve [32m25519[0m DHE 253
+Accepted  [32mTLSv1.3[0m  [32m256[0m bits  [32mTLS_AES_256_GCM_SHA384       [0m Curve [32m25519[0m DHE 253
+Accepted  [32mTLSv1.3[0m  [32m256[0m bits  [32mTLS_CHACHA20_POLY1305_SHA256 [0m Curve [32m25519[0m DHE 253
+Accepted  [32mTLSv1.3[0m  [32m128[0m bits  TLS_AES_128_CCM_SHA256        Curve [32m25519[0m DHE 253
+Accepted  [32mTLSv1.3[0m  [31m64[0m bits   [31mTLS_AES_128_CCM_8_SHA256     [0m Curve [32m25519[0m DHE 253
+[32mPreferred[0m TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-CHACHA20-POLY1305  [0m Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-CHACHA20-POLY1305    [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-AES256-GCM-SHA384  [0m Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-AES256-GCM-SHA384    [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-CCM            DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  ECDHE-RSA-AES256-SHA384       Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-SHA256         DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  [33mECDHE-RSA-AES256-SHA         [0m Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m256[0m bits  [33mDHE-RSA-AES256-SHA           [0m DHE 2048 bits
+Accepted  TLSv1.2  [31m64[0m bits   [31mDHE-RSA-AES256-CCM8          [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  ECDHE-RSA-CAMELLIA256-SHA384  Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-CAMELLIA256-SHA256    DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  [33mDHE-RSA-CAMELLIA256-SHA      [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  [32mECDHE-ARIA256-GCM-SHA384     [0m Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m256[0m bits  [32mDHE-RSA-ARIA256-GCM-SHA384   [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  [32mECDHE-RSA-AES128-GCM-SHA256  [0m Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m128[0m bits  [32mDHE-RSA-AES128-GCM-SHA256    [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-CCM            DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  ECDHE-RSA-AES128-SHA256       Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA256         DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  [33mECDHE-RSA-AES128-SHA         [0m Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m128[0m bits  [33mDHE-RSA-AES128-SHA           [0m DHE 2048 bits
+Accepted  TLSv1.2  [31m64[0m bits   [31mDHE-RSA-AES128-CCM8          [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  ECDHE-RSA-CAMELLIA128-SHA256  Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-CAMELLIA128-SHA256    DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  [33mDHE-RSA-CAMELLIA128-SHA      [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m128[0m bits  [32mECDHE-ARIA128-GCM-SHA256     [0m Curve [32m25519[0m DHE 253
+Accepted  TLSv1.2  [32m128[0m bits  [32mDHE-RSA-ARIA128-GCM-SHA256   [0m DHE 2048 bits
+Accepted  TLSv1.2  [32m256[0m bits  AES256-GCM-SHA384            
+Accepted  TLSv1.2  [32m256[0m bits  AES256-CCM                   
+Accepted  TLSv1.2  [32m256[0m bits  AES256-SHA256                
+Accepted  TLSv1.2  [32m256[0m bits  [33mAES256-SHA                   [0m
+Accepted  TLSv1.2  [31m64[0m bits   [31mAES256-CCM8                  [0m
+Accepted  TLSv1.2  [32m256[0m bits  CAMELLIA256-SHA256           
+Accepted  TLSv1.2  [32m256[0m bits  [33mCAMELLIA256-SHA              [0m
+Accepted  TLSv1.2  [32m256[0m bits  ARIA256-GCM-SHA384           
+Accepted  TLSv1.2  [32m128[0m bits  AES128-GCM-SHA256            
+Accepted  TLSv1.2  [32m128[0m bits  AES128-CCM                   
+Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA256                
+Accepted  TLSv1.2  [32m128[0m bits  [33mAES128-SHA                   [0m
+Accepted  TLSv1.2  [31m64[0m bits   [31mAES128-CCM8                  [0m
+Accepted  TLSv1.2  [32m128[0m bits  CAMELLIA128-SHA256           
+Accepted  TLSv1.2  [32m128[0m bits  [33mCAMELLIA128-SHA              [0m
+Accepted  TLSv1.2  [32m128[0m bits  ARIA128-GCM-SHA256           
+Accepted  TLSv1.2  [32m256[0m bits  [32mTLS_ECDHE_RSA_WITH_CAMELLIA_256_GCM_SHA384[0m
+Accepted  TLSv1.2  [32m256[0m bits  [32mTLS_DHE_RSA_WITH_CAMELLIA_256_GCM_SHA384[0m
+Accepted  TLSv1.2  [32m256[0m bits  TLS_ECDHE_RSA_WITH_ARIA_256_CBC_SHA384
+Accepted  TLSv1.2  [32m256[0m bits  TLS_DHE_RSA_WITH_ARIA_256_CBC_SHA384
+Accepted  TLSv1.2  [32m128[0m bits  [32mTLS_ECDHE_RSA_WITH_CAMELLIA_128_GCM_SHA256[0m
+Accepted  TLSv1.2  [32m128[0m bits  [32mTLS_DHE_RSA_WITH_CAMELLIA_128_GCM_SHA256[0m
+Accepted  TLSv1.2  [32m128[0m bits  TLS_ECDHE_RSA_WITH_ARIA_128_CBC_SHA256
+Accepted  TLSv1.2  [32m128[0m bits  TLS_DHE_RSA_WITH_ARIA_128_CBC_SHA256
+Accepted  TLSv1.2  [32m256[0m bits  TLS_RSA_WITH_CAMELLIA_256_GCM_SHA384
+Accepted  TLSv1.2  [32m256[0m bits  TLS_RSA_WITH_ARIA_256_CBC_SHA384
+Accepted  TLSv1.2  [32m128[0m bits  TLS_RSA_WITH_CAMELLIA_128_GCM_SHA256
+Accepted  TLSv1.2  [32m128[0m bits  TLS_RSA_WITH_ARIA_128_CBC_SHA256
+
+  [1;34mServer Key Exchange Group(s):[0m
+TLSv1.3  [32m128[0m bits  secp256r1 (NIST P-256)[0m
+TLSv1.3  [32m192[0m bits  secp384r1 (NIST P-384)[0m
+TLSv1.3  [32m260[0m bits  secp521r1 (NIST P-521)[0m
+TLSv1.3  [32m128[0m bits  [32mx25519[0m
+TLSv1.3  [32m224[0m bits  [32mx448[0m
+TLSv1.3  [33m112[0m bits  [33mffdhe2048[0m
+TLSv1.3  [32m128[0m bits  ffdhe3072[0m
+TLSv1.3  [32m150[0m bits  ffdhe4096[0m
+TLSv1.3  [32m175[0m bits  ffdhe6144[0m
+TLSv1.3  [32m192[0m bits  ffdhe8192[0m
+TLSv1.2  [32m128[0m bits  secp256r1 (NIST P-256)[0m
+TLSv1.2  [32m192[0m bits  secp384r1 (NIST P-384)[0m
+TLSv1.2  [32m260[0m bits  secp521r1 (NIST P-521)[0m
+TLSv1.2  [32m128[0m bits  brainpoolP256r1[0m
+TLSv1.2  [32m192[0m bits  brainpoolP384r1[0m
+TLSv1.2  [32m256[0m bits  brainpoolP512r1[0m
+TLSv1.2  [32m128[0m bits  [32mx25519[0m
+TLSv1.2  [32m224[0m bits  [32mx448[0m
+
+  [1;34mSSL Certificate:[0m
+Signature Algorithm: [32msha256WithRSAEncryption[0m
+RSA Key Strength:    [32m3072[0m
+
+Subject:  lmgtfy.com
+Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere[0m
+Not valid before: [32mDec  3 04:07:43 2019 GMT[0m
+Not valid after:  [32mDec  3 04:07:43 2029 GMT[0m
