@@ -77,7 +77,7 @@ Key changes are as follows:
 
 ### Building on Linux
 
-It is recommended to ignore the OpenSSL system installation and statically build against your own version. Although this results in a more resource-heavy `sslscan` binary (file size, memory consumption, etc.), this allows some additional checks such as TLS compression. Note that the minimum OpenSSL version required by sslscan is 3.5.0 (LTS), so if your distro ships an older version then building against it will not work, and you will have to do a static build.
+It is recommended to ignore the OpenSSL system installation and statically build against your own version. Although this results in a more resource-heavy `sslscan` binary (file size, memory consumption, etc.), this allows some additional checks such as TLS compression. Note that as of sslscan version 2.2.0, the minimum OpenSSL version required by sslscan is 3.5.0 (LTS), so if your distro ships an older version then building against it will not work, and you will have to do a static build.
 
 To compile your own OpenSSL version, you'll probably need to install the OpenSSL build dependencies. The commands below can be used to do this on Debian.
 

@@ -1,11 +1,11 @@
 Changelog
 =========
 
-Version: TBC
-Date   : TBC
+Version: 2.2.0
+Date   : 15/06/2025
 Author : rbsec <robin@rbsec.net>
 Changes: The following are a list of changes
-		 > OpenSSL 3.5 is now the minimum version to build against
+		 > OpenSSL 3.5 is now the minimum version to build against (credit tetlowgm)
        > Various code cleanup dropping support for legacy OpenSSL versions (credit tetlowgm)
        > Handle some servers that rejecting large ClientHello messages (credit jtesta)
        > Add support for new post-quantum groups (credit jtesta)
