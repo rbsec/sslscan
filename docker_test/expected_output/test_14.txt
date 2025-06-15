@@ -37,16 +37,16 @@ Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-CCM            DHE 8192 bit
 Accepted  TLSv1.2  [32m128[0m bits  [32mECDHE-RSA-AES128-GCM-SHA256  [0m Curve P-521 DHE 521
 Accepted  TLSv1.2  [32m128[0m bits  [32mDHE-RSA-AES128-GCM-SHA256    [0m DHE 8192 bits
 Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-CCM            DHE 8192 bits
-Accepted  TLSv1.2  [32m256[0m bits  ECDHE-RSA-AES256-SHA          Curve P-521 DHE 521
-Accepted  TLSv1.2  [32m256[0m bits  DHE-RSA-AES256-SHA            DHE 8192 bits
-Accepted  TLSv1.2  [32m128[0m bits  ECDHE-RSA-AES128-SHA          Curve P-521 DHE 521
-Accepted  TLSv1.2  [32m128[0m bits  DHE-RSA-AES128-SHA            DHE 8192 bits
+Accepted  TLSv1.2  [32m256[0m bits  [33mECDHE-RSA-AES256-SHA         [0m Curve P-521 DHE 521
+Accepted  TLSv1.2  [32m256[0m bits  [33mDHE-RSA-AES256-SHA           [0m DHE 8192 bits
+Accepted  TLSv1.2  [32m128[0m bits  [33mECDHE-RSA-AES128-SHA         [0m Curve P-521 DHE 521
+Accepted  TLSv1.2  [32m128[0m bits  [33mDHE-RSA-AES128-SHA           [0m DHE 8192 bits
 Accepted  TLSv1.2  [32m256[0m bits  AES256-GCM-SHA384            
 Accepted  TLSv1.2  [32m256[0m bits  AES256-CCM                   
 Accepted  TLSv1.2  [32m128[0m bits  AES128-GCM-SHA256            
 Accepted  TLSv1.2  [32m128[0m bits  AES128-CCM                   
-Accepted  TLSv1.2  [32m256[0m bits  AES256-SHA                   
-Accepted  TLSv1.2  [32m128[0m bits  AES128-SHA                   
+Accepted  TLSv1.2  [32m256[0m bits  [33mAES256-SHA                   [0m
+Accepted  TLSv1.2  [32m128[0m bits  [33mAES128-SHA                   [0m
 
   [1;34mServer Key Exchange Group(s):[0m
 TLSv1.3  [32m260[0m bits  secp521r1 (NIST P-521)[0m

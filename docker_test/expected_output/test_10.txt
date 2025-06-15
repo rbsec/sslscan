@@ -8,17 +8,46 @@ SSLv2     [32mdisabled[0m
 SSLv3     [32mdisabled[0m
 TLSv1.0   [32mdisabled[0m
 TLSv1.1   [32mdisabled[0m
-TLSv1.2   enabled
-TLSv1.3   [33mdisabled[0m
+TLSv1.2   disabled
+TLSv1.3   [32menabled[0m
+
+  [1;34mTLS Fallback SCSV:[0m
+Server [32msupports[0m TLS Fallback SCSV
+
+  [1;34mTLS renegotiation:[0m
+Session renegotiation [32mnot supported[0m
+
+  [1;34mTLS Compression:[0m
+Compression [32mdisabled[0m
+
+  [1;34mHeartbleed:[0m
+TLSv1.3 [32mnot vulnerable[0m to heartbleed
 
   [1;34mSupported Server Cipher(s):[0m
-[32mPreferred[0m 400 Bad Request  TLSv1.2  [32m256[0m bits  [32mECDHE-RSA-CHACHA20-POLY1305  [0m Curve [32m25519[0m DHE 253
+[32mPreferred[0m [32mTLSv1.3[0m  [32m128[0m bits  [32mTLS_AES_128_GCM_SHA256       [0m Curve [32m25519[0m DHE 253
+Accepted  [32mTLSv1.3[0m  [32m256[0m bits  [32mTLS_AES_256_GCM_SHA384       [0m Curve [32m25519[0m DHE 253
+Accepted  [32mTLSv1.3[0m  [32m256[0m bits  [32mTLS_CHACHA20_POLY1305_SHA256 [0m Curve [32m25519[0m DHE 253
+Accepted  [32mTLSv1.3[0m  [32m128[0m bits  TLS_AES_128_CCM_SHA256        Curve [32m25519[0m DHE 253
+
+  [1;34mServer Key Exchange Group(s):[0m
+TLSv1.3  [31m96[0m bits  [31msecp192r1[0m
+TLSv1.3  [33m112[0m bits  [33msecp224r1[0m
+TLSv1.3  [32m128[0m bits  secp256r1 (NIST P-256)[0m
+TLSv1.3  [32m192[0m bits  secp384r1 (NIST P-384)[0m
+TLSv1.3  [32m260[0m bits  secp521r1 (NIST P-521)[0m
+TLSv1.3  [32m128[0m bits  [32mx25519[0m
+TLSv1.3  [32m224[0m bits  [32mx448[0m
+TLSv1.3  [33m112[0m bits  [33mffdhe2048[0m
+TLSv1.3  [32m128[0m bits  ffdhe3072[0m
+TLSv1.3  [32m150[0m bits  ffdhe4096[0m
+TLSv1.3  [32m175[0m bits  ffdhe6144[0m
+TLSv1.3  [32m192[0m bits  ffdhe8192[0m
 
   [1;34mSSL Certificate:[0m
 Signature Algorithm: [32msha256WithRSAEncryption[0m
-RSA Key Strength:    3072
+RSA Key Strength:    [32m3072[0m
 
 Subject:  lmgtfy.com
-Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere
+Issuer:   /C=XX/ST=Nowhere in particular/L=Nowhere[0m
 Not valid before: [32mDec  3 04:07:43 2019 GMT[0m
 Not valid after:  [32mDec  3 04:07:43 2029 GMT[0m
