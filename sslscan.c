@@ -4143,8 +4143,7 @@ int main(int argc, char *argv[])
     switch (mode)
     {
         case mode_version:
-            printf("%s\t\t%s\n\t\t%s\n%s", COL_BLUE, VERSION,
-                    OpenSSL_version(OPENSSL_VERSION), RESET);
+            printf("%s\n%s", VERSION, OpenSSL_version(OPENSSL_VERSION));
             break;
 
         case mode_help:
