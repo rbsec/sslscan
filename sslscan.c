@@ -5329,7 +5329,8 @@ void tlsExtensionAddSupportedGroups(unsigned int tls_version, bs *tls_extensions
       0x01, 0x03, // FFDHE6144
       0x01, 0x04, // FFDHE8192
       0x11, 0xec, // X25519MLKEM768
-    }, 28);
+      0x63, 0x99, // X25519Kyber768Draft00
+    }, 30);
   } else {
     bs_append_bytes(tls_extensions, (unsigned char []) {
       0x00, 0x0a, // Extension: supported_groups (10)
@@ -5649,6 +5650,7 @@ int testSupportedGroups(struct sslCheckOptions *options) {
 #define NID_TYPE_SECP256R1MLKEM768 9
 #define NID_TYPE_SECP384R1MLKEM1024 10
 #define NID_TYPE_BRAINPOOL_TLS13 11
+#define NID_TYPE_X25519Kyber768Draft00 12
 
   /* Bit strength of DHE 2048 and 3072-bit moduli is taken directly from NIST SP 800-57 pt.1, rev4., pg. 53; DHE 4096, 6144, and 8192 are estimated using that document. */
   struct group_key_exchange group_key_exchanges[] = {
@@ -5704,6 +5706,7 @@ int testSupportedGroups(struct sslCheckOptions *options) {
     {0x11eb, "SecP256r1MLKEM768", 192, COL_PLAIN, -1, NID_TYPE_SECP256R1MLKEM768, 1249},
     {0x11ec, "X25519MLKEM768", 192, COL_GREEN, -1, NID_TYPE_X25519MLKEM768, 1216},
     {0x11ed, "SecP384r1MLKEM1024", 256, COL_PLAIN, -1, NID_TYPE_SECP384R1MLKEM1024, 1665},
+    {0x6399, "X25519Kyber768Draft00", 192, COL_GREEN, -1, NID_TYPE_X25519Kyber768Draft00, 1216},
   };
 
 
@@ -5777,7 +5780,7 @@ int testSupportedGroups(struct sslCheckOptions *options) {
 
         bs_append_mlkem(1024, key_exchange);
 
-      } else if (nid_type == NID_TYPE_X25519MLKEM768) {
+      } else if ((nid_type == NID_TYPE_X25519MLKEM768) || ((nid_type == NID_TYPE_X25519Kyber768Draft00))) {
         /* Only defined for TLS v1.3. */
         if (tls_version != TLSv1_3)
           continue;
