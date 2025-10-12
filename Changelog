@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version: 2.2.1
+Date   : TBC
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Add the "strength" field to the XML output for groups
+
 Version: 2.2.0
 Date   : 15/06/2025
 Author : rbsec <robin@rbsec.net>

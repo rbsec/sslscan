@@ -6046,16 +6046,23 @@ int testSupportedGroups(struct sslCheckOptions *options) {
       }
 
       char *bits_color = RESET;
-      if (group_bit_strength < 112)
+      char *strength;
+      if (group_bit_strength < 112) {
         bits_color = COL_RED;
-      else if (group_bit_strength < 128)
+        strength = "weak";
+      }
+      else if (group_bit_strength < 128) {
         bits_color = COL_YELLOW;
-      else
+        strength = "medium";
+      }
+      else {
         bits_color = COL_GREEN;
+        strength = "good";
+      }
 
       char *printable_TLS_name = getPrintableTLSName(tls_version);
       printf("%s  %s%d%s bits  %s%s%s\n", printable_TLS_name, bits_color, group_bit_strength, RESET, color, group_name, RESET);
-      printf_xml("  <group sslversion=\"%s\" bits=\"%d\" name=\"%s\" id=\"0x%04x\" />\n", printable_TLS_name, group_bit_strength, group_name, group_id);
+      printf_xml("  <group sslversion=\"%s\" bits=\"%d\" name=\"%s\" id=\"0x%04x\" strength=\"%s\" />\n", printable_TLS_name, group_bit_strength, group_name, group_id, strength);
     }
   }
 
