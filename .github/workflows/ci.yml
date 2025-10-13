@@ -10,27 +10,27 @@ jobs:
       matrix:
         cc: [clang, gcc]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: build with ${{ matrix.cc }}
         run: |
           # Since ubuntu-latest does not ship with OpenSSL >= v3.5, dynamic linking will fail unless we build and install it.
-          git clone -b openssl-3.5 https://github.com/openssl/openssl
+          git clone -b openssl-3.6 https://github.com/openssl/openssl
           pushd openssl
           git fetch --tags
-          git checkout openssl-3.5.0
-          ./config --prefix=/opt/openssl35 shared
+          git checkout openssl-3.6.0
+          ./config --prefix=/opt/openssl36 shared
           make -j $(nproc --all)
           make install
           popd
 
-          make sslscan LDFLAGS=-L/opt/openssl35 CFLAGS=-I/opt/openssl35/include
+          make sslscan LDFLAGS=-L/opt/openssl36 CFLAGS=-I/opt/openssl36/include
           make static
         env:
           CC: ${{ matrix.cc }}
   build_mingw:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: install mingw-w64
         run: |
           sudo apt-get update -qq
