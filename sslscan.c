@@ -4687,6 +4687,16 @@ void bs_append_bs(bs *dst, bs *src) {
 }
 
 /* Returns the number of bytes in this byte string. */
+size_t bs_reset(bs *b) {
+  if (b == NULL)
+    return 0;
+
+  b->len = 0;
+
+  return 0;
+}
+
+/* Returns the number of bytes in this byte string. */
 size_t bs_get_len(bs *b) {
   if (b == NULL)
     return 0;
@@ -5361,22 +5371,26 @@ bs *getTLSHandshakeRecord(int s) {
   bs *tls_record = NULL;
   bs_new_size(&tls_record, 512);
 
-  /* Read in the first 5 bytes to get the length of the rest of the record. */
-  int err = bs_read_socket(tls_record, s, 5);
-  if (err != 0)
-    goto err;
+  while (1) {
+      /* Read in the first 5 bytes to get the length of the rest of the record. */
+      int err = bs_read_socket(tls_record, s, 5);
+      if (err != 0)
+        goto err;
 
-  /* Ensure that the Content Type is Handshake (22). */
-  if (bs_get_byte(tls_record, 0) != 0x16)
-    goto err;
+      /* Get the length of the record. */
+      unsigned short packet_len = (bs_get_byte(tls_record, 3) << 8) | bs_get_byte(tls_record, 4);
 
-  /* Get the length of the record. */
-  unsigned short packet_len = (bs_get_byte(tls_record, 3) << 8) | bs_get_byte(tls_record, 4);
+      /* Read in the rest of the record. */
+      err = bs_read_socket(tls_record, s, packet_len);
+      if (err != 0)
+        goto err;
 
-  /* Read in the rest of the record. */
-  err = bs_read_socket(tls_record, s, packet_len);
-  if (err != 0)
-    goto err;
+      /* Find that the Content Type is Handshake (22). */
+      if (bs_get_byte(tls_record, 0) == 0x16)
+        break;
+
+      bs_reset(tls_record);
+  }
 
   return tls_record;
 
