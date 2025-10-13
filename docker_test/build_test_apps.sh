@@ -25,14 +25,14 @@ fi
 
 # Compile all version of GnuTLS.
 function compile_gnutls_all {
-    compile_gnutls '3.6.11.1'
-    compile_gnutls '3.8.9'
+    compile_gnutls '3.6.16'
+    compile_gnutls '3.8.10'
 }
 
 
 # Compile all versions of Mbed TLS.
 function compile_mbedtls_all {
-    compile_mbedtls '3.6.3.1'
+    compile_mbedtls '3.6.4'
 }
 
 
@@ -41,7 +41,7 @@ function compile_openssl_all {
     compile_openssl '1.0.0'
     compile_openssl '1.0.2'
     compile_openssl '1.1.1'
-    compile_openssl '3.5.0'
+    compile_openssl '3.6.0'
 }
 
 
@@ -51,16 +51,16 @@ function compile_mbedtls {
 
     git_tag=
     output_dir=
-    if [[ $version == '3.6.3.1' ]]; then
-	git_tag="v3.6.3.1"
-        output_dir="mbedtls_v3.6.3.1_dir"
+    if [[ $version == '3.6.4' ]]; then
+	      git_tag="v3.6.4"
+        output_dir="mbedtls_v3.6.4_dir"
     else
 	echo -e "${REDB}Error: Mbed TLS v${version} is unknown!${CLR}"
 	exit 1
     fi
 
     echo -e "\n${YELLOWB}Downloading Mbed TLS v${version}...${CLR}\n"
-    git clone --depth 1 -b ${git_tag} https://github.com/Mbed-TLS/mbedtls ${output_dir}
+    git clone --depth 1 --recurse-submodules -b ${git_tag} https://github.com/Mbed-TLS/mbedtls ${output_dir}
 
     echo -e "\n${YELLOWB}Compiling Mbed TLS v${version}...${CLR}\n"
     pushd ${output_dir}
@@ -113,10 +113,10 @@ function compile_openssl {
 	git_tag="OpenSSL_1_1_1-stable"
 	compile_args="enable-weak-ssl-ciphers no-shared zlib"
 	output_dir="openssl_v1.1.1_dir"
-    elif [[ $version == '3.5.0' ]]; then
-	git_tag="openssl-3.5.0"
+    elif [[ $version == '3.6.0' ]]; then
+	git_tag="openssl-3.6.0"
 	compile_args="enable-weak-ssl-ciphers no-shared zlib"
-	output_dir="openssl_v3.5.0_dir"
+	output_dir="openssl_v3.6.0_dir"
     else
 	echo -e "${REDB}Error: OpenSSL v${version} is unknown!${CLR}"
 	exit 1
@@ -163,23 +163,23 @@ function compile_gnutls {
     nettle_version=
     compile_num_procs=${NUM_PROCS}
     compile_nettle=0
-    if [[ "${gnutls_version}" == "3.6.11.1" ]]; then
-	gnutls_url=https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.11.1.tar.xz
-	gnutls_expected_sha256=fbba12f3db9a55dbf027e14111755817ec44b57eabec3e8089aac8ac6f533cf8
-	gnutls_filename=gnutls-3.6.11.1.tar.xz
-	gnutls_source_dir=gnutls-3.6.11.1
-	nettle_version=3.5.1
-	nettle_url=https://ftp.gnu.org/gnu/nettle/nettle-3.5.1.tar.gz
-	nettle_expected_sha256=75cca1998761b02e16f2db56da52992aef622bf55a3b45ec538bc2eedadc9419
-	nettle_filename=nettle-3.5.1.tar.gz
-	nettle_source_dir=nettle-3.5.1
-	compile_nettle=1
-    elif [[ "${gnutls_version}" == "3.8.9" ]]; then
+    if [[ "${gnutls_version}" == "3.6.16" ]]; then
+        gnutls_url=https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.16.tar.xz
+        gnutls_expected_sha256=1b79b381ac283d8b054368b335c408fedcb9b7144e0c07f531e3537d4328f3b3
+        gnutls_filename=gnutls-3.6.16.tar.xz
+        gnutls_source_dir=gnutls-3.6.16
+        nettle_version=3.10.2
+        nettle_url=https://ftp.gnu.org/gnu/nettle/nettle-3.10.2.tar.gz
+        nettle_expected_sha256=fe9ff51cb1f2abb5e65a6b8c10a92da0ab5ab6eaf26e7fc2b675c45f1fb519b5
+        nettle_filename=nettle-3.10.2.tar.gz
+        nettle_source_dir=nettle-3.10.2
+        compile_nettle=1
+    elif [[ "${gnutls_version}" == "3.8.10" ]]; then
         echo "Using platform's nettle library."
-        gnutls_url=https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.9.tar.xz
-	gnutls_expected_sha256=69e113d802d1670c4d5ac1b99040b1f2d5c7c05daec5003813c049b5184820ed
-	gnutls_filename=gnutls-3.8.9.tar.xz
-	gnutls_source_dir=gnutls-3.8.9
+        gnutls_url=https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.10.tar.xz
+        gnutls_expected_sha256=db7fab7cce791e7727ebbef2334301c821d79a550ec55c9ef096b610b03eb6b7
+        gnutls_filename=gnutls-3.8.10.tar.xz
+        gnutls_source_dir=gnutls-3.8.10
     else
 	echo -e "${REDB}Error: GnuTLS v${gnutls_version} is unknown!${CLR}"
 	exit 1
@@ -262,7 +262,7 @@ function compile_gnutls {
 	exit 1
     fi
 
-    # Copy the gnutls-cli and gnutls-serv apps to the top-level docker building dir as, e.g. 'gnutls-cli-v3.6.11.1'.  Then we can delete the source code directory and move on.
+    # Copy the gnutls-cli and gnutls-serv apps to the top-level docker building dir as, e.g. 'gnutls-cli-v3.6.16'.  Then we can delete the source code directory and move on.
     cp "src/gnutls-cli" "/build/gnutls-cli-v${gnutls_version}"
     cp "src/gnutls-serv" "/build/gnutls-serv-v${gnutls_version}"
 
