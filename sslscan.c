@@ -4180,7 +4180,7 @@ int main(int argc, char *argv[])
             printf("  %s--show-ciphers%s       Show supported client ciphers\n", COL_GREEN, RESET);
             printf("  %s--show-cipher-ids%s    Show cipher ids\n", COL_GREEN, RESET);
             printf("  %s--iana-names%s         Use IANA/RFC cipher names rather than OpenSSL ones\n", COL_GREEN, RESET);
-            printf("  %s--show-times%s         Show handhake times in milliseconds\n", COL_GREEN, RESET);
+            printf("  %s--show-times%s         Show handshake times in milliseconds\n", COL_GREEN, RESET);
             printf("\n");
             printf("  %s--no-cipher-details%s  Disable EC curve names and EDH/RSA key lengths output\n", COL_GREEN, RESET);
             printf("  %s--no-ciphersuites%s    Do not check for supported ciphersuites\n", COL_GREEN, RESET);
