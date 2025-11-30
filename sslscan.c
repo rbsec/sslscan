@@ -1497,7 +1497,13 @@ int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
 #ifndef LIBRESSL_VERSION_NUMBER
     EVP_PKEY *key;
     if (!SSL_get_server_tmp_key(s, &key))
+    {
+        if (SSL_version(s) == TLS1_3_VERSION)
+        {
+            printf(" Group %s", SSL_group_to_name(s, SSL_get_negotiated_group(s)));
+        }
         return 1;
+    }
     switch (EVP_PKEY_id(key)) {
     case EVP_PKEY_RSA:
         if (EVP_PKEY_bits(key) <= 1024)
