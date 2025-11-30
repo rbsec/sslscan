@@ -1494,13 +1494,19 @@ int testHeartbleed(struct sslCheckOptions *options, const SSL_METHOD *sslMethod)
 
 int ssl_print_tmp_key(struct sslCheckOptions *options, SSL *s)
 {
+    const char *groupname;
 #ifndef LIBRESSL_VERSION_NUMBER
     EVP_PKEY *key;
     if (!SSL_get_server_tmp_key(s, &key))
     {
         if (SSL_version(s) == TLS1_3_VERSION)
         {
-            printf(" Group %s", SSL_group_to_name(s, SSL_get_negotiated_group(s)));
+            groupname = SSL_group_to_name(s, SSL_get_negotiated_group(s));
+            if (strstr(groupname, "25519")) {
+                printf(" Group %s%s%s", COL_GREEN, groupname, RESET);
+            } else {
+                printf(" Group %s", groupname);
+            }
         }
         return 1;
     }
