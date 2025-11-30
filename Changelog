@@ -2,10 +2,12 @@ Changelog
 =========
 
 Version: 2.2.1
-Date   : TBC
+Date   : 30/11/2025
 Author : rbsec <robin@rbsec.net>
 Changes: The following are a list of changes
 		 > Add the "strength" field to the XML output for groups
+		 > Add support for PQ hybrid key exchange groups (credit malhotrag)
+		 > Show Show PQ groups in cipher output (credit nuxi)
 
 Version: 2.2.0
 Date   : 15/06/2025
