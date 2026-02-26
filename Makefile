@@ -92,14 +92,16 @@ LDFLAGS   += -L/usr/local/lib -L/usr/local/ssl/lib -L/usr/local/opt/openssl/lib 
 CFLAGS    += -I/usr/local/include -I/usr/local/ssl/include -I/usr/local/ssl/include/openssl -I/usr/local/opt/openssl/include -I/opt/local/include -I/opt/local/include/openssl
 endif
 
-# Find the number of processors on the system (used in -j option in building OpenSSL).
+# If -j wasn't passed to make, find the number of processors on the system.
 # Uses /usr/bin/nproc if available, otherwise defaults to 1.
-NUM_PROCS = 1
-ifneq (,$(wildcard /usr/bin/nproc))
-	NUM_PROCS = `/usr/bin/nproc --all`
-endif
-ifeq ($(OS), Darwin)
-	NUM_PROCS = `sysctl -n hw.ncpu`
+ifeq (,$(findstring -j,$(MAKEFLAGS)))
+        JOBS_ARG = -j1
+        ifneq (,$(wildcard /usr/bin/nproc))
+                JOBS_ARG = -j`/usr/bin/nproc --all`
+        endif
+        ifeq ($(OS), Darwin)
+                JOBS_ARG = -j`sysctl -n hw.ncpu`
+        endif
 endif
 
 .PHONY: all sslscan clean realclean install uninstall static opensslpull
@@ -154,12 +156,12 @@ openssl/Makefile: .openssl.is.fresh
 	cd ./openssl; ./Configure -v -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC no-shared enable-weak-ssl-ciphers zlib
 
 openssl/libcrypto.a: openssl/Makefile
-	$(MAKE) -j $(NUM_PROCS) -C openssl depend
-	$(MAKE) -j $(NUM_PROCS) -C openssl build_libs
-#	$(MAKE) -j $(NUM_PROCS) -C openssl test # Disabled because this takes 45+ minutes for OpenSSL v1.1.1.
+	$(MAKE) $(JOBS_ARG) -C openssl depend
+	$(MAKE) $(JOBS_ARG) -C openssl build_libs
+#	$(MAKE) $(JOBS_ARG) -C openssl test # Disabled because this takes 45+ minutes for OpenSSL v1.1.1.
 
 static: openssl/libcrypto.a
-	$(MAKE) -j $(NUM_PROCS) sslscan STATIC_BUILD=TRUE
+	$(MAKE) $(JOBS_ARG) sslscan STATIC_BUILD=TRUE
 
 docker:
 	docker build -t sslscan:sslscan .
