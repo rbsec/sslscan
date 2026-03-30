@@ -70,7 +70,10 @@ zlibpull:
 	fi
 
 opensslpull:
-	upstream=`git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.5\.[0-9]+)' | sort -V | tail -n 1` ; \
+	# OpenSSL 3.5.5 breaks the build, so stick on 3.5.4 for now until 3.5.6 is released to fix it
+	# https://github.com/openssl/openssl/issues/29818
+	# upstream=`git ls-remote https://github.com/openssl/openssl | grep -Eo '(openssl-3\.5\.[0-9]+)' | sort -V | tail -n 1` ; \
+	upstream='openssl-3.5.4' ; \
 	if [ -d openssl_mingw -a -d openssl_mingw/.git ]; then \
 		if [ "$$upstream" != "`cd ./openssl_mingw && git describe --exact-match --tags`" ]; then \
 			cd ./openssl_mingw && git fetch --depth 1 origin refs/tags/$$upstream:refs/tags/$$upstream && git checkout $$upstream && touch ../.openssl_mingw.is.fresh ; \
