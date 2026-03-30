@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version: 2.2.2
+Date   : 30/03/2026
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Respect the -j option when building OpenSSL (credit hlein)
+
 Version: 2.2.1
 Date   : 30/11/2025
 Author : rbsec <robin@rbsec.net>
