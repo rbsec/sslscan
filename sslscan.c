@@ -91,6 +91,7 @@
   #include <sys/socket.h>
   #include <sys/select.h>
   #include <fcntl.h>
+  #include <signal.h>
 #endif
 #include <string.h>
 #include <sys/stat.h>
@@ -4151,6 +4152,12 @@ int main(int argc, char *argv[])
 
     // Build the list of ciphers missing from OpenSSL.
     findMissingCiphers();
+
+    // Ignore SIGPIPE, or otherwise we might be aborted by the OS if the remote host closes our socket and we try to write to it
+#ifndef _WIN32
+    signal(SIGPIPE, SIG_IGN);
+#endif
+
 
     switch (mode)
     {
