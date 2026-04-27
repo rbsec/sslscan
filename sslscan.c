@@ -4162,7 +4162,7 @@ int main(int argc, char *argv[])
     switch (mode)
     {
         case mode_version:
-            printf("%s\n%s", VERSION, OpenSSL_version(OPENSSL_VERSION));
+            printf("%s\n%s\n", VERSION, OpenSSL_version(OPENSSL_VERSION));
             break;
 
         case mode_help:
