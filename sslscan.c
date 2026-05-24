@@ -3997,10 +3997,24 @@ int main(int argc, char *argv[])
         else if (strncmp("--connect-timeout=", argv[argLoop], 18) == 0)
             options->connect_timeout = atoi(argv[argLoop] + 18);
 
-        // Sleep between requests (ms)
+        // Sleep between requests (ms). Accept both `--sleep=<ms>` and
+        // `--sleep <ms>` (issue #357 — the latter form silently did nothing).
         else if (strncmp("--sleep=", argv[argLoop], 8) == 0)
         {
             msec = atoi(argv[argLoop] + 8);
+            if (msec >= 0) {
+                options->sleep = msec;
+            }
+        }
+        else if (strcmp("--sleep", argv[argLoop]) == 0)
+        {
+            if (argLoop + 1 >= argc)
+            {
+                printf("%s--sleep%s requires a value in milliseconds (e.g. --sleep 100 or --sleep=100)\n", COL_RED, RESET);
+                exit(1);
+            }
+            argLoop++;
+            msec = atoi(argv[argLoop]);
             if (msec >= 0) {
                 options->sleep = msec;
             }
