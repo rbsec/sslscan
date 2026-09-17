@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version: 2.2.3
+Date   : 17/09/2026
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Ignore SIGPIPE to prevent crashes (credit MarcT512)
+		 > Add --all-groups flag to scan on all TLS protocols (credit jalilm)
+
 Version: 2.2.2
 Date   : 30/03/2026
 Author : rbsec <robin@rbsec.net>
