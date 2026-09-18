@@ -131,15 +131,15 @@ function run_test_8 {
 }
 
 
-# OpenSSL v3.5.0, TLSv1.3 only, with all supported groups.
+# OpenSSL v3.6.0, TLSv1.3 only, with all supported groups.
 function run_test_9 {
-    run_test $1 '9' "/openssl_v3.5.0/openssl s_server -accept 443 -key /etc/ssl/key_3072.pem -cert /etc/ssl/cert_3072.crt -tls1_3 -groups secp256r1:secp384r1:secp521r1:x25519:x448:brainpoolP256r1tls13:brainpoolP384r1tls13:brainpoolP512r1tls13:ffdhe2048:ffdhe3072:ffdhe4096:ffdhe6144:ffdhe8192:MLKEM512:MLKEM768:MLKEM1024:SecP256r1MLKEM768:X25519MLKEM768:SecP384r1MLKEM1024" ""
+    run_test $1 '9' "/openssl_v3.6.0/openssl s_server -accept 443 -key /etc/ssl/key_3072.pem -cert /etc/ssl/cert_3072.crt -tls1_3 -groups secp256r1:secp384r1:secp521r1:x25519:x448:brainpoolP256r1tls13:brainpoolP384r1tls13:brainpoolP512r1tls13:ffdhe2048:ffdhe3072:ffdhe4096:ffdhe6144:ffdhe8192:MLKEM512:MLKEM768:MLKEM1024:SecP256r1MLKEM768:X25519MLKEM768:SecP384r1MLKEM1024" ""
 }
 
 
-# GnuTLS v3.8.9, TLSv1.3 only, with all supported groups.
+# GnuTLS v3.8.10, TLSv1.3 only, with all supported groups.
 function run_test_10 {
-    run_test $1 '10' "/gnutls-3.8.9/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_3072.crt --x509keyfile=/etc/ssl/key_3072.pem --priority=NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+GROUP-SECP192R1:+GROUP-SECP224R1:+GROUP-SECP256R1:+GROUP-SECP384R1:+GROUP-SECP521R1:+GROUP-X25519:+GROUP-GC256B:+GROUP-GC512A:+GROUP-X448:+GROUP-FFDHE2048:+GROUP-FFDHE3072:+GROUP-FFDHE4096:+GROUP-FFDHE6144:+GROUP-FFDHE8192" ""
+    run_test $1 '10' "/gnutls-3.8.10/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_3072.crt --x509keyfile=/etc/ssl/key_3072.pem --priority=NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+GROUP-SECP192R1:+GROUP-SECP224R1:+GROUP-SECP256R1:+GROUP-SECP384R1:+GROUP-SECP521R1:+GROUP-X25519:+GROUP-GC256B:+GROUP-GC512A:+GROUP-X448:+GROUP-FFDHE2048:+GROUP-FFDHE3072:+GROUP-FFDHE4096:+GROUP-FFDHE6144:+GROUP-FFDHE8192" ""
 }
 
 
@@ -155,21 +155,21 @@ function run_test_12 {
 }
 
 
-# GnuTLS 3.6.11.1, default options.
+# GnuTLS 3.6.16, default options.
 function run_test_13 {
-    run_test $1 '13' "/gnutls-3.6.11.1/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_3072.crt --x509keyfile=/etc/ssl/key_3072.pem" ""
+    run_test $1 '13' "/gnutls-3.6.16/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_3072.crt --x509keyfile=/etc/ssl/key_3072.pem" ""
 }
 
 
 # GnuTLS with only TLSv1.2 and TLSv1.3, and secp521r1 and ffdhe8192 groups.
 function run_test_14 {
-    run_test $1 '14' "/gnutls-3.6.11.1/gnutls-serv -p 443 --priority=NORMAL:-VERS-TLS1.1:-VERS-TLS1.0:-GROUP-X25519:-GROUP-SECP256R1:-GROUP-SECP384R1:-GROUP-FFDHE2048:-GROUP-FFDHE3072:-GROUP-FFDHE4096:-GROUP-FFDHE6144 --x509certfile=/etc/ssl/cert_3072.crt --x509keyfile=/etc/ssl/key_3072.pem" ""
+    run_test $1 '14' "/gnutls-3.6.16/gnutls-serv -p 443 --priority=NORMAL:-VERS-TLS1.1:-VERS-TLS1.0:-GROUP-X25519:-GROUP-SECP256R1:-GROUP-SECP384R1:-GROUP-FFDHE2048:-GROUP-FFDHE3072:-GROUP-FFDHE4096:-GROUP-FFDHE6144 --x509certfile=/etc/ssl/cert_3072.crt --x509keyfile=/etc/ssl/key_3072.pem" ""
 }
 
 
 # GnuTLS with an ECDSA certificate (secp256r1 / NIST P-256).
 function run_test_15 {
-    run_test $1 '15' "/gnutls-3.6.11.1/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem" ""
+    run_test $1 '15' "/gnutls-3.6.16/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem" ""
 }
 
 
@@ -187,19 +187,19 @@ function run_test_17 {
 
 # TLSv1.2 with ECDSA-SHA1 signature only.
 function run_test_18 {
-    run_test $1 '18' "/gnutls-3.6.11.1/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem --priority=NONE:-VERS-TLS1.0:-VERS-TLS1.1:+VERS-TLS1.2:-VERS-TLS1.3:+MAC-ALL:+GROUP-ALL:+SIGN-ECDSA-SHA1:+COMP-NULL:+CTYPE-SRV-ALL:+KX-ALL:+CHACHA20-POLY1305:+CAMELLIA-128-GCM:+AES-128-GCM" ""
+    run_test $1 '18' "/gnutls-3.6.16/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem --priority=NONE:-VERS-TLS1.0:-VERS-TLS1.1:+VERS-TLS1.2:-VERS-TLS1.3:+MAC-ALL:+GROUP-ALL:+SIGN-ECDSA-SHA1:+COMP-NULL:+CTYPE-SRV-ALL:+KX-ALL:+CHACHA20-POLY1305:+CAMELLIA-128-GCM:+AES-128-GCM" ""
 }
 
 
 # Mbed TLS, default settings.
 function run_test_19 {
-    run_test $1 '19' "/mbedtls_v3.6.3.1/ssl_server2 server_port=443 crt_file=/etc/ssl/cert_3072.crt key_file=/etc/ssl/key_3072.pem" ""
+    run_test $1 '19' "/mbedtls_v3.6.4/ssl_server2 server_port=443 crt_file=/etc/ssl/cert_3072.crt key_file=/etc/ssl/key_3072.pem" ""
 }
 
 
 # Many unique algorithms only present in GnuTLS.
 function run_test_20 {
-    run_test $1 '20' "/gnutls-3.8.9/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem --priority=NORMAL:+GOST28147-TC26Z-CFB:+GOST28147-CPA-CFB:+GOST28147-CPB-CFB:+GOST28147-CPC-CFB:+GOST28147-CPD-CFB:+AES-128-XTS:+AES-256-XTS:+AES-128-SIV:+AES-256-SIV:+AES-128-SIV-GCM:+AES-256-SIV-GCM:+GOST28147-TC26Z-CNT:+MAGMA-CTR-ACPKM:+KUZNYECHIK-CTR-ACPKM:+GOSTR341194:+STREEBOG-256:+STREEBOG-512:+VKO-GOST-12:+RSA-EXPORT:+GROUP-GC256B:+GROUP-GC512A:+SIGN-ECDSA-SHA3-224:+SIGN-ECDSA-SHA3-256:+SIGN-ECDSA-SHA3-384:+SIGN-ECDSA-SHA3-512:+SIGN-RSA-SHA3-224:+SIGN-RSA-SHA3-256:+SIGN-RSA-SHA3-384:+SIGN-RSA-SHA3-512:+SIGN-DSA-SHA3-224:+SIGN-DSA-SHA3-256:+SIGN-DSA-SHA3-384:+SIGN-DSA-SHA3-512:+SIGN-RSA-RAW:+SIGN-GOSTR341012-512:+SIGN-GOSTR341012-256:+SIGN-GOSTR341001:+SIGN-DSA-SHA384:+SIGN-DSA-SHA512" ""
+    run_test $1 '20' "/gnutls-3.8.10/gnutls-serv -p 443 --x509certfile=/etc/ssl/cert_ecdsa_prime256v1.crt --x509keyfile=/etc/ssl/key_ecdsa_prime256v1.pem --priority=NORMAL:+GOST28147-TC26Z-CFB:+GOST28147-CPA-CFB:+GOST28147-CPB-CFB:+GOST28147-CPC-CFB:+GOST28147-CPD-CFB:+AES-128-XTS:+AES-256-XTS:+AES-128-SIV:+AES-256-SIV:+AES-128-SIV-GCM:+AES-256-SIV-GCM:+GOST28147-TC26Z-CNT:+MAGMA-CTR-ACPKM:+KUZNYECHIK-CTR-ACPKM:+GOSTR341194:+STREEBOG-256:+STREEBOG-512:+VKO-GOST-12:+RSA-EXPORT:+GROUP-GC256B:+GROUP-GC512A:+SIGN-ECDSA-SHA3-224:+SIGN-ECDSA-SHA3-256:+SIGN-ECDSA-SHA3-384:+SIGN-ECDSA-SHA3-512:+SIGN-RSA-SHA3-224:+SIGN-RSA-SHA3-256:+SIGN-RSA-SHA3-384:+SIGN-RSA-SHA3-512:+SIGN-DSA-SHA3-224:+SIGN-DSA-SHA3-256:+SIGN-DSA-SHA3-384:+SIGN-DSA-SHA3-512:+SIGN-RSA-RAW:+SIGN-GOSTR341012-512:+SIGN-GOSTR341012-256:+SIGN-GOSTR341001:+SIGN-DSA-SHA384:+SIGN-DSA-SHA512" ""
 }
 
 
