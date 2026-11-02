@@ -5734,8 +5734,13 @@ int testSupportedGroups(struct sslCheckOptions *options) {
     {0x11eb, "SecP256r1MLKEM768", 192, COL_PLAIN, -1, NID_TYPE_SECP256R1MLKEM768, 1249},
     {0x11ec, "X25519MLKEM768", 192, COL_GREEN, -1, NID_TYPE_X25519MLKEM768, 1216},
     {0x11ed, "SecP384r1MLKEM1024", 256, COL_PLAIN, -1, NID_TYPE_SECP384R1MLKEM1024, 1665},
-    {0x6399, "X25519Kyber768Draft00", 192, COL_GREEN, -1, NID_TYPE_X25519Kyber768Draft00, 1216},
-  };
+    /* X25519Kyber768Draft00 is the pre-standard (round 3) Kyber hybrid.  IANA
+     * marks it obsolete, superseded by X25519MLKEM768 (0x11ec), and it is not
+     * wire-compatible with FIPS 203 ML-KEM.  Major clients have dropped it
+     * (Chrome 131, Go 1.24), so a server still offering it is running legacy
+     * pre-standard crypto.  It's not known to be broken, so flag it in yellow
+     * rather than red. */
+    {0x6399, "X25519Kyber768Draft00", 192, COL_YELLOW, -1, NID_TYPE_X25519Kyber768Draft00, 1216},  };
 
 
   /* If TLSv1.3 is supported, test it first. */
