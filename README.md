@@ -76,21 +76,13 @@ Key changes are as follows:
 * Display the full certifiate chain `--show-certificates`
 * Added option to scan groups on all supported protocols `--all-groups`.
 
-### Interpreting cipher strength
+### Cipher Strength in Bits
 
-The `bits` column in the cipher suite output reports the cipher's effective
-security strength as returned by OpenSSL, not necessarily its encryption key
-length. For example, `TLS_RSA_WITH_AES_128_CCM_8` (`AES128-CCM8`) and
-`TLS_RSA_WITH_AES_256_CCM_8` (`AES256-CCM8`) are both reported as **64 bits**.
-Their AES keys are still 128 and 256 bits respectively; the lower reported
-strength reflects their short, 8-byte authentication tags. This follows
-[OpenSSL's treatment of CCM8 ciphers](https://github.com/openssl/openssl/pull/16652)
-and is not evidence that the server negotiated a 64-bit AES key.
+The `bits` column in the cipher suite output reports the cipher's effective security strength as returned by OpenSSL, which does not necessarily its encryption key length.
 
-The same value is written to the `bits` attribute of each `<cipher>` in XML
-output. The cipher name's colour and the XML `strength` attribute are separate
-classifications that also consider the algorithms used, so a large `bits`
-value alone does not mean a cipher suite is recommended.
+This is most notable in `3DES` ciphers (which are listed as 112 bits of effective strength due to the parity bits in the keys and meet-in-the-middle attacks), and in `CCM8` ciphers (which are listed as 64 bits of effective strength due to the short authentication tag, as discussed in the [upstream OpenSSL pull request](https://github.com/openssl/openssl/pull/16652)).
+
+The same value is written to the `bits` attribute of each `<cipher>` in XML output, and the `<strength>` attribute is a broader consideration of the cipher strength, aligned to the colour in the sslscan output.
 
 ### Building on Linux
 

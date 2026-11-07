@@ -23,13 +23,12 @@ Ciphers and algorithms with known weaknesses or that are still too new to widely
 Ciphers and algorithms that are aligned with current recommended best practices.
 .br
 .br
-.SS Cipher strength
-The bits column for cipher suites reports the effective security strength returned by OpenSSL, not necessarily the encryption key length.
-For example, TLS_RSA_WITH_AES_128_CCM_8 (AES128-CCM8) and TLS_RSA_WITH_AES_256_CCM_8 (AES256-CCM8) are both reported as 64 bits because of their short, 8-byte authentication tags.
-Their AES keys remain 128 and 256 bits respectively.
+.SS Cipher Strength
+The bits column in the cipher suite output reports the cipher's effective security strength as returned by OpenSSL, which does not necessarily its encryption key length.
 .PP
-The same value is used for the bits attribute of each cipher element in XML output.
-The cipher name's colour and the XML strength attribute are separate classifications that also consider the algorithms used; a large bits value alone does not mean a cipher suite is recommended.
+This is most notable in 3DES ciphers (which are listed as 112 bits of effective strength due to the parity bits in the keys and meet-in-the-middle attacks), and in CCM8 ciphers (which are listed as 64 bits of effective strength due to the short authentication tag).
+.PP
+The same value is written to the bits attribute of each <cipher> in XML output, and the <strength> attribute is a broader consideration of the cipher strength, aligned to the colours above.
 .SH OPTIONS
 .TP
 .B \-\-help
