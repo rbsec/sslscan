@@ -76,6 +76,22 @@ Key changes are as follows:
 * Display the full certifiate chain `--show-certificates`
 * Added option to scan groups on all supported protocols `--all-groups`.
 
+### Interpreting cipher strength
+
+The `bits` column in the cipher suite output reports the cipher's effective
+security strength as returned by OpenSSL, not necessarily its encryption key
+length. For example, `TLS_RSA_WITH_AES_128_CCM_8` (`AES128-CCM8`) and
+`TLS_RSA_WITH_AES_256_CCM_8` (`AES256-CCM8`) are both reported as **64 bits**.
+Their AES keys are still 128 and 256 bits respectively; the lower reported
+strength reflects their short, 8-byte authentication tags. This follows
+[OpenSSL's treatment of CCM8 ciphers](https://github.com/openssl/openssl/pull/16652)
+and is not evidence that the server negotiated a 64-bit AES key.
+
+The same value is written to the `bits` attribute of each `<cipher>` in XML
+output. The cipher name's colour and the XML `strength` attribute are separate
+classifications that also consider the algorithms used, so a large `bits`
+value alone does not mean a cipher suite is recommended.
+
 ### Building on Linux
 
 It is recommended to ignore the OpenSSL system installation and statically build against your own version. Although this results in a more resource-heavy `sslscan` binary (file size, memory consumption, etc.), this allows some additional checks such as TLS compression. Note that as of sslscan version 2.2.0, the minimum OpenSSL version required by sslscan is 3.5.0 (LTS), so if your distro ships an older version then building against it will not work, and you will have to do a static build.
