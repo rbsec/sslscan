@@ -27,6 +27,8 @@ jobs:
           make static
         env:
           CC: ${{ matrix.cc }}
+      - name: test certificate names
+        run: python3 docker_test/test_certificate_names.py
   build_mingw:
     runs-on: ubuntu-latest
     steps:
