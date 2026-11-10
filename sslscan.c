@@ -2144,16 +2144,18 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                 ASN1_STRING *d;
                                 const char *subject;
                                 const char *issuer;
+                                char *subject_name = NULL;
 
                                 // Get SSL cert CN
                                 cnindex = -1;
                                 subj = X509_get_subject_name(x509Cert);
                                 cnindex = X509_NAME_get_index_by_NID(subj, NID_commonName, cnindex);
 
-                                // SSL cert doesn't have a CN, so just print whole thing
-                                if (cnindex == -1)
+                                // Use the full name if there is no CN or more than one CN.
+                                if (cnindex == -1 || X509_NAME_get_index_by_NID(subj, NID_commonName, cnindex) != -1)
                                 {
-                                    subject = (char *) X509_NAME_oneline(X509_get_subject_name(x509Cert), NULL, 0);
+                                    subject_name = X509_NAME_oneline(subj, NULL, 0);
+                                    subject = subject_name;
                                     printf("Subject:  %s\n", subject);
                                     printf_xml("   <subject><![CDATA[%s]]></subject>\n", subject);
 
@@ -2199,8 +2201,8 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                 subj = X509_get_issuer_name(x509Cert);
                                 cnindex = X509_NAME_get_index_by_NID(subj, NID_commonName, cnindex);
 
-                                // Issuer cert doesn't have a CN, so just print whole thing
-                                if (cnindex == -1)
+                                // Keep all issuer CNs too, using the same format as the subject.
+                                if (cnindex == -1 || X509_NAME_get_index_by_NID(subj, NID_commonName, cnindex) != -1)
                                 {
                                     char *issuer = X509_NAME_oneline(X509_get_issuer_name(x509Cert), NULL, 0);
                                     char *color = "";
@@ -2219,6 +2221,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                     else {
                                         printf_xml("   <self-signed>false</self-signed>\n");
                                     }
+                                    OPENSSL_free(issuer);
                                 }
                                 else
                                 {
@@ -2245,6 +2248,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                         printf_xml("   <self-signed>false</self-signed>\n");
                                     }
                                 }
+                                OPENSSL_free(subject_name);
                             }
 
                             // Check for certificate expiration
