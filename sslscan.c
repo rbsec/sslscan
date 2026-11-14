@@ -2212,7 +2212,7 @@ int checkCertificate(struct sslCheckOptions *options, const SSL_METHOD *sslMetho
                                         color = COL_RED;
                                         self_signed = 1;
                                     }
-                                    printf("%sIssuer:   %s%s", color, issuer, RESET);
+                                    printf("%sIssuer:   %s%s\n", color, issuer, RESET);
                                     printf_xml("   <issuer><![CDATA[%s]]></issuer>\n", issuer);
 
                                     if (self_signed) {
