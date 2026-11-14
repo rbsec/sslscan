@@ -1,32 +1,3 @@
-# sslscan2
-
-sslscan version 2 has now been released. This includes a major rewrite of the backend scanning code, which means that it is no longer reliant on the version of OpenSSL for many checks. This means that it is possible to support legacy protocols (SSLv2 and SSLv3), as well as supporting TLSv1.3 - regardless of the version of OpenSSL that it has been compiled against.
-
-This has been made possible largely by the work of [jtesta](https://github.com/jtesta), who has been responsible for most of the backend rewrite.
-
-Other key changes include:
-
-* Enumeration of server key exchange groups.
-* Enumeration of server signature algorithms.
-* SSLv2 and SSLv3 protocol support is scanned, but individual ciphers are not.
-* A test suite is included using Docker, to verify that sslscan is functionality correctly.
-* Removed the `--http` option, as it was broken and had very little use in the first place.
-* Support for new post-quantum groups.
-
-## XML Output Changes
-A potentially breaking change has been made to the XML output in version **2.0.0-beta4**. Previously, multiple `<certificate>` elements could be returned (one by default, and a second one if `--show-certificate` was used).
-
-The key changes are:
-
-* A new parent `<certificates>` element that will contain the `<certificate>` elements.
-* `<certificate>` elements have a new `type` attribute, which can either be:
-  * `short` for the default output.
-  * `full` for when `--show-certificate` is used.
-* There will potentially be more than one certificate of each type returned on servers that have multiple certificates with different signature algorithms (see discussion in issue [#208](https://github.com/rbsec/sslscan/issues/208)).
-* The `<signature-algorithm>` element in a `<certificate>` no longer contains the "Signature Algorithm:" prefix, or the spacing and newline.
-
-If you are using the XML output, then you may need to make changes to your parser.
-
 # README
 
 [![ci](https://github.com/rbsec/sslscan/actions/workflows/ci.yml/badge.svg)](https://github.com/rbsec/sslscan/actions/workflows/ci.yml)
@@ -76,26 +47,9 @@ Key changes are as follows:
 * Display the full certifiate chain `--show-certificates`
 * Added option to scan groups on all supported protocols `--all-groups`.
 
-### Certificate Names
+# Compiling
 
-The short certificate output shows the common name (CN) for subjects and issuers
-with exactly one CN. If a name has no CN or multiple CNs, sslscan shows the full
-distinguished name instead, so no CN is silently omitted. This applies to both
-terminal output and the existing XML `subject` and `issuer` elements.
-
-To test this output against local TLS servers without Docker, build sslscan and
-run `python3 docker_test/test_certificate_names.py`. The test needs Python 3 and
-an `openssl` command on PATH; it only connects to loopback addresses.
-
-### Cipher Strength in Bits
-
-The `bits` column in the cipher suite output reports the cipher's effective security strength as returned by OpenSSL, which does not necessarily its encryption key length.
-
-This is most notable in `3DES` ciphers (which are listed as 112 bits of effective strength due to the parity bits in the keys and meet-in-the-middle attacks), and in `CCM8` ciphers (which are listed as 64 bits of effective strength due to the short authentication tag, as discussed in the [upstream OpenSSL pull request](https://github.com/openssl/openssl/pull/16652)).
-
-The same value is written to the `bits` attribute of each `<cipher>` in XML output, and the `<strength>` attribute is a broader consideration of the cipher strength, aligned to the colour in the sslscan output.
-
-### Building on Linux
+## Building on Linux
 
 It is recommended to ignore the OpenSSL system installation and statically build against your own version. Although this results in a more resource-heavy `sslscan` binary (file size, memory consumption, etc.), this allows some additional checks such as TLS compression. Note that as of sslscan version 2.2.0, the minimum OpenSSL version required by sslscan is 3.5.0 (LTS), so if your distro ships an older version then building against it will not work, and you will have to do a static build.
 
@@ -119,7 +73,7 @@ Then run
 
 You can verify whether you have a statically linked OpenSSL version, by checking whether the version listed by `sslscan --version` has the `-static` suffix.
 
-### Building with Docker
+## Building with Docker
 
 Ensure that you local Docker installation is functional, and the build the container with:
 
@@ -133,7 +87,7 @@ You can then run sslscan with:
 
     docker run --rm -ti sslscan:sslscan --help
 
-### Building on Windows
+## Building on Windows
 
 Thanks to a patch by jtesta, sslscan can now be compiled on Windows. This can either be done natively or by cross-compiling from Linux. See INSTALL for instructions.
 
@@ -141,10 +95,45 @@ Note that sslscan was originally written for Linux, and has not been extensively
 
 Pre-build cross-compiled Windows binaries are available on the [GitHub Releases Page](https://github.com/rbsec/sslscan/releases).
 
-### Building on macOS (formerly named OS X)
+## Building on macOS (formerly named OS X)
 There is experimental support for statically building on macOS (formerly named OS X), however this should be considered unsupported. You may need to install any dependencies required to compile OpenSSL from source on macOS (formerly named OS X). Once you have, just run:
 
     make static
+
+# Notes
+
+## XML Output Changes
+A potentially breaking change has been made to the XML output in version **2.0.0-beta4**. Previously, multiple `<certificate>` elements could be returned (one by default, and a second one if `--show-certificate` was used).
+
+The key changes are:
+
+* A new parent `<certificates>` element that will contain the `<certificate>` elements.
+* `<certificate>` elements have a new `type` attribute, which can either be:
+  * `short` for the default output.
+  * `full` for when `--show-certificate` is used.
+* There will potentially be more than one certificate of each type returned on servers that have multiple certificates with different signature algorithms (see discussion in issue [#208](https://github.com/rbsec/sslscan/issues/208)).
+* The `<signature-algorithm>` element in a `<certificate>` no longer contains the "Signature Algorithm:" prefix, or the spacing and newline.
+
+If you are using the XML output, then you may need to make changes to your parser.
+
+## Certificate Names
+
+The short certificate output shows the common name (CN) for subjects and issuers
+with exactly one CN. If a name has no CN or multiple CNs, sslscan shows the full
+distinguished name instead, so no CN is silently omitted. This applies to both
+terminal output and the existing XML `subject` and `issuer` elements.
+
+To test this output against local TLS servers without Docker, build sslscan and
+run `python3 docker_test/test_certificate_names.py`. The test needs Python 3 and
+an `openssl` command on PATH; it only connects to loopback addresses.
+
+## Cipher Strength in Bits
+
+The `bits` column in the cipher suite output reports the cipher's effective security strength as returned by OpenSSL, which does not necessarily its encryption key length.
+
+This is most notable in `3DES` ciphers (which are listed as 112 bits of effective strength due to the parity bits in the keys and meet-in-the-middle attacks), and in `CCM8` ciphers (which are listed as 64 bits of effective strength due to the short authentication tag, as discussed in the [upstream OpenSSL pull request](https://github.com/openssl/openssl/pull/16652)).
+
+The same value is written to the `bits` attribute of each `<cipher>` in XML output, and the `<strength>` attribute is a broader consideration of the cipher strength, aligned to the colour in the sslscan output.
 
 # Original (ioerror) README
 This is a fork of sslscan.c to better support STARTTLS.

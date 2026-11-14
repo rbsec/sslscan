@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version: 2.2.4
+Date   : 14/11/2026
+Author : rbsec <robin@rbsec.net>
+Changes: The following are a list of changes
+		 > Fix output for certs with multiple CNs (credit hakarrr)
+		 > Flag X25519Kyber768Draft00 as yellow in output as its obsolete
+       > Don't sent some unnecessary suites in hardcoded handshakes (credit jalilm)
+       > Fix broken ClientHello for TLSv1.3 (reported by Georgios Feretzakis)
+
 Version: 2.2.3
 Date   : 17/09/2026
 Author : rbsec <robin@rbsec.net>

@@ -19,3 +19,8 @@ openssl/
 
 # custom zlib build for Windows
 zlib_mingw/
+
+# other stuff
+*.zip
+*.sig
+*.xml
