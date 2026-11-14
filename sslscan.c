@@ -5341,8 +5341,8 @@ void tlsExtensionAddSupportedGroups(unsigned int tls_version, bs *tls_extensions
   if (tls_version == TLSv1_3) {
     bs_append_bytes(tls_extensions, (unsigned char []) {
       0x00, 0x0a, // Extension: supported_groups (10)
-      0x00, 0x18, // Extension Length (24)
-      0x00, 0x16, // Supported Groups List Length (22)
+      0x00, 0x1a, // Extension Length (26)
+      0x00, 0x18, // Supported Groups List Length (24)
       0x00, 0x17, // secp256r1
       0x00, 0x19, // secp521r1
       0x00, 0x18, // secp384r1
