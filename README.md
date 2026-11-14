@@ -76,6 +76,17 @@ Key changes are as follows:
 * Display the full certifiate chain `--show-certificates`
 * Added option to scan groups on all supported protocols `--all-groups`.
 
+### Certificate Names
+
+The short certificate output shows the common name (CN) for subjects and issuers
+with exactly one CN. If a name has no CN or multiple CNs, sslscan shows the full
+distinguished name instead, so no CN is silently omitted. This applies to both
+terminal output and the existing XML `subject` and `issuer` elements.
+
+To test this output against local TLS servers without Docker, build sslscan and
+run `python3 docker_test/test_certificate_names.py`. The test needs Python 3 and
+an `openssl` command on PATH; it only connects to loopback addresses.
+
 ### Cipher Strength in Bits
 
 The `bits` column in the cipher suite output reports the cipher's effective security strength as returned by OpenSSL, which does not necessarily its encryption key length.
