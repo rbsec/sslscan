@@ -11,6 +11,8 @@ jobs:
         cc: [clang, gcc]
     steps:
       - uses: actions/checkout@v4
+      - name: test recursive make parallelism
+        run: python3 docker_test/test_make_parallelism.py
       - name: build with ${{ matrix.cc }}
         run: |
           # Since ubuntu-latest does not ship with OpenSSL >= v3.5, dynamic linking will fail unless we build and install it.

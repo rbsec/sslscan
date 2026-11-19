@@ -94,15 +94,16 @@ endif
 
 # If -j wasn't passed to make, find the number of processors on the system.
 # Uses /usr/bin/nproc if available, otherwise defaults to 1.
-ifeq (,$(findstring -j,$(MAKEFLAGS)))
-        JOBS_ARG = -j1
-        ifneq (,$(wildcard /usr/bin/nproc))
-                JOBS_ARG = -j`/usr/bin/nproc --all`
-        endif
-        ifeq ($(OS), Darwin)
-                JOBS_ARG = -j`sysctl -n hw.ncpu`
-        endif
+AUTO_JOBS_ARG = -j1
+ifneq (,$(wildcard /usr/bin/nproc))
+        AUTO_JOBS_ARG = -j`/usr/bin/nproc --all`
 endif
+ifeq ($(OS), Darwin)
+        AUTO_JOBS_ARG = -j`sysctl -n hw.ncpu`
+endif
+# Evaluate MAKEFLAGS when expanding recipes: command-line -j is not yet
+# included while parsing this makefile. Leave an existing jobserver intact.
+JOBS_ARG = $(if $(findstring -j,$(MAKEFLAGS)),,$(AUTO_JOBS_ARG))
 
 .PHONY: all sslscan clean realclean install uninstall static opensslpull
 
