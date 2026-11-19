@@ -73,6 +73,12 @@ Then run
 
 You can verify whether you have a statically linked OpenSSL version, by checking whether the version listed by `sslscan --version` has the `-static` suffix.
 
+Use `make -jN static` to limit build parallelism, including the OpenSSL sub-build.
+Without `-j`, the build chooses the processor count automatically. The recursive
+make job-limit regression tests can be run with
+`python3 docker_test/test_make_parallelism.py`; they require GNU make and Python 3,
+but do not download OpenSSL or compile sslscan.
+
 ## Building with Docker
 
 Ensure that you local Docker installation is functional, and the build the container with:
